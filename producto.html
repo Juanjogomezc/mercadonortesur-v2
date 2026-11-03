@@ -1,0 +1,20 @@
+<!DOCTYPE html><html lang="es-CL"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Producto — Mercado Norte Sur</title><link rel="stylesheet" href="assets/styles.css">
+<style>.bar{border-bottom:1px solid var(--line);padding:14px 0}.bar .wrap{display:flex;align-items:center;gap:16px}.bar nav{margin-left:auto;display:flex;gap:16px;align-items:center;font-size:14px;font-weight:500}
+main.wrap{padding-top:28px;padding-bottom:70px}.two{display:grid;grid-template-columns:1.1fr 1fr;gap:36px}@media(max-width:760px){.two{grid-template-columns:1fr}}
+.ph{aspect-ratio:1;border-radius:var(--radius);background:var(--bg-subtle) center/cover}.ord{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:10px 0}
+.tg{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--forest-soft);color:var(--forest)}.tg.h{background:var(--amber-soft);color:var(--amber)}.msg{padding:10px 14px;border-radius:8px;background:var(--forest-soft);margin:12px 0}.msg.e{background:var(--red-soft);color:var(--red)}
+.wp{max-width:420px;margin:40px auto;border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}</style></head><body>
+<div class="bar"><div class="wrap"><a class="logo" href="index.html"><span class="logo-mark"></span>Mercado Norte Sur</a>
+<nav id="nav"></nav></div></div><main class="wrap" id="app"></main>
+<script src="assets/app.js"></script><script>
+const B='';const u=MNS.me(),$=id=>document.getElementById(id);
+$('nav').innerHTML=u?`<a href="${B}index.html">Comprar</a><a href="${B}cuenta/publicar.html">Vender</a><a href="${B}cuenta/pedidos.html">Mis pedidos</a><a href="#" onclick="MNS.logout();location.href='${B}index.html'">Salir</a>`:`<a href="${B}index.html">Comprar</a><a href="${B}auth/login.html">Entrar</a><a class="btn-primary" href="${B}auth/register.html">Crear cuenta</a>`;
+const id=new URLSearchParams(location.search).get('id'),p=MNS.find(id);
+if(!p){$('app').innerHTML='<h1>No encontramos este producto</h1>'}else{
+const ok=(p.status||'active')==='active'&&!MNS.db().orders.some(o=>o.lid===p.id&&['PAID_HELD','SHIPPED','RELEASED'].includes(o.status));
+$('app').innerHTML=`<div class="two"><div class="ph" style="background-image:url('${p.img}')"></div><div><p class="eyebrow">${p.cat} · ${p.cond==='nuevo'?'Nuevo':'Usado'} · ${p.loc}</p><h1 style="font-size:30px;margin:6px 0 10px">${p.name}</h1>
+<div class="price" style="font-size:28px">${MNS.money(p.price)}${p.oldPrice?` <s style="font-size:16px;color:var(--ink-faint);font-weight:400">${MNS.money(p.oldPrice)}</s>`:''}</div>
+<p>${p.desc||'Producto en buen estado, listo para tu próxima salida.'}</p><p style="color:var(--ink-soft)">Vendido por ${p.seller}</p><div id="m"></div>
+${!ok?'<div class="msg">Este producto ya no está disponible.</div>':u?'<button class="btn-primary" onclick="comprar()">Comprar con Webpay</button><p style="color:var(--ink-soft);font-size:14px">El pago queda retenido hasta que confirmes la entrega. Devolución fácil en 15 días.</p>':'<a class="btn-primary" href="../auth/login.html">Inicia sesión para comprar</a>'.replace('../','')}</div></div>`}
+function comprar(){const r=MNS.buy(id);if(r.err){$('m').innerHTML='<div class="msg e">'+r.err+'</div>';return}location.href='pagar.html?o='+r.id}</script></body></html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi cuenta · Mercado Norte Sur</title>
+<style>
+/* ============================================================
+   Mercado Norte Sur — Design system compartido
+   Tokens, tipografía y componentes reutilizados en todas las páginas.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+
+:root{
+  --bg: #FFFFFF;
+  --bg-subtle: #F6F4EF;
+  --ink: #1B1A17;
+  --ink-soft: #635E55;
+  --ink-faint: #96907F;
+  --rust: #D2551F;
+  --rust-dark: #B5461A;
+  --rust-soft: #FBE9DE;
+  --forest: #223B2C;
+  --forest-soft: #DCE6DD;
+  --amber: #9A6B12;
+  --amber-soft: #FBEED2;
+  --red: #B3261E;
+  --red-soft: #FBE2E0;
+  --line: #E7E2D8;
+  --card-bg: #FFFFFF;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(27,26,23,0.04), 0 8px 24px rgba(27,26,23,0.05);
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Roboto', -apple-system, sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit; text-decoration:none; cursor:pointer;}
+ul{list-style:none; margin:0; padding:0;}
+img{max-width:100%; display:block;}
+button{font-family:inherit;}
+
+.price{font-family:'Roboto', sans-serif; font-weight:600; letter-spacing:-0.01em;}
+.eyebrow{
+  font-family:'Roboto', sans-serif;
+  font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+  color:var(--ink-faint); font-weight:600;
+}
+h1,h2,h3{font-family:'Roboto', sans-serif; margin:0; letter-spacing:-0.01em;}
+
+.wrap{max-width:1280px; margin:0 auto; padding:0 32px;}
+
+/* ---------- LOGO ---------- */
+.logo{display:flex; align-items:center; gap:9px; font-weight:700; font-size:18px; flex-shrink:0;}
+.logo-mark{
+  width:30px; height:30px; border-radius:8px; background:var(--rust);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+
+/* ---------- HEADER (público / app) ---------- */
+header.site{
+  position:sticky; top:0; z-index:50;
+  background:rgba(255,255,255,0.94); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.header-top{
+  display:flex; align-items:center; gap:28px; padding:14px 32px;
+  max-width:1280px; margin:0 auto;
+}
+.search-bar{
+  flex:1; display:flex; align-items:center;
+  background:var(--bg-subtle); border:1px solid var(--line); border-radius:8px;
+  padding:0 14px; height:42px; max-width:620px;
+}
+.search-bar input{
+  border:none; background:transparent; outline:none;
+  font-family:'Roboto',sans-serif; font-size:14px; flex:1; color:var(--ink);
+}
+.search-bar input::placeholder{color:var(--ink-faint);}
+.header-actions{display:flex; align-items:center; gap:18px; flex-shrink:0;}
+.icon-btn{display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; color:var(--ink); position:relative;}
+.cart-dot{
+  position:absolute; top:-6px; right:-9px; background:var(--rust); color:#fff;
+  font-size:9.5px; font-weight:700; width:15px; height:15px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* Avatar / user menu */
+.user-menu{position:relative;}
+.avatar-btn{
+  display:flex; align-items:center; gap:8px; padding:6px 10px 6px 6px;
+  border:1px solid var(--line); border-radius:100px; background:#fff;
+}
+.avatar{
+  width:26px; height:26px; border-radius:50%; background:var(--forest); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;
+}
+.avatar-name{font-size:13px; font-weight:600;}
+.dropdown{
+  position:absolute; top:44px; right:0; background:#fff; border:1px solid var(--line);
+  border-radius:10px; box-shadow:var(--shadow); min-width:210px; padding:6px; display:none; z-index:60;
+}
+.dropdown.open{display:block;}
+.dropdown a, .dropdown button{
+  display:flex; align-items:center; gap:9px; width:100%; text-align:left;
+  padding:9px 10px; font-size:13.5px; font-weight:500; border-radius:7px; border:none; background:none;
+}
+.dropdown a:hover, .dropdown button:hover{background:var(--bg-subtle);}
+.dropdown hr{border:none; border-top:1px solid var(--line); margin:5px 2px;}
+
+.cat-nav{
+  border-top:1px solid var(--line); display:flex; align-items:center; gap:2px;
+  max-width:1280px; margin:0 auto; padding:0 32px; overflow-x:auto;
+}
+.cat-nav a{
+  font-size:13px; font-weight:600; color:var(--ink-soft); padding:11px 14px; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .15s ease, border-color .15s ease;
+}
+.cat-nav a:hover{color:var(--rust); border-color:var(--rust);}
+.cat-nav a.active{color:var(--ink); border-color:var(--ink);}
+
+/* ---------- BUTTONS ---------- */
+.btn-primary, .btn-sell{
+  background:var(--rust); color:#fff; font-weight:700; font-size:13.5px;
+  padding:11px 18px; border-radius:7px; display:inline-flex; align-items:center; gap:8px;
+  border:none; cursor:pointer; transition:background .15s ease;
+}
+.btn-primary:hover, .btn-sell:hover{background:var(--rust-dark);}
+.btn-ghost{
+  background:transparent; color:var(--ink); font-weight:700; font-size:13.5px;
+  padding:11px 18px; border-radius:7px; border:1.5px solid var(--ink); cursor:pointer;
+}
+.btn-ghost:hover{background:var(--bg-subtle);}
+.btn-google{
+  display:flex; align-items:center; justify-content:center; gap:10px; width:100%;
+  padding:11px 16px; border:1px solid var(--line); border-radius:7px; background:#fff;
+  font-weight:600; font-size:13.5px; cursor:pointer; transition:background .15s ease, box-shadow .15s ease;
+}
+.btn-google:hover{box-shadow:var(--shadow);}
+.btn-danger{
+  background:var(--red-soft); color:var(--red); font-weight:700; font-size:13px;
+  padding:9px 14px; border-radius:7px; border:none; cursor:pointer;
+}
+.btn-approve{
+  background:var(--forest); color:#fff; font-weight:700; font-size:13px;
+  padding:9px 14px; border-radius:7px; border:none; cursor:pointer;
+}
+.btn-sm{padding:7px 12px; font-size:12.5px;}
+.link-rust{color:var(--rust); font-weight:600; font-size:13.5px;}
+
+/* ---------- BADGES / STATUS ---------- */
+.badge{
+  display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700;
+  font-family:'Roboto',sans-serif; padding:4px 9px; border-radius:5px; letter-spacing:0.02em;
+}
+.badge.aprobado{background:var(--forest-soft); color:var(--forest);}
+.badge.revision{background:var(--amber-soft); color:var(--amber);}
+.badge.rechazado{background:var(--red-soft); color:var(--red);}
+.badge.nuevo{background:var(--forest-soft); color:var(--forest);}
+.badge.usado{background:#EFE9DA; color:var(--ink-soft);}
+
+/* ---------- CARDS / TABLE / TABS ---------- */
+.card{
+  border:1px solid var(--line); border-radius:var(--radius); background:#fff; padding:20px;
+}
+.section-head{
+  display:flex; align-items:baseline; justify-content:space-between; margin-bottom:20px; gap:16px;
+}
+.section-head h2{font-size:22px;}
+
+.tabs{display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:24px;}
+.tab{
+  padding:11px 4px; margin-right:22px; font-size:13.5px; font-weight:700; color:var(--ink-faint);
+  border-bottom:2px solid transparent; cursor:pointer; background:none; border-top:none; border-left:none; border-right:none;
+}
+.tab.active{color:var(--ink); border-color:var(--rust);}
+
+table.data-table{width:100%; border-collapse:collapse; font-size:13.5px;}
+.data-table th{
+  text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;
+  color:var(--ink-faint); font-weight:700; padding:0 12px 10px; border-bottom:1px solid var(--line);
+}
+.data-table td{padding:14px 12px; border-bottom:1px solid var(--line); vertical-align:middle;}
+.data-table tr:last-child td{border-bottom:none;}
+.row-prod{display:flex; align-items:center; gap:10px;}
+.row-thumb{width:42px; height:42px; border-radius:7px; object-fit:cover; background:var(--bg-subtle); flex-shrink:0;}
+
+.stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+.stat-box{border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+.stat-box .num{font-family:'Roboto',sans-serif; font-size:26px;}
+.stat-box .lbl{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+
+.empty-state{
+  border:1px dashed var(--line); border-radius:var(--radius); padding:44px 20px;
+  text-align:center; color:var(--ink-soft); font-size:14px;
+}
+
+/* ---------- FORMS ---------- */
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:12.5px; font-weight:700; margin-bottom:6px;}
+.field input, .field select, .field textarea{
+  width:100%; border:1px solid var(--line); border-radius:7px; padding:10px 12px;
+  font-family:'Roboto',sans-serif; font-size:14px; color:var(--ink); background:#fff; outline:none;
+}
+.field input:focus, .field select:focus, .field textarea:focus{border-color:var(--rust);}
+.field .hint{font-size:11.5px; color:var(--ink-faint); margin-top:5px;}
+.divider-or{
+  display:flex; align-items:center; gap:10px; margin:18px 0; color:var(--ink-faint); font-size:12px; font-weight:600;
+}
+.divider-or::before, .divider-or::after{content:''; flex:1; height:1px; background:var(--line);}
+
+.pill-toggle{display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+.pill-toggle button{
+  flex:1; padding:10px; font-size:13px; font-weight:600; border:none; background:#fff; color:var(--ink-soft); cursor:pointer;
+}
+.pill-toggle button.on{background:var(--ink); color:#fff;}
+
+/* ---------- TOAST ---------- */
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--ink); color:#fff; padding:12px 20px; border-radius:8px; font-size:13.5px; font-weight:600;
+  opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:200;
+  display:flex; align-items:center; gap:10px;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* ---------- FOOTER ---------- */
+footer.site{background:var(--forest); color:#D7DFD9; padding:40px 0 24px; margin-top:60px;}
+footer.site .wrap{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#8A968E; flex-wrap:wrap; gap:10px;}
+footer.site a{color:#D7DFD9;}
+
+@media (max-width:960px){
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+}
+
+</style>
+<style>
+  .page-head{padding:32px 0 8px;}
+  .page-head h1{font-size:26px; margin-bottom:4px;}
+  .page-head .sub{font-size:13.5px; color:var(--ink-soft);}
+  main{padding:24px 0 60px;}
+  .banner-alert{
+    display:flex; align-items:center; gap:12px; background:var(--red-soft); color:var(--red);
+    border-radius:9px; padding:13px 16px; font-size:13px; margin-bottom:22px;
+  }
+  .banner-alert b{font-weight:700;}
+  .fav-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  .fav-card{border:1px solid var(--line); border-radius:9px; overflow:hidden;}
+  .fav-media{aspect-ratio:1/1; background:var(--bg-subtle);}
+  .fav-media img{width:100%; height:100%; object-fit:cover;}
+  .fav-body{padding:10px 12px;}
+  .fav-body .n{font-size:13px; font-weight:600; margin-bottom:4px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  @media(max-width:960px){.fav-grid{grid-template-columns:repeat(2,1fr);}}
+
+  @media (max-width:680px){
+    .wrap{padding:0 16px;}
+    .page-head{padding:22px 0 6px;}
+    .page-head h1{font-size:21px;}
+    .header-top{padding:12px 16px; gap:10px;}
+    .search-bar{display:none;}
+    .avatar-name{display:none;}
+    .btn-sell{padding:9px 12px; font-size:12.5px;}
+    .btn-sell svg{width:13px; height:13px;}
+    .stat-grid{grid-template-columns:1fr 1fr; gap:10px;}
+    .stat-box{padding:12px 14px;}
+    .stat-box .num{font-size:20px;}
+    .tabs{overflow-x:auto; white-space:nowrap; -ms-overflow-style:none; scrollbar-width:none;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab{margin-right:16px; font-size:12.5px;}
+    .table-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+    .table-scroll table{min-width:560px;}
+    .fav-grid{grid-template-columns:repeat(2,1fr); gap:10px;}
+    .banner-alert{font-size:12px; padding:11px 13px;}
+    footer.site .wrap{flex-direction:column; gap:6px; text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="header-top">
+    <a href="../index.html" class="logo">
+      <span class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>
+      Mercado Norte Sur
+    </a>
+    <div class="search-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#96907F" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" placeholder="Buscar carpas, mochilas, botas de trekking...">
+    </div>
+    <div class="header-actions">
+      <a href="publicar.html" class="btn-sell">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Publicar anuncio
+      </a>
+      <div class="user-menu">
+        <button class="avatar-btn" onclick="document.getElementById('userDropdown').classList.toggle('open')">
+          <span class="avatar">MP</span>
+          <span class="avatar-name">María P.</span>
+        </button>
+        <div class="dropdown" id="userDropdown">
+          <a href="dashboard.html">Mi cuenta</a>
+          <a href="publicar.html">Publicar anuncio</a>
+          <hr>
+          <a href="../auth/login.html">Cerrar sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap page-head">
+  <h1>Hola, María 👋</h1>
+  <div class="sub">Desde acá gestionas tus compras y tus publicaciones — la misma cuenta sirve para ambas cosas.</div>
+</div>
+
+<main class="wrap">
+
+  <div class="banner-alert">
+    <span>⚠️</span>
+    <span><b>Tu publicación "Carpa Doite Kaiku 4 personas" fue rechazada.</b> Motivo: las fotos no muestran el estado real del producto. <a href="publicar.html" class="link-rust" style="color:var(--red); text-decoration:underline;">Editar y reenviar</a></span>
+  </div>
+
+  <div class="stat-grid" style="margin-bottom:28px;">
+    <div class="stat-box"><div class="num price">2</div><div class="lbl">Compras en curso</div></div>
+    <div class="stat-box"><div class="num price">3</div><div class="lbl">Publicaciones activas</div></div>
+    <div class="stat-box"><div class="num price">1</div><div class="lbl">En revisión</div></div>
+    <div class="stat-box"><div class="num price">$142.000</div><div class="lbl">Vendido este mes</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-panel="compras">Mis compras</button>
+    <button class="tab" data-panel="favoritos">Favoritos</button>
+    <button class="tab" data-panel="publicaciones">Mis publicaciones</button>
+    <button class="tab" data-panel="ventas">Ventas</button>
+  </div>
+
+  <div class="panel active" id="panel-compras">
+    <div class="table-scroll"><table class="data-table">
+      <thead><tr><th>Producto</th><th>Vendedor</th><th>Precio</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-boots1/100/100"><span>Botas Salomon Quest 4D GTX 42</span></td>
+          <td>Ignacio T.</td>
+          <td class="price">$65.000</td>
+          <td><span class="badge revision">EN CAMINO</span></td>
+          <td><a href="#" class="link-rust" style="font-size:12.5px;">Ver detalle</a></td>
+        </tr>
+        <tr>
+          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-gps/100/100"><span>GPS Garmin GPSMAP 66i</span></td>
+          <td>OutdoorPro</td>
+          <td class="price">$310.000</td>
+          <td><span class="badge aprobado">ENTREGADO</span></td>
+          <td><a href="#" class="link-rust" style="font-size:12.5px;">Ver detalle</a></td>
+        </tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="panel" id="panel-favoritos">
+    <div class="fav-grid">
+      <div class="fav-card">
+        <div class="fav-media"><img src="https://picsum.photos/seed/mns-mtb/300/300"></div>
+        <div class="fav-body"><div class="n">Bicicleta MTB rodado 29 Trek</div><span class="price">$450.000</span></div>
+      </div>
+      <div class="fav-card">
+        <div class="fav-media"><img src="https://picsum.photos/seed/mns-surfboard/300/300"></div>
+        <div class="fav-body"><div class="n">Tabla de surf shortboard 6'2"</div><span class="price">$180.000</span></div>
+      </div>
+      <div class="fav-card">
+        <div class="fav-media"><img src="https://picsum.photos/seed/mns-snowboard/300/300"></div>
+        <div class="fav-body"><div class="n">Tabla de snowboard Burton</div><span class="price">$270.000</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-publicaciones">
+    <div class="table-scroll"><table class="data-table">
+      <thead><tr><th>Producto</th><th>Precio</th><th>Estado</th><th>Visitas</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-tent1/100/100"><span>Carpa Doite Kaiku 4 personas</span></td>
+          <td class="price">$89.990</td>
+          <td><span class="badge rechazado">RECHAZADO</span></td>
+          <td>—</td>
+          <td><a href="publicar.html" class="link-rust" style="font-size:12.5px;">Editar</a></td>
+        </tr>
+        <tr>
+          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-poles/100/100"><span>Bastones de trekking Black Diamond</span></td>
+          <td class="price">$28.000</td>
+          <td><span class="badge aprobado">APROBADO</span></td>
+          <td>214</td>
+          <td><a href="#" class="link-rust" style="font-size:12.5px;">Pausar</a></td>
+        </tr>
+        <tr>
+          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-rod/100/100"><span>Caña de pescar spinning Shimano</span></td>
+          <td class="price">$32.000</td>
+          <td><span class="badge revision">EN REVISIÓN</span></td>
+          <td>—</td>
+          <td><span style="font-size:12.5px; color:var(--ink-faint);">Esperando aprobación</span></td>
+        </tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="panel" id="panel-ventas">
+    <div class="table-scroll"><table class="data-table">
+      <thead><tr><th>Producto</th><th>Comprador</th><th>Precio</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-poles/100/100"><span>Bastones de trekking Black Diamond</span></td>
+          <td>Camila R.</td>
+          <td class="price">$28.000</td>
+          <td><span class="badge revision">POR ENVIAR</span></td>
+          <td><a href="#" class="link-rust" style="font-size:12.5px;">Marcar enviado</a></td>
+        </tr>
+      </tbody>
+    </table></div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>© 2026 Mercado Norte Sur</span>
+    <span><a href="../index.html">Volver al marketplace</a></span>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-'+tab.dataset.panel).classList.add('active');
+    });
+  });
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.user-menu')) document.getElementById('userDropdown').classList.remove('open');
+  });
+</script>
+</body>
+</html>

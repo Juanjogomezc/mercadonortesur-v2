@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="es-CL"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mis pedidos — Mercado Norte Sur</title><link rel="stylesheet" href="../assets/styles.css">
+<style>.bar{border-bottom:1px solid var(--line);padding:14px 0}.bar .wrap{display:flex;align-items:center;gap:16px}.bar nav{margin-left:auto;display:flex;gap:16px;align-items:center;font-size:14px;font-weight:500}
+main.wrap{padding-top:28px;padding-bottom:70px}.two{display:grid;grid-template-columns:1.1fr 1fr;gap:36px}@media(max-width:760px){.two{grid-template-columns:1fr}}
+.ph{aspect-ratio:1;border-radius:var(--radius);background:var(--bg-subtle) center/cover}.ord{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:10px 0}
+.tg{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--forest-soft);color:var(--forest)}.tg.h{background:var(--amber-soft);color:var(--amber)}.msg{padding:10px 14px;border-radius:8px;background:var(--forest-soft);margin:12px 0}.msg.e{background:var(--red-soft);color:var(--red)}
+.wp{max-width:420px;margin:40px auto;border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}</style></head><body>
+<div class="bar"><div class="wrap"><a class="logo" href="../index.html"><span class="logo-mark"></span>Mercado Norte Sur</a>
+<nav id="nav"></nav></div></div><main class="wrap" id="app"></main>
+<script src="../assets/app.js"></script><script>
+const B='../';const u=MNS.me(),$=id=>document.getElementById(id);
+$('nav').innerHTML=u?`<a href="${B}index.html">Comprar</a><a href="${B}cuenta/publicar.html">Vender</a><a href="${B}cuenta/pedidos.html">Mis pedidos</a><a href="#" onclick="MNS.logout();location.href='${B}index.html'">Salir</a>`:`<a href="${B}index.html">Comprar</a><a href="${B}auth/login.html">Entrar</a><a class="btn-primary" href="${B}auth/register.html">Crear cuenta</a>`;
+if(!u)location.href='../auth/login.html';
+const L=MNS.find,LB={PAID_HELD:'Pagado, retenido',SHIPPED:'En camino',RELEASED:'Entregado, pago liberado',CANCELLED:'Cancelado'},LS={review:'En revisión',active:'Publicada'};
+const m=new URLSearchParams(location.search).get('m');
+function row(o,x){return `<div class="ord"><div><b>${L(o.lid).name}</b><br><span style="color:var(--ink-soft)">${MNS.money(o.amount)}${o.track?' · Seguimiento '+o.track:''}</span></div><span class="tg ${o.status==='PAID_HELD'?'h':''}">${LB[o.status]}</span>${x}</div>`}
+function draw(){const b=MNS.myOrders(),s=MNS.mySales(),ls=MNS.myListings();
+$('app').innerHTML=`<h1>Mis pedidos</h1>${m==='ok'?'<div class="msg">Pago recibido. Tu dinero queda retenido hasta que confirmes la entrega.</div>':m==='no'?'<div class="msg e">Pago cancelado.</div>':''}
+<h2>Mis compras</h2>${b.length?'':'<p>Aún no has comprado nada.</p>'}${b.map(o=>row(o,o.status==='SHIPPED'?`<button class="btn-primary" onclick="MNS.deliver('${o.id}');draw()">Confirmar que lo recibí</button>`:o.status==='PAID_HELD'?`<a href="#" onclick="event.preventDefault();MNS.ship('${o.id}','CHX'+Math.floor(Math.random()*9e6+1e6));draw()" style="font-size:13px">Demo: simular envío del vendedor</a>`:'')).join('')}
+<h2>Mis ventas</h2>${s.length?'':'<p>Aún no tienes ventas.</p>'}${s.map(o=>row(o,o.status==='PAID_HELD'?`<span><input id="t-${o.id}" placeholder="Código de seguimiento"> <button class="btn-primary" onclick="var t=$('t-${o.id}').value.trim();if(t){MNS.ship('${o.id}',t);draw()}">Marcar enviado</button></span>`:'')).join('')}
+<h2>Mis publicaciones</h2>${ls.length?'':'<p>Aún no has publicado nada.</p>'}${ls.map(l=>`<div class="ord"><div><b>${l.name}</b><br><span style="color:var(--ink-soft)">${MNS.money(l.price)}</span></div><span class="tg ${l.status==='review'?'h':''}">${LS[l.status]}</span>${l.status==='review'?`<a href="#" onclick="event.preventDefault();MNS.approve('${l.id}');draw()" style="font-size:13px">Demo: simular aprobación del administrador</a>`:''}</div>`).join('')}`}
+draw();</script></body></html>
