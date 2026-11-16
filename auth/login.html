@@ -305,12 +305,14 @@ footer.site a{color:#D7DFD9;}
       <button type="submit" class="btn-primary" id="submitBtn" style="width:100%; justify-content:center; margin-top:6px;">Iniciar sesión</button>
     </form>
 
-    <div class="foot-link">¿No tienes cuenta? <a href="register.html" class="link-rust">Crea una gratis</a></div>
+    <div class="foot-link">¿No tienes cuenta? <a id="registerLink" href="register.html" class="link-rust">Crea una gratis</a></div>
   </div>
 </div>
 <script type="module">
   import { loginWithEmail, loginWithGoogle, friendlyError, homeFor } from "../assets/firebase.js";
 
+  const nextParam = new URLSearchParams(location.search).get('next');
+  if (nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')) document.getElementById('registerLink').href = 'register.html?next=' + encodeURIComponent(nextParam);
   const errBox = document.getElementById('formError');
   const submitBtn = document.getElementById('submitBtn');
   const googleBtn = document.getElementById('googleBtn');
