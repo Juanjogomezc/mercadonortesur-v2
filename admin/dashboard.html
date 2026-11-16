@@ -380,7 +380,7 @@ footer.site a{color:#D7DFD9;}
       <div style="display:flex; align-items:center; gap:12px;">
         <span class="eyebrow" id="queueLabel"></span>
         <button class="btn-outline-sm" id="adminPhoneBtn" type="button" style="margin:0; display:none;">☎ WhatsApp institucional</button>
-        <button class="btn-outline-sm" id="importCatalogBtn" type="button" style="margin:0; display:none;">＋ Cargar catálogo institucional</button>
+        
         <button class="btn-outline-sm" id="refreshBtn" type="button" style="margin:0; display:none;">↻ Actualizar</button>
       </div>
     </div>
@@ -388,6 +388,13 @@ footer.site a{color:#D7DFD9;}
     <div id="gateMsg" class="empty-state">Verificando acceso…</div>
 
     <div id="adminApp" style="display:none;">
+      <div class="admin-catalog-import" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px;margin:0 0 18px;background:#fff;border:1px solid #d9e1e8;border-radius:12px;">
+        <div>
+          <strong style="display:block;margin-bottom:4px;">Catálogo institucional</strong>
+          <span style="color:#64748b;font-size:14px;">Carga inicial de los 23 productos y servicios de Mercado Norte Sur.</span>
+        </div>
+        <button class="btn-primary" id="importCatalogBtn" type="button">＋ Cargar 23 publicaciones</button>
+      </div>
 
       <!-- ===== Publicaciones pendientes ===== -->
       <div class="panel active" id="panel-publicaciones">
