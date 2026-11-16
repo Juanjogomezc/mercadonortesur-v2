@@ -214,19 +214,41 @@ function listingPayload(f) {
   };
 }
 
-export async function createListing(form, images, user, profile) {
+export async function createListing(form, images, user, profile, listingId = null) {
+  if (!user || !profile || profile.status !== "approved") {
+    throw new Error("Tu cuenta debe estar aprobada para enviar publicaciones a revisión.");
+  }
+  const listingRef = listingId
+    ? doc(db, "listings", listingId)
+    : doc(collection(db, "listings"));
+
+  // Si Firebase guardó el documento pero la respuesta se perdió por conexión,
+  // un reintento reconoce la misma publicación y evita crear duplicados.
+  const existing = await getDoc(listingRef);
+  const payload = listingPayload(form);
+  if (existing.exists()) {
+    const saved = existing.data();
+    const sameSubmission = saved.sellerId === user.uid
+      && saved.title === payload.title
+      && saved.category === payload.category
+      && Number(saved.price) === payload.price
+      && saved.description === payload.description;
+    if (sameSubmission) return listingRef.id;
+    throw new Error("Ya existe un envío anterior asociado a esta sesión. Revisa «Mis publicaciones» antes de iniciar otro anuncio.");
+  }
+
   const data = {
-    ...listingPayload(form),
+    ...payload,
     images: images || [],
     sellerId: user.uid,
-    sellerName: profile.name,
+    sellerName: profile.name || user.displayName || (user.email || "").split("@")[0] || "Usuario",
     status: "pending",
     rejectionReason: null,
     createdAt: serverTimestamp(),
     reviewedAt: null
   };
-  const refDoc = await addDoc(collection(db, "listings"), data);
-  return refDoc.id;
+  await setDoc(listingRef, data);
+  return listingRef.id;
 }
 
 // Editar y reenviar: vuelve a "pending" para que el admin la revise de nuevo
