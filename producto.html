@@ -1,20 +1,54 @@
-<!DOCTYPE html><html lang="es-CL"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!DOCTYPE html>
+<html lang="es-CL"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Producto — Mercado Norte Sur</title><link rel="stylesheet" href="assets/styles.css">
-<style>.bar{border-bottom:1px solid var(--line);padding:14px 0}.bar .wrap{display:flex;align-items:center;gap:16px}.bar nav{margin-left:auto;display:flex;gap:16px;align-items:center;font-size:14px;font-weight:500}
-main.wrap{padding-top:28px;padding-bottom:70px}.two{display:grid;grid-template-columns:1.1fr 1fr;gap:36px}@media(max-width:760px){.two{grid-template-columns:1fr}}
-.ph{aspect-ratio:1;border-radius:var(--radius);background:var(--bg-subtle) center/cover}.ord{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:10px 0}
-.tg{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--forest-soft);color:var(--forest)}.tg.h{background:var(--amber-soft);color:var(--amber)}.msg{padding:10px 14px;border-radius:8px;background:var(--forest-soft);margin:12px 0}.msg.e{background:var(--red-soft);color:var(--red)}
-.wp{max-width:420px;margin:40px auto;border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}</style></head><body>
-<div class="bar"><div class="wrap"><a class="logo" href="index.html"><span class="logo-mark"></span>Mercado Norte Sur</a>
-<nav id="nav"></nav></div></div><main class="wrap" id="app"></main>
-<script src="assets/app.js"></script><script>
-const B='';const u=MNS.me(),$=id=>document.getElementById(id);
-$('nav').innerHTML=u?`<a href="${B}index.html">Comprar</a><a href="${B}cuenta/publicar.html">Vender</a><a href="${B}cuenta/pedidos.html">Mis pedidos</a><a href="#" onclick="MNS.logout();location.href='${B}index.html'">Salir</a>`:`<a href="${B}index.html">Comprar</a><a href="${B}auth/login.html">Entrar</a><a class="btn-primary" href="${B}auth/register.html">Crear cuenta</a>`;
-const id=new URLSearchParams(location.search).get('id'),p=MNS.find(id);
-if(!p){$('app').innerHTML='<h1>No encontramos este producto</h1>'}else{
-const ok=(p.status||'active')==='active'&&!MNS.db().orders.some(o=>o.lid===p.id&&['PAID_HELD','SHIPPED','RELEASED'].includes(o.status));
-$('app').innerHTML=`<div class="two"><div class="ph" style="background-image:url('${p.img}')"></div><div><p class="eyebrow">${p.cat} · ${p.cond==='nuevo'?'Nuevo':'Usado'} · ${p.loc}</p><h1 style="font-size:30px;margin:6px 0 10px">${p.name}</h1>
-<div class="price" style="font-size:28px">${MNS.money(p.price)}${p.oldPrice?` <s style="font-size:16px;color:var(--ink-faint);font-weight:400">${MNS.money(p.oldPrice)}</s>`:''}</div>
-<p>${p.desc||'Producto en buen estado, listo para tu próxima salida.'}</p><p style="color:var(--ink-soft)">Vendido por ${p.seller}</p><div id="m"></div>
-${!ok?'<div class="msg">Este producto ya no está disponible.</div>':u?'<button class="btn-primary" onclick="comprar()">Comprar con Webpay</button><p style="color:var(--ink-soft);font-size:14px">El pago queda retenido hasta que confirmes la entrega. Devolución fácil en 15 días.</p>':'<a class="btn-primary" href="../auth/login.html">Inicia sesión para comprar</a>'.replace('../','')}</div></div>`}
-function comprar(){const r=MNS.buy(id);if(r.err){$('m').innerHTML='<div class="msg e">'+r.err+'</div>';return}location.href='pagar.html?o='+r.id}</script></body></html>
+<style>
+.bar{border-bottom:1px solid var(--line);padding:14px 0}.bar .wrap{display:flex;align-items:center;gap:16px}.bar nav{margin-left:auto;display:flex;gap:16px;align-items:center;font-size:14px;font-weight:500}
+main.wrap{padding-top:30px;padding-bottom:70px}.product-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:42px;align-items:start}.product-photo{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;background:var(--bg-subtle)}
+.product-info{position:sticky;top:24px}.product-title{font-size:32px;line-height:1.15;margin:8px 0 14px}.product-price{font-size:32px;margin:12px 0}.product-meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.product-tag{padding:6px 10px;border-radius:20px;background:var(--bg-subtle);font-size:12px;color:var(--ink-soft)}
+.seller-card{border:1px solid var(--line);border-radius:10px;padding:16px;margin:22px 0}.seller-row{display:flex;align-items:center;gap:12px}.seller-avatar{width:42px;height:42px;border-radius:50%;background:var(--forest-soft);display:grid;place-items:center;color:var(--forest);font-weight:700}
+.product-actions{display:grid;gap:10px;margin-top:18px}.contact-btn{display:flex;justify-content:center;align-items:center;gap:9px;background:#223B2C;color:white;border-radius:8px;padding:14px 18px;font-weight:700}.favorite-btn{display:flex;justify-content:center;align-items:center;gap:9px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:13px 18px;font-weight:700;cursor:pointer}.favorite-btn.is-favorite{color:var(--rust);border-color:var(--rust);background:var(--rust-soft)}
+.description{line-height:1.7;color:var(--ink-soft);white-space:pre-line}.notice{padding:12px;border-radius:8px;background:var(--bg-subtle);color:var(--ink-soft);font-size:13px;margin-top:12px}
+@media(max-width:760px){.product-layout{grid-template-columns:1fr;gap:22px}.product-info{position:static}.product-title{font-size:26px}.bar nav{gap:10px;font-size:12px}main.wrap{padding-top:18px}}
+</style></head><body>
+<div class="bar"><div class="wrap"><a class="logo" href="index.html"><span class="logo-mark"></span>Mercado Norte Sur</a><nav><a href="index.html">Comprar</a><a href="cuenta/favoritos.html">Favoritos</a><a href="cuenta/dashboard.html">Mi cuenta</a></nav></div></div>
+<main class="wrap" id="app"><div class="empty-state">Cargando publicación…</div></main>
+<script src="assets/app.js"></script>
+<script type="module">
+import { watchUser, fetchListing, fetchFavoriteIds, toggleFavorite, safeUrl, esc } from "./assets/firebase.js";
+const root=document.getElementById("app"), id=new URLSearchParams(location.search).get("id");
+let uid=null, saved=false, rendered=false;
+const money=n=>"$"+Number(n||0).toLocaleString("es-CL");
+function syncFavoriteButton(){const b=document.getElementById("favoriteBtn");if(b){b.classList.toggle("is-favorite",saved);b.textContent=saved?"♥ Guardado en favoritos":"♡ Guardar en favoritos"}}
+function render(p,demo=false){
+ rendered=true;
+ const image=demo?(p.img||""):(safeUrl(p.images?.[0])||"");
+ const name=demo?p.name:p.title, category=demo?p.cat:p.category, condition=demo?p.cond:p.condition, loc=demo?p.loc:p.location, seller=demo?p.seller:p.sellerName, description=demo?(p.desc||"Producto de demostración."):(p.description||"El vendedor no agregó una descripción.");
+ const phone=demo?"":String(p.contactPhone||"").replace(/\D/g,"");
+ const whatsapp=phone?"https://wa.me/"+(phone.length===9?"56"+phone:phone)+"?text="+encodeURIComponent("Hola, vi tu publicación «"+name+"» en Mercado Norte Sur y me interesa. ¿Está disponible? "+location.href):"";
+ root.innerHTML=`<div class="product-layout"><div><img class="product-photo" src="${esc(image)}" alt="${esc(name)}"><section><h2 style="font-size:20px;margin-bottom:12px">Descripción del producto</h2><p class="description">${esc(description)}</p></section></div>
+ <div class="product-info"><div class="eyebrow">${esc(category||"Outdoor")} · ${esc(loc||"Chile")}</div><h1 class="product-title">${esc(name)}</h1><div class="product-price price">${money(p.price)}</div>
+ <div class="product-meta"><span class="product-tag">${condition==="nuevo"?"Nuevo":condition==="servicio"?"Servicio":"Usado"}</span><span class="product-tag">${esc(loc||"Ubicación no indicada")}</span>${demo?'<span class="product-tag">Producto de ejemplo</span>':""}</div>
+ <div class="seller-card"><div class="seller-row"><div class="seller-avatar">${esc((seller||"V").slice(0,1).toUpperCase())}</div><div><strong>${esc(seller||"Vendedor")}</strong><div style="font-size:12px;color:var(--ink-soft);margin-top:3px">Vendedor en Mercado Norte Sur</div></div></div></div>
+ <div class="product-actions">${whatsapp?'<a class="contact-btn" target="_blank" rel="noopener" href="'+whatsapp+'">◉ Contactar por WhatsApp</a>':'<div class="notice">'+(demo?'Producto demostrativo: no permite contactar a un vendedor.':'El vendedor aún no ha registrado un WhatsApp de contacto. Pídele que actualice su publicación.')+'</div>'}
+ <button id="favoriteBtn" class="favorite-btn" type="button">♡ Guardar en favoritos</button></div></div></div>`;
+ syncFavoriteButton();
+ document.getElementById("favoriteBtn").addEventListener("click",async()=>{
+   if(demo){alert("Los productos de ejemplo no se pueden guardar. Prueba con una publicación real.");return}
+   if(!uid){location.href="auth/login.html?next="+encodeURIComponent(location.pathname+location.search);return}
+   const b=document.getElementById("favoriteBtn");b.disabled=true;
+   try{saved=await toggleFavorite(uid,id);syncFavoriteButton()}catch(e){alert("No pudimos actualizar tus favoritos.")}finally{b.disabled=false}
+ });
+}
+watchUser(async user=>{
+ uid=user?.uid||null;
+ if(uid&&id&&!id.startsWith("s")){
+   try{saved=(await fetchFavoriteIds(uid)).includes(id);if(rendered)syncFavoriteButton()}catch(e){}
+ }
+});
+(async()=>{
+ if(!id){root.innerHTML="<h1>Producto no encontrado</h1>";return}
+ if(id.startsWith("s")){const p=window.MNS?.find(id);if(p){render(p,true);return}}
+ try{const p=await fetchListing(id);if(!p||p.status!=="approved"){root.innerHTML="<h1>Esta publicación no está disponible</h1><p>Puede haber sido pausada o eliminada.</p>";return}render(p,false)}
+ catch(e){root.innerHTML="<h1>No pudimos cargar el producto</h1><p>Inténtalo nuevamente más tarde.</p>"}
+})();
+</script></body></html>

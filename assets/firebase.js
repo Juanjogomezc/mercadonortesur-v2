@@ -209,7 +209,8 @@ function listingPayload(f) {
     price: Number(f.price),
     oldPrice: f.oldPrice ? Number(f.oldPrice) : null,
     unit: f.unit || "",
-    location: (f.location || "").trim()
+    location: (f.location || "").trim(),
+    contactPhone: (f.contactPhone || "").replace(/\D/g, "").replace(/^9(?=\d{8}$)/, "569")
   };
 }
 
@@ -259,4 +260,25 @@ export function setListingStatus(id, status, { reason = null, markReviewed = fal
 
 export function setUserStatus(uid, status) {
   return updateDoc(doc(db, "users", uid), { status, reviewedAt: serverTimestamp() });
+}
+
+
+/* ---------- Favoritos ---------- */
+export async function fetchFavoriteIds(uid) {
+  if (!uid) return [];
+  const snap = await getDocs(collection(db, "users", uid, "favorites"));
+  return snap.docs.map(d => d.id);
+}
+export async function toggleFavorite(uid, listingId) {
+  if (!uid) throw new Error("Inicia sesión para guardar favoritos.");
+  const favoriteRef = doc(db, "users", uid, "favorites", listingId);
+  const snap = await getDoc(favoriteRef);
+  if (snap.exists()) { await deleteDoc(favoriteRef); return false; }
+  await setDoc(favoriteRef, { listingId, createdAt: serverTimestamp() });
+  return true;
+}
+export async function fetchFavoriteListings(uid) {
+  const ids = await fetchFavoriteIds(uid);
+  const listings = await Promise.all(ids.map(id => fetchListing(id).catch(() => null)));
+  return listings.filter(item => item && item.status === "approved");
 }

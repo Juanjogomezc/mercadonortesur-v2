@@ -37,6 +37,12 @@ service cloud.firestore {
 
       allow delete: if isAdmin();
     }
+    // ---------- Favoritos privados de cada usuario ----------
+    match /users/{uid}/favorites/{listingId} {
+      allow read, delete: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid
+                            && request.resource.data.listingId == listingId;
+    }
 
     // ---------- Publicaciones ----------
     match /listings/{id} {

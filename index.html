@@ -524,7 +524,7 @@
     }
     #mobileFilterLabel{color:var(--rust);}
   }
-</style>
+.p-card{cursor:pointer}.p-fav{position:absolute;top:12px;right:12px;cursor:pointer;z-index:3;border:0;background:#fff;border-radius:50%;width:34px;height:34px;display:grid;place-items:center;color:#635E55;box-shadow:0 2px 8px rgba(0,0,0,.12)}.p-fav.is-favorite{color:#D2551F}.p-fav.is-favorite svg{fill:#D2551F}.p-fav:focus-visible{outline:2px solid #D2551F;outline-offset:2px}</style>
 </head>
 <body>
 
@@ -599,6 +599,7 @@
       <input type="text" id="searchInput" placeholder="Buscar carpas, mochilas, botas de trekking...">
     </div>
     <div class="header-actions">
+      <a href="cuenta/favoritos.html" class="icon-btn desktop-only" aria-label="Mis favoritos">♡ <span>Favoritos</span></a>
       <a href="auth/register.html" class="icon-btn desktop-only" id="hdrAccount">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="lbl-text" id="hdrAccountLbl">Crea tu cuenta</span>
@@ -896,15 +897,16 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
 
+  PRODUCTS = PRODUCTS.map((p, i) => ({ ...p, id: p.id || 's' + i, demo: true }));
   function cardHTML(p){
     const cond = ['nuevo','usado','servicio'].includes(p.cond) ? p.cond : 'usado';
     const isService = cond === 'servicio';
     const badgeLabel = isService ? 'SERVICIO' : (cond === 'nuevo' ? 'NUEVO' : 'USADO');
     return `
-      <div class="p-card">
+      <div class="p-card" data-product-id="${esc(p.id)}" data-demo="${p.demo ? "1" : "0"}" role="link" tabindex="0" aria-label="Ver ${esc(p.name)}">
         <div class="p-media">
           <span class="p-badge ${cond}">${badgeLabel}</span>
-          <div class="p-fav"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg></div>
+          <button class="p-fav" type="button" data-favorite="${esc(p.id)}" aria-label="Guardar ${esc(p.name)}" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg></button>
           ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy">` : ''}
         </div>
         <div class="p-body">
@@ -934,6 +936,7 @@
       if(el) el.textContent = counts[a.dataset.cat] || 0;
     });
     renderGrid();
+    if (window.mnsRefreshFavorites) window.mnsRefreshFavorites();
   }
 
   function renderGrid(){
@@ -952,6 +955,15 @@
       currentCat === 'all' ? 'Recién publicados' : 'Productos en ' + CAT_LABELS[currentCat];
   }
 
+  document.addEventListener('click', (event) => {
+    const fav = event.target.closest('[data-favorite]');
+    if (fav) { event.preventDefault(); event.stopPropagation(); window.mnsToggleFavorite && window.mnsToggleFavorite(fav.dataset.favorite, fav); return; }
+    const card = event.target.closest('.p-card[data-product-id]');
+    if (card) location.href = 'producto.html?id=' + encodeURIComponent(card.dataset.productId);
+  });
+  document.addEventListener('keydown', (event) => {
+    if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.p-card[data-product-id]')) { event.preventDefault(); event.target.click(); }
+  });
   function selectCategory(cat){
     currentCat = cat;
     document.querySelectorAll('#catNav a').forEach(a => a.classList.toggle('active', a.dataset.cat === cat));
@@ -1069,7 +1081,7 @@
 
 
 <script type="module">
-  import { watchUser, fetchApprovedListings, safeUrl } from "./assets/firebase.js";
+  import { watchUser, fetchApprovedListings, safeUrl, fetchFavoriteIds, toggleFavorite } from "./assets/firebase.js";
 
   // true: mientras no haya publicaciones aprobadas reales, se muestran las de ejemplo.
   // Ponlo en false cuando quieras lanzar el sitio solo con contenido real.
@@ -1078,6 +1090,7 @@
   function toProduct(l) {
     return {
       id: l.id,
+      demo: false,
       cat: l.category,
       name: l.title,
       price: l.price,
@@ -1101,8 +1114,34 @@
     }
   })();
 
-  // Encabezado según haya sesión o no
-  watchUser((user, profile) => {
+  let currentUid = null;
+  window.mnsRefreshFavorites = async () => {
+    if (!currentUid) return;
+    try { const ids = new Set(await fetchFavoriteIds(currentUid)); document.querySelectorAll("[data-favorite]").forEach(btn => { const saved = ids.has(btn.dataset.favorite); btn.classList.toggle("is-favorite", saved); btn.setAttribute("aria-pressed", String(saved)); }); } catch (e) { console.warn("No se pudieron cargar favoritos", e); }
+  };
+  window.mnsToggleFavorite = async (id, button) => {
+    if (button.closest('.p-card')?.dataset.demo === "1") { alert("Este es un producto de demostración. Los favoritos están disponibles para publicaciones reales."); return; }
+    if (!currentUid) { location.href = "auth/login.html?next=" + encodeURIComponent(location.pathname + location.search); return; }
+    button.disabled = true;
+    try {
+      const saved = await toggleFavorite(currentUid, id);
+      button.classList.toggle("is-favorite", saved);
+      button.setAttribute("aria-pressed", String(saved));
+    } catch (e) { alert("No pudimos actualizar tus favoritos. Inténtalo nuevamente."); }
+    finally { button.disabled = false; }
+  };
+  watchUser(async (user, profile) => {
+    currentUid = user?.uid || null;
+    if (currentUid) {
+      try {
+        const ids = new Set(await fetchFavoriteIds(currentUid));
+        document.querySelectorAll('[data-favorite]').forEach(btn => {
+          const saved = ids.has(btn.dataset.favorite);
+          btn.classList.toggle("is-favorite", saved);
+          btn.setAttribute("aria-pressed", String(saved));
+        });
+      } catch (e) { console.warn("No se pudieron cargar favoritos", e); }
+    }
     if (!user || !profile) return;
     const first = (profile.name || '').split(' ')[0] || 'Mi cuenta';
     const acc = document.getElementById('hdrAccount');

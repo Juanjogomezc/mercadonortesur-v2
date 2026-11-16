@@ -326,7 +326,8 @@ footer.site a{color:#D7DFD9;}
     setBusy(true);
     try {
       const { profile } = await loginWithEmail(email, password);
-      location.href = homeFor(profile);
+      const next = new URLSearchParams(location.search).get("next");
+      location.href = next && next.startsWith("/") && !next.startsWith("//") ? next : homeFor(profile);
     } catch (err) {
       showError(friendlyError(err));
       setBusy(false);
@@ -338,7 +339,8 @@ footer.site a{color:#D7DFD9;}
     setBusy(true);
     try {
       const { profile } = await loginWithGoogle();
-      location.href = homeFor(profile);
+      const next = new URLSearchParams(location.search).get("next");
+      location.href = next && next.startsWith("/") && !next.startsWith("//") ? next : homeFor(profile);
     } catch (err) {
       showError(friendlyError(err));
       setBusy(false);

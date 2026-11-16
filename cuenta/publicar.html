@@ -394,6 +394,7 @@ footer.site a{color:#D7DFD9;}
           <select id="f-unit"><option value="día">Día</option><option value="medio día">Medio día</option><option value="hora">Hora</option><option value="persona">Persona</option><option value="noche">Noche</option></select>
         </div>
         <div class="field"><label>Ubicación</label><input type="text" id="f-ubicacion" maxlength="80" placeholder="Ciudad o comuna"></div>
+        <div class="field"><label>WhatsApp de contacto</label><input type="tel" id="f-contacto" maxlength="20" placeholder="+56 9 1234 5678"><div class="hint">Se mostrará en tu publicación para que los interesados puedan consultarte directamente.</div></div>
       </div>
 
       <div class="fase" id="fase-4">
@@ -509,7 +510,8 @@ footer.site a{color:#D7DFD9;}
       price: $('f-precio').value,
       oldPrice: $('f-precioold').value,
       unit: isService() ? $('f-unit').value : '',
-      location: $('f-ubicacion').value
+      location: $('f-ubicacion').value,
+      contactPhone: $('f-contacto').value
     };
   }
 
@@ -524,6 +526,8 @@ footer.site a{color:#D7DFD9;}
       if (f.price === '' || !(price > 0)) return 'Ingresa un precio mayor a 0.';
       if (f.oldPrice !== '' && !(Number(f.oldPrice) > price)) return 'El precio anterior debe ser mayor al precio actual (o déjalo vacío).';
       if (f.location.trim().length < 2) return 'Indica la ubicación (ciudad o comuna).';
+      const phoneDigits = (f.contactPhone || '').replace(/\D/g, '');
+      if (phoneDigits.length < 8 || phoneDigits.length > 15) return 'Ingresa un WhatsApp válido con código de país.';
     }
     return '';
   }
@@ -535,7 +539,7 @@ footer.site a{color:#D7DFD9;}
     $('rev-cond-row').style.display = f.condition === 'servicio' ? 'none' : 'flex';
     $('rev-condicion').textContent = f.condition === 'nuevo' ? 'Nuevo' : 'Usado';
     $('rev-precio').textContent = '$' + Number(f.price).toLocaleString('es-CL') + (f.unit ? ' / ' + f.unit : '');
-    $('rev-ubicacion').textContent = f.location;
+    $('rev-ubicacion').textContent = f.location + ' · WhatsApp: ' + f.contactPhone;
     $('rev-fotos').textContent = files.length ? files.length + ' nueva(s)' : (existingImages.length ? existingImages.length + ' actual(es)' : 'Sin fotos');
   }
 
@@ -603,6 +607,7 @@ footer.site a{color:#D7DFD9;}
         $('f-precioold').value = l.oldPrice ?? '';
         if (l.unit) $('f-unit').value = l.unit;
         $('f-ubicacion').value = l.location || '';
+        $('f-contacto').value = l.contactPhone || '';
         existingImages = Array.isArray(l.images) ? l.images : [];
         $('editNote').style.display = 'block';
       } catch (err) {
