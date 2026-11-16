@@ -27,7 +27,7 @@ async function resolveItems(){
  const items=MNS.getCart();
  await Promise.all(items.map(async item=>{
    if(products.has(item.id))return;
-   if(item.id.startsWith("s")){const p=window.MNS.find(item.id);if(p)products.set(item.id,{id:item.id,name:p.name,price:p.price,image:p.img,seller:p.seller,location:p.loc});return}
+   if(item.id.startsWith("s")){const p=MNS.find(item.id);if(p)products.set(item.id,{id:item.id,name:p.name,price:p.price,image:p.img,seller:p.seller,location:p.loc});return}
    try{const p=await fetchListing(item.id);if(p&&p.status==="approved")products.set(item.id,{id:item.id,name:p.title,price:p.price,image:safeUrl(p.images?.[0]),seller:p.sellerName||"Vendedor",location:p.location||""})}
    catch(e){console.warn("No se pudo actualizar el producto del carrito",e)}
    if(!products.has(item.id)&&item.snapshot)products.set(item.id,{id:item.id,...item.snapshot,unavailable:true});
