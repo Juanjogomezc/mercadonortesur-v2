@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi carrito — Mercado Norte Sur</title><link rel="stylesheet" href="../assets/styles.css">
+<style>
+.bar{border-bottom:1px solid var(--line);padding:14px 0}.bar .wrap{display:flex;align-items:center;gap:16px}.bar nav{margin-left:auto;display:flex;gap:16px;align-items:center;font-size:14px;font-weight:500}
+main.wrap{padding-top:30px;padding-bottom:70px}.cart-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start;margin-top:22px}
+.cart-list,.summary,.seller-group{border:1px solid var(--line);border-radius:12px;background:#fff}.seller-group{padding:16px;margin-bottom:14px}.seller-heading{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--forest)}
+.cart-item{display:grid;grid-template-columns:104px minmax(0,1fr) auto;gap:16px;padding:15px 0;border-top:1px solid var(--line);align-items:center}.cart-item:first-of-type{border-top:0}
+.cart-item img{width:104px;height:104px;object-fit:cover;border-radius:8px;background:var(--bg-subtle)}.item-name{font-weight:700;line-height:1.35}.item-meta{font-size:12px;color:var(--ink-soft);margin-top:5px}.item-price{font-weight:700;margin-top:8px}
+.item-actions{display:flex;align-items:center;gap:8px;margin-top:10px}.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:7px;overflow:hidden}.qty button{border:0;background:#fff;padding:6px 10px;cursor:pointer;font-size:16px}.qty span{min-width:28px;text-align:center;font-size:13px}.remove{border:0;background:none;color:var(--rust-dark);font-size:12px;text-decoration:underline;cursor:pointer}
+.line-total{font-weight:700;white-space:nowrap;text-align:right}.summary{padding:20px;position:sticky;top:20px}.summary h2{font-size:19px;margin-bottom:16px}.sum-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;color:var(--ink-soft);font-size:14px}.sum-total{border-top:1px solid var(--line);margin-top:8px;padding-top:16px;color:var(--ink);font-size:18px;font-weight:700}.continue{display:flex;justify-content:center;margin-top:16px;background:var(--rust);color:white;padding:13px;border-radius:8px;font-weight:700}.clear{display:block;margin:4px 0 0 auto;border:0;background:none;color:var(--ink-soft);text-decoration:underline;cursor:pointer;font-size:12px}.empty{padding:55px 20px;text-align:center;border:1px dashed var(--line);border-radius:12px}.empty p{color:var(--ink-soft);margin:8px 0 20px}
+.note{font-size:12px;line-height:1.5;color:var(--ink-soft);background:var(--bg-subtle);border-radius:8px;padding:12px;margin-top:14px}
+@media(max-width:800px){.cart-layout{grid-template-columns:1fr}.summary{position:static}}@media(max-width:520px){.bar nav{gap:9px;font-size:12px}.cart-item{grid-template-columns:76px minmax(0,1fr);gap:11px}.cart-item img{width:76px;height:76px}.line-total{grid-column:2;text-align:left}.seller-group{padding:12px}}
+</style></head>
+<body>
+<div class="bar"><div class="wrap"><a class="logo" href="../index.html"><span class="logo-mark"></span>Mercado Norte Sur</a><nav><a href="../index.html">Comprar</a><a href="favoritos.html">Favoritos</a><a href="dashboard.html">Mi cuenta</a></nav></div></div>
+<main class="wrap"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div class="eyebrow">Tu selección</div><h1>Mi carrito</h1></div><a href="../index.html" style="font-size:13px;color:var(--rust);font-weight:700">← Seguir comprando</a></div>
+<div id="cartApp" style="margin-top:22px"><div class="empty-state">Cargando tu carrito…</div></div></main>
+<script src="../assets/app.js"></script>
+<script type="module">
+import {fetchListing,safeUrl,esc} from "../assets/firebase.js";
+const root=document.getElementById("cartApp"),money=n=>"$"+Number(n||0).toLocaleString("es-CL");
+let products=new Map(),loading=false;
+async function resolveItems(){
+ const items=MNS.getCart();
+ await Promise.all(items.map(async item=>{
+   if(products.has(item.id))return;
+   if(item.id.startsWith("s")){const p=window.MNS.find(item.id);if(p)products.set(item.id,{id:item.id,name:p.name,price:p.price,image:p.img,seller:p.seller,location:p.loc});return}
+   try{const p=await fetchListing(item.id);if(p&&p.status==="approved")products.set(item.id,{id:item.id,name:p.title,price:p.price,image:safeUrl(p.images?.[0]),seller:p.sellerName||"Vendedor",location:p.location||""})}
+   catch(e){console.warn("No se pudo actualizar el producto del carrito",e)}
+   if(!products.has(item.id)&&item.snapshot)products.set(item.id,{id:item.id,...item.snapshot,unavailable:true});
+ }));
+}
+function draw(){
+ const items=MNS.getCart();
+ if(!items.length){root.innerHTML='<div class="empty"><h2>Tu carrito está vacío</h2><p>Explora el catálogo y agrega los productos que te interesan.</p><a class="btn-primary" href="../index.html">Explorar productos</a></div>';return}
+ const groups=new Map();
+ items.forEach(item=>{const p=products.get(item.id)||item.snapshot||{};const seller=p.seller||"Vendedor";if(!groups.has(seller))groups.set(seller,[]);groups.get(seller).push({item,p})});
+ let subtotal=0,units=0;
+ const groupsHtml=[...groups.entries()].map(([seller,rows])=>{
+   const amount=rows.reduce((s,{item,p})=>s+(Number(p.price)||0)*item.qty,0);subtotal+=amount;
+   return '<section class="seller-group"><div class="seller-heading">Vendedor: '+esc(seller)+'</div>'+rows.map(({item,p})=>{
+     const price=Number(p.price)||0;units+=item.qty;
+     return '<article class="cart-item"><img src="'+esc(p.image||"")+'" alt="'+esc(p.name||"Producto")+'" onerror="this.style.visibility=\'hidden\'"><div><a class="item-name" href="../producto.html?id='+encodeURIComponent(item.id)+'">'+esc(p.name||"Producto")+'</a><div class="item-meta">'+esc(p.location||"")+(p.unavailable?' · Publicación no disponible actualmente':'')+'</div><div class="item-price">'+money(price)+'</div><div class="item-actions"><div class="qty"><button type="button" data-minus="'+esc(item.id)+'" aria-label="Disminuir cantidad">−</button><span>'+item.qty+'</span><button type="button" data-plus="'+esc(item.id)+'" aria-label="Aumentar cantidad">+</button></div><button class="remove" type="button" data-remove="'+esc(item.id)+'">Eliminar</button></div></div><div class="line-total">'+money(price*item.qty)+'</div></article>';
+   }).join("")+'</section>';
+ }).join("");
+ root.innerHTML='<div class="cart-layout"><div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong>'+units+' producto(s)</strong><button class="clear" id="clearCart">Vaciar carrito</button></div>'+groupsHtml+'</div><aside class="summary"><h2>Resumen de compra</h2><div class="sum-row"><span>Productos ('+units+')</span><strong>'+money(subtotal)+'</strong></div><div class="sum-row"><span>Despacho</span><span>Por coordinar</span></div><div class="sum-row sum-total"><span>Subtotal</span><strong>'+money(subtotal)+'</strong></div><div class="note">Los productos de distintos vendedores se gestionan por separado. El pago y la coordinación de despacho se habilitarán cuando esté implementado el proceso de compra.</div><a class="continue" href="../index.html">Seguir explorando</a></aside></div>';
+ root.querySelectorAll("[data-plus]").forEach(b=>b.addEventListener("click",()=>{const item=MNS.getCart().find(x=>x.id===b.dataset.plus);if(item)MNS.updateCartQuantity(item.id,item.qty+1);draw()}));
+ root.querySelectorAll("[data-minus]").forEach(b=>b.addEventListener("click",()=>{const item=MNS.getCart().find(x=>x.id===b.dataset.minus);if(item)MNS.updateCartQuantity(item.id,item.qty-1);draw()}));
+ root.querySelectorAll("[data-remove]").forEach(b=>b.addEventListener("click",()=>{MNS.removeFromCart(b.dataset.remove);draw()}));
+ document.getElementById("clearCart").addEventListener("click",()=>{if(confirm("¿Quieres eliminar todos los productos del carrito?")){MNS.clearCart();draw()}});
+}
+async function render(){if(loading)return;loading=true;root.innerHTML='<div class="empty-state">Actualizando productos…</div>';await resolveItems();draw();loading=false}
+window.addEventListener("mns:cart-updated",()=>{products.clear();render()});
+render();
+</script></body></html>
