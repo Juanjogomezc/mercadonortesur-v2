@@ -543,26 +543,50 @@ footer.site a{color:#1B1A17;}
     $('rev-fotos').textContent = files.length ? files.length + ' nueva(s)' : (existingImages.length ? existingImages.length + ' actual(es)' : 'Sin fotos');
   }
 
+  function pendingCreateKey() { return 'mns-pending-listing-' + me.uid; }
+  function getPendingCreateId() {
+    const key = pendingCreateKey();
+    let id = '';
+    try { id = sessionStorage.getItem(key) || ''; } catch (_) {}
+    if (!id) {
+      id = (window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : 'mns' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+      try { sessionStorage.setItem(key, id); } catch (_) {}
+    }
+    return id;
+  }
+  function clearPendingCreateId() {
+    try { sessionStorage.removeItem(pendingCreateKey()); } catch (_) {}
+  }
+
   async function submit() {
     const btn = $('btnNext');
-    btn.disabled = true; btn.textContent = 'Enviando…'; showError('');
+    btn.disabled = true; btn.textContent = 'Guardando y enviando…'; showError('');
     try {
       let images = [];
       if (files.length) {
         try {
           images = await uploadListingImages(me.uid, files);
         } catch (err) {
-          const ok = confirm('No pudimos subir las fotos (' + friendlyError(err) + ').\n\n¿Quieres publicar sin fotos de todas formas?');
+          const ok = confirm('No pudimos subir las fotos (' + friendlyError(err) + ').\\n\\n¿Quieres enviar la publicación sin fotos de todas formas?');
           if (!ok) { btn.disabled = false; updateStepper(); return; }
         }
       }
       const form = readForm();
-      if (editId) await resubmitListing(editId, form, images);
-      else await createListing(form, images, me, myProfile);
+      if (editId) {
+        await resubmitListing(editId, form, images);
+      } else {
+        // Se conserva el mismo ID durante los reintentos para no duplicar anuncios
+        // si Firebase alcanzó a guardar, pero el navegador perdió la respuesta.
+        await createListing(form, images, me, myProfile, getPendingCreateId());
+        clearPendingCreateId();
+      }
       $('wizard').style.display = 'none';
       $('sentState').style.display = 'block';
     } catch (err) {
-      showError(friendlyError(err));
+      console.error('Error al enviar la publicación a revisión:', err);
+      showError(friendlyError(err) + ' Tus datos siguen en pantalla. Puedes corregir el problema e intentarlo nuevamente.');
       btn.disabled = false;
       updateStepper();
     }
