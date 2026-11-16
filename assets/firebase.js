@@ -279,6 +279,6 @@ export async function toggleFavorite(uid, listingId) {
 }
 export async function fetchFavoriteListings(uid) {
   const ids = await fetchFavoriteIds(uid);
-  const listings = await Promise.all(ids.map(id => fetchListing(id)));
+  const listings = await Promise.all(ids.map(id => fetchListing(id).catch(() => null)));
   return listings.filter(item => item && item.status === "approved");
 }
