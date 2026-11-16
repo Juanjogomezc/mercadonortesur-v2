@@ -801,7 +801,7 @@ footer.site a{color:#1B1A17;}
     reportes: 'Reportes para toma de decisiones'
   };
   document.querySelectorAll('.admin-nav button[data-panel]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       $('adminSidebar').classList.remove('open');
       $('adminOverlay').classList.remove('open');
       document.querySelectorAll('.admin-nav button').forEach(b => b.classList.remove('active'));
