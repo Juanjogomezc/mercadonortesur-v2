@@ -20,6 +20,10 @@ const SEED = [
     {cat:'nieve', name:'Chaqueta técnica para nieve Columbia', price:85000, oldPrice:null, cond:'nuevo', seller:'Andes Snow', loc:'Chillán', img:'https://picsum.photos/seed/mns-skiwear/500/500'},
     {cat:'navegacion', name:'GPS Garmin GPSMAP 66i', price:310000, oldPrice:null, cond:'nuevo', seller:'OutdoorPro', loc:'Concepción', img:'https://picsum.photos/seed/mns-gps/500/500'},
     {cat:'navegacion', name:'Chaleco salvavidas náutico', price:29000, oldPrice:39000, cond:'usado', seller:'Marina Sur', loc:'Valparaíso', img:'https://picsum.photos/seed/mns-lifejacket/500/500'},
+    {cat:'servicios', name:'Arriendo kayak inflable — medio día', price:15000, cond:'servicio', seller:'RíoSur Rentals', loc:'Valdivia', img:'https://picsum.photos/seed/mns-serv-kayak/500/500'},
+    {cat:'servicios', name:'Tour guiado Torres del Paine 3D/2N', price:180000, cond:'servicio', seller:'Andes Trek Tours', loc:'Puerto Natales', img:'https://picsum.photos/seed/mns-serv-tour/500/500'},
+    {cat:'servicios', name:'Arriendo bicicleta MTB — día completo', price:25000, cond:'servicio', seller:'BikeStore', loc:'Santiago', img:'https://picsum.photos/seed/mns-serv-bike/500/500'},
+    {cat:'servicios', name:'Clase de escalada con guía certificado', price:45000, cond:'servicio', seller:'VertexGear', loc:'Santiago', img:'https://picsum.photos/seed/mns-serv-climb/500/500'},
   ];
 const MNS = (() => {
   const K = 'mns_db';
