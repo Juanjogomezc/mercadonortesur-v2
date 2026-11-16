@@ -524,7 +524,7 @@
     }
     #mobileFilterLabel{color:var(--rust);}
   }
-.p-card{cursor:pointer}.p-fav{cursor:pointer;z-index:3;border:0;background:#fff;border-radius:50%;width:34px;height:34px;display:grid;place-items:center;color:#635E55;box-shadow:0 2px 8px rgba(0,0,0,.12)}.p-fav.is-favorite{color:#D2551F}.p-fav.is-favorite svg{fill:#D2551F}.p-fav:focus-visible{outline:2px solid #D2551F;outline-offset:2px}</style>
+.p-card{cursor:pointer}.p-fav{position:absolute;top:12px;right:12px;cursor:pointer;z-index:3;border:0;background:#fff;border-radius:50%;width:34px;height:34px;display:grid;place-items:center;color:#635E55;box-shadow:0 2px 8px rgba(0,0,0,.12)}.p-fav.is-favorite{color:#D2551F}.p-fav.is-favorite svg{fill:#D2551F}.p-fav:focus-visible{outline:2px solid #D2551F;outline-offset:2px}</style>
 </head>
 <body>
 
@@ -903,7 +903,7 @@
     const isService = cond === 'servicio';
     const badgeLabel = isService ? 'SERVICIO' : (cond === 'nuevo' ? 'NUEVO' : 'USADO');
     return `
-      <div class="p-card">
+      <div class="p-card" data-product-id="${esc(p.id)}" data-demo="${p.demo ? "1" : "0"}" role="link" tabindex="0" aria-label="Ver ${esc(p.name)}">
         <div class="p-media">
           <span class="p-badge ${cond}">${badgeLabel}</span>
           <button class="p-fav" type="button" data-favorite="${esc(p.id)}" aria-label="Guardar ${esc(p.name)}" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg></button>
@@ -936,6 +936,7 @@
       if(el) el.textContent = counts[a.dataset.cat] || 0;
     });
     renderGrid();
+    if (window.mnsRefreshFavorites) window.mnsRefreshFavorites();
   }
 
   function renderGrid(){
@@ -1114,6 +1115,10 @@
   })();
 
   let currentUid = null;
+  window.mnsRefreshFavorites = async () => {
+    if (!currentUid) return;
+    try { const ids = new Set(await fetchFavoriteIds(currentUid)); document.querySelectorAll("[data-favorite]").forEach(btn => { const saved = ids.has(btn.dataset.favorite); btn.classList.toggle("is-favorite", saved); btn.setAttribute("aria-pressed", String(saved)); }); } catch (e) { console.warn("No se pudieron cargar favoritos", e); }
+  };
   window.mnsToggleFavorite = async (id, button) => {
     if (button.closest('.p-card')?.dataset.demo === "1") { alert("Este es un producto de demostración. Los favoritos están disponibles para publicaciones reales."); return; }
     if (!currentUid) { location.href = "auth/login.html?next=" + encodeURIComponent(location.pathname + location.search); return; }
