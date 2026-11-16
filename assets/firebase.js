@@ -245,7 +245,6 @@ export function removeListing(id) {
 // Importación idempotente del catálogo institucional. Solo puede ejecutarla un administrador.
 export async function importAdminCatalog(items, user, profile) {
   if (!user || !profile || profile.role !== "admin") throw new Error("Solo un administrador puede cargar el catálogo institucional.");
-  if (profile.status !== "approved") throw new Error("La cuenta administradora debe estar aprobada para importar publicaciones.");
   let created = 0, skipped = 0;
   for (const item of items) {
     const listingRef = doc(db, "listings", item.id);
