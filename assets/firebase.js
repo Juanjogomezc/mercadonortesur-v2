@@ -240,6 +240,12 @@ export async function createListing(form, images, user, profile, listingId = nul
   return listingRef.id;
 }
 
+// Adjunta fotos después de crear la publicación. Si Storage falla, el anuncio
+// ya existe en Firestore y no se pierde el formulario ni el registro.
+export async function updateListingImages(id, images) {
+  await updateDoc(doc(db, "listings", id), { images: images || [] });
+}
+
 // Editar y reenviar: vuelve a "pending" para que el admin la revise de nuevo
 export async function resubmitListing(id, form, images) {
   const data = { ...listingPayload(form), status: "pending", rejectionReason: null, reviewedAt: null };
