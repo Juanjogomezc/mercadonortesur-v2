@@ -222,23 +222,12 @@ export async function createListing(form, images, user, profile, listingId = nul
     ? doc(db, "listings", listingId)
     : doc(collection(db, "listings"));
 
-  // Si Firebase guardó el documento pero la respuesta se perdió por conexión,
-  // un reintento reconoce la misma publicación y evita crear duplicados.
-  const existing = await getDoc(listingRef);
-  const payload = listingPayload(form);
-  if (existing.exists()) {
-    const saved = existing.data();
-    const sameSubmission = saved.sellerId === user.uid
-      && saved.title === payload.title
-      && saved.category === payload.category
-      && Number(saved.price) === payload.price
-      && saved.description === payload.description;
-    if (sameSubmission) return listingRef.id;
-    throw new Error("Ya existe un envío anterior asociado a esta sesión. Revisa «Mis publicaciones» antes de iniciar otro anuncio.");
-  }
+  // No consultar getDoc() antes de crear: las reglas de lectura pueden denegar
+  // la lectura de un documento inexistente. setDoc escribe directamente y permite
+  // reintentar con el mismo ID si se perdió la respuesta de red.
 
   const data = {
-    ...payload,
+    ...listingPayload(form),
     images: images || [],
     sellerId: user.uid,
     sellerName: profile.name || user.displayName || (user.email || "").split("@")[0] || "Usuario",
