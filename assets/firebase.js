@@ -210,7 +210,7 @@ function listingPayload(f) {
     oldPrice: f.oldPrice ? Number(f.oldPrice) : null,
     unit: f.unit || "",
     location: (f.location || "").trim(),
-    contactPhone: (f.contactPhone || "").replace(/\D/g, "")
+    contactPhone: (f.contactPhone || "").replace(/\D/g, "").replace(/^9(?=\d{8}$)/, "569")
   };
 }
 
