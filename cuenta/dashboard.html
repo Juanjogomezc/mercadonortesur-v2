@@ -471,11 +471,13 @@ footer.site a{color:#D7DFD9;}
 
     try {
       listings = await fetchMyListings(user.uid);
+      renderListings();
     } catch (err) {
-      loading.textContent = 'No pudimos cargar tus publicaciones. ' + friendlyError(err);
-      return;
+      console.error('[Mercado Norte Sur] No se pudieron cargar las publicaciones', err);
+      document.getElementById('listingsWrap').innerHTML =
+        '<div class="banner-alert"><span>⚠️</span><span><b>No pudimos cargar tus publicaciones.</b> ' +
+        esc(friendlyError(err)) + ' Puedes seguir usando el resto de tu cuenta.</span></div>';
     }
-    renderListings();
     loading.style.display = 'none';
     document.getElementById('app').style.display = 'block';
   });
