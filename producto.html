@@ -35,7 +35,7 @@ function render(p,demo=false){
  syncFavoriteButton();
  const addButton=document.getElementById("addCartBtn");
  addButton.addEventListener("click",()=>{
-   const added=window.MNS?.addToCart({id,name,price:p.price,image,seller,category,location:loc});
+   const added=MNS.addToCart({id,name,price:p.price,image,seller,category,location:loc});
    if(added){addButton.textContent="✓ Agregado al carrito";addButton.disabled=true;setTimeout(()=>{addButton.textContent="＋ Agregar al carrito";addButton.disabled=false},1300)}
  });
  document.getElementById("favoriteBtn").addEventListener("click",async()=>{
