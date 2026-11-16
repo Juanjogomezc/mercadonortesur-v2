@@ -569,7 +569,7 @@ footer.site a{color:#1B1A17;}
         try {
           images = await uploadListingImages(me.uid, files);
         } catch (err) {
-          const ok = confirm('No pudimos subir las fotos (' + friendlyError(err) + ').\\n\\n¿Quieres enviar la publicación sin fotos de todas formas?');
+          const ok = confirm('No pudimos subir las fotos (' + friendlyError(err) + ').\n\n¿Quieres enviar la publicación sin fotos de todas formas?');
           if (!ok) { btn.disabled = false; updateStepper(); return; }
         }
       }
