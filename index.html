@@ -846,7 +846,7 @@
   </div>
 </footer>
 
-<p class="mock-note">Mockup navegable — las fotos son placeholders (Picsum Photos, estáticos y estables) para ilustrar el layout, a reemplazar por fotos reales de cada publicación. · <a href="admin/dashboard.html" style="color:var(--rust); font-weight:600;">Ver panel de administrador (demo)</a></p>
+
 
 <script>
   const CAT_LABELS = {
@@ -873,13 +873,12 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
 
-  PRODUCTS = PRODUCTS.map((p, i) => ({ ...p, id: p.id || 's' + i, demo: true }));
   function cardHTML(p){
     const cond = ['nuevo','usado','servicio'].includes(p.cond) ? p.cond : 'usado';
     const isService = cond === 'servicio';
     const badgeLabel = isService ? 'SERVICIO' : (cond === 'nuevo' ? 'NUEVO' : 'USADO');
     return `
-      <div class="p-card" data-product-id="${esc(p.id)}" data-demo="${p.demo ? "1" : "0"}" role="link" tabindex="0" aria-label="Ver ${esc(p.name)}">
+      <div class="p-card" data-product-id="${esc(p.id)}" role="link" tabindex="0" aria-label="Ver ${esc(p.name)}">
         <div class="p-media">
           <span class="p-badge ${cond}">${badgeLabel}</span>
           <button class="p-fav" type="button" data-favorite="${esc(p.id)}" aria-label="Guardar ${esc(p.name)}" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg></button>
@@ -1064,7 +1063,6 @@
   function toProduct(l) {
     return {
       id: l.id,
-      demo: false,
       cat: l.category,
       name: l.title,
       price: l.price,
