@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crea tu cuenta · Mercado Norte Sur</title>
+<link rel="icon" href="../assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="../assets/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <style>
 /* ============================================================
    Mercado Norte Sur — Design system compartido
@@ -259,6 +262,12 @@ footer.site a{color:#D7DFD9;}
     .auth-wrap{padding:14px;}
     .auth-card{padding:24px 18px; border-radius:12px;}
   }
+
+  .form-error{
+    display:none; background:#FBE2E0; color:#B3261E; border-radius:8px; padding:10px 12px;
+    font-size:12.5px; font-weight:500; line-height:1.4; margin:0 0 14px;
+  }
+  .btn-google[disabled], .btn-primary[disabled]{opacity:.6; cursor:progress;}
 </style>
 </head>
 <body>
@@ -276,45 +285,77 @@ footer.site a{color:#D7DFD9;}
       <span>Con tu cuenta puedes comprar y también publicar productos para vender cuando quieras — no necesitas elegir un tipo de cuenta.</span>
     </div>
 
-    <button class="btn-google" onclick="mockGoogle()">
+    <button class="btn-google" id="googleBtn" type="button">
       <svg width="17" height="17" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.25 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.85A11 11 0 0012 23z"/><path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 015.48 12c0-.73.13-1.44.36-2.1V7.05H2.18A11 11 0 001 12c0 1.77.43 3.45 1.18 4.95l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.85C6.71 7.3 9.14 5.38 12 5.38z"/></svg>
       Continuar con Google
     </button>
 
     <div class="divider-or">o con tu correo</div>
 
-    <form onsubmit="return doRegister(event, this)">
+    <form id="registerForm" novalidate>
       <div class="field">
         <label>Nombre completo</label>
-        <input type="text" name="name" placeholder="María Pérez" required>
-      </div>
-      <div class="field">
-        <label>RUT</label>
-        <input type="text" name="rut" placeholder="12.345.678-5" required>
+        <input type="text" id="regName" placeholder="María Pérez" autocomplete="name" required>
       </div>
       <div class="field">
         <label>Correo electrónico</label>
-        <input type="email" name="email" placeholder="tucorreo@ejemplo.com" required>
+        <input type="email" id="regEmail" placeholder="tucorreo@ejemplo.com" autocomplete="email" required>
       </div>
       <div class="field">
         <label>Contraseña</label>
-        <input type="password" name="pass" placeholder="Mínimo 8 caracteres" required>
+        <input type="password" id="regPassword" placeholder="Mínimo 8 caracteres" minlength="8" autocomplete="new-password" required>
       </div>
       <label class="check-row">
-        <input type="checkbox" required>
+        <input type="checkbox" id="regTerms" required>
         <span>Acepto los <a href="#" class="link-rust">Términos y condiciones</a> y la <a href="#" class="link-rust">Política de privacidad</a></span>
       </label>
-      <p id="formErr" role="alert" style="color:var(--red);margin:0 0 10px;font-size:14px"></p>
-      <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">Crear cuenta</button>
+      <div class="form-error" id="formError" role="alert"></div>
+      <button type="submit" class="btn-primary" id="submitBtn" style="width:100%; justify-content:center;">Crear cuenta</button>
     </form>
 
     <div class="foot-link">¿Ya tienes cuenta? <a href="login.html" class="link-rust">Inicia sesión</a></div>
   </div>
 </div>
-<script src="../assets/app.js"></script>
-<script>
-  function doRegister(e,f){e.preventDefault();const err=MNS.register(Object.fromEntries(new FormData(f)));if(err){document.getElementById('formErr').textContent=err;return false}location.href='../index.html';return false}
-  function mockGoogle(){ window.location.href = '../cuenta/dashboard.html'; }
+<script type="module">
+  import { registerWithEmail, loginWithGoogle, friendlyError, homeFor } from "../assets/firebase.js";
+
+  const errBox = document.getElementById('formError');
+  const submitBtn = document.getElementById('submitBtn');
+  const googleBtn = document.getElementById('googleBtn');
+  const showError = (m) => { errBox.textContent = m || ''; errBox.style.display = m ? 'block' : 'none'; };
+  const setBusy = (on) => { submitBtn.disabled = on; googleBtn.disabled = on; };
+
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showError('');
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    if (name.length < 2) { showError('Ingresa tu nombre completo.'); return; }
+    if (!email) { showError('Ingresa tu correo.'); return; }
+    if (password.length < 8) { showError('La contraseña debe tener al menos 8 caracteres.'); return; }
+    if (!document.getElementById('regTerms').checked) { showError('Debes aceptar los términos y condiciones.'); return; }
+    setBusy(true);
+    try {
+      await registerWithEmail(name, email, password);
+      location.href = '../cuenta/dashboard.html';
+    } catch (err) {
+      showError(friendlyError(err));
+      setBusy(false);
+    }
+  });
+
+  googleBtn.addEventListener('click', async () => {
+    showError('');
+    setBusy(true);
+    try {
+      const { profile } = await loginWithGoogle();
+      location.href = homeFor(profile);
+    } catch (err) {
+      showError(friendlyError(err));
+      setBusy(false);
+    }
+  });
 </script>
 </body>
 </html>

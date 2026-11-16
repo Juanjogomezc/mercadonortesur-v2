@@ -1,143 +1,1151 @@
 <!DOCTYPE html>
-<html lang="es-CL"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mercado Norte Sur</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&display=swap">
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mercado Norte Sur — Mockup arquitectura visual</title>
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <style>
-:root{--bg:#F3F6F3;--ink:#17261E;--mute:#5A6B62;--line:#D5DED7;--card:#fff;--pri:#1F4D3A;--pri-ink:#fff;--acc:#E2672B;--hbg:#14352A;--ph:#DCE6DF;--errbg:#FBE9E5;--okbg:#E1F0E7;--holdbg:#FBE8D3;--hold:#9A5513;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1A14;--ink:#E5EEE8;--mute:#93A89B;--line:#26372D;--card:#15251C;--pri:#5CBF8B;--pri-ink:#06180F;--acc:#F08A55;--hbg:#0A1410;--ph:#22372B;--errbg:#3A1E19;--okbg:#17342A;--holdbg:#3A2A14;--hold:#E0A15A;color-scheme:dark}}
-*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'Bricolage Grotesque',system-ui,sans-serif}
-a{color:inherit;cursor:pointer}h1,h2{letter-spacing:-.02em;line-height:1.1}h2{font-size:1.6rem;margin:1.6em 0 .6em}
-.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
-.promo{background:var(--acc);color:#1B0F08;font-size:.88rem;text-align:center;padding:7px 10px}
-header{background:var(--hbg);color:#E8F1EC}.hd{display:flex;align-items:center;gap:16px;padding-top:12px;padding-bottom:12px;flex-wrap:wrap}
-.logo{font-size:1.35rem;cursor:pointer;white-space:nowrap}.ic{background:none;border:1px solid #3B5A4B;color:#E8F1EC;padding:6px 12px}
-.hs{flex:1;min-width:180px;max-width:460px}.hs input{width:100%;background:#0C241B;border:1px solid #3B5A4B;color:#E8F1EC;border-radius:8px;padding:11px 14px}
-#nav{display:flex;align-items:center;gap:20px;margin-left:auto}#nav a{text-decoration:none;font-weight:600;white-space:nowrap}
-#nav a.cta{padding:8px 16px}.sep{width:2px;align-self:stretch;background:var(--acc)}
-.catrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px}.catrow a{padding:5px 14px;border-radius:99px;border:1px solid #3B5A4B;white-space:nowrap;text-decoration:none;font-size:.92rem}.catrow a.on{background:#E8F1EC;color:#14352A}
-.btn,button{background:var(--pri);color:var(--pri-ink);border:0;border-radius:6px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
-button.ghost{background:none;color:var(--ink);border:1px solid var(--line)}header button.ghost{color:#E8F1EC}
-.cta{background:var(--acc);color:#1B0F08;border:0;border-radius:6px;padding:10px 18px;font:inherit;font-weight:600;text-decoration:none;display:inline-block;cursor:pointer}
-:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
-.drawer{position:fixed;inset:0;background:#0008;z-index:20;display:flex}.drawer[hidden]{display:none}
-.drawer aside{background:var(--card);width:min(320px,88vw);height:100%;overflow:auto;padding:20px}.drawer h3{margin:1.2em 0 .4em}.drawer a{display:flex;justify-content:space-between;padding:7px 0;text-decoration:none}
-.hero{position:relative;display:grid;grid-template-columns:1.3fr 1fr;align-items:center;gap:20px;color:#fff;border-radius:12px;padding:44px;margin-top:24px;min-height:340px}
-.hero h1{font-size:clamp(1.9rem,4vw,3rem);margin:.1em 0 .3em}.hero p{max-width:46ch}.brand{font-weight:700;font-size:1.1rem;margin:0}.hero .big{font-size:8rem;text-align:center}
-.dots{position:absolute;bottom:14px;left:44px;display:flex;gap:8px}.dots button{width:12px;height:12px;padding:0;border-radius:99px;background:#fff6}.dots button.on{background:#fff;width:28px}
-@media(max-width:720px){.hero{grid-template-columns:1fr;padding:28px}.hero .big{display:none}.dots{left:28px}}
-.brands{color:var(--mute);font-weight:700;letter-spacing:.06em;margin:22px 0;display:flex;gap:26px;overflow-x:auto;white-space:nowrap}
-.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}.cats a{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;text-decoration:none;display:grid;gap:2px;font-weight:600}.cats span{font-size:2rem}.cats small{color:var(--mute);font-weight:400}
-.row{display:flex;justify-content:space-between;align-items:end}.more{color:var(--pri)}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}.chips a{padding:6px 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);text-decoration:none}.chips a.on{background:var(--ink);color:var(--bg)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;margin-bottom:30px}
-.item{position:relative;background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--line);text-decoration:none;display:block}
-.ph{aspect-ratio:4/3;background:var(--ph);display:grid;place-items:center;font-size:3.4rem}.item .in{padding:12px}.item h3{margin:0 0 4px;font-size:1rem}.price{font-weight:700;font-size:1.15rem}.was{color:var(--mute);text-decoration:line-through;font-weight:400;font-size:.9rem;margin-left:6px}
-.off{position:absolute;top:10px;left:10px;background:var(--acc);color:#1B0F08;font-weight:700;font-size:.8rem;padding:2px 9px;border-radius:99px}
-.trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin:40px 0}.trust p{margin:0}
-.sell{background:var(--hbg);color:#E8F1EC;border-radius:12px;padding:40px;display:grid;grid-template-columns:1.2fr 1fr;gap:30px;margin:40px 0}@media(max-width:720px){.sell{grid-template-columns:1fr;padding:26px}}
-.sell ul{padding-left:18px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}.stats div{background:#ffffff14;border-radius:10px;padding:14px}.stats b{font-size:1.6rem;display:block}
-footer{background:var(--hbg);color:#C5D6CC;margin-top:50px;padding:40px 0 24px;font-size:.92rem}footer .cols{display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:24px}@media(max-width:720px){footer .cols{grid-template-columns:1fr 1fr}}
-footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;padding:2px 0}footer small{display:block;margin-top:26px;opacity:.8}
-.mute{color:var(--mute);font-size:.92rem}.err{background:var(--errbg);border-left:4px solid #C2452B;padding:10px 14px;margin:14px 0}.ok{background:var(--okbg);border-left:4px solid var(--pri);padding:10px 14px;margin:14px 0}
-form.f{display:grid;gap:14px;max-width:440px;margin:24px 0 60px}label{display:grid;gap:4px;font-weight:600}
-input,select,textarea{font:inherit;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
-.two{display:grid;grid-template-columns:1.2fr 1fr;gap:36px;margin:30px 0 60px}@media(max-width:720px){.two{grid-template-columns:1fr}}.two .ph{border-radius:10px;font-size:6rem}
-.order{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:12px 0;display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;align-items:center}
-.tag{font-size:.8rem;font-weight:700;padding:2px 10px;border-radius:99px;background:var(--okbg);color:var(--pri)}.tag.hold{background:var(--holdbg);color:var(--hold)}
-.wp{max-width:420px;margin:40px auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px}.demo{font-size:.8rem;background:var(--holdbg);color:var(--hold);padding:4px 10px;border-radius:6px}
-ol.steps{padding-left:20px;max-width:56ch}ol.steps li{margin:10px 0}
-</style></head><body>
-<div class="promo">🚚 <b>Envío gratis</b> en compras sobre $50.000 · Devolución fácil en 15 días</div>
-<header><div class="wrap hd"><button class="ghost ic" onclick="tg(1)" aria-label="Abrir categorías">☰</button><b class="logo" onclick="go('')">⛰ Mercado Norte Sur</b>
-<form class="hs" onsubmit="event.preventDefault();hsearch(this)"><input name="q" placeholder="Busca carpas, mochilas, tablas…" aria-label="Buscar"></form><nav id="nav"></nav></div>
-<div class="wrap catrow" id="catrow"></div></header>
-<div id="drawer" class="drawer" hidden onclick="if(event.target===this)tg(0)"><aside id="aside"></aside></div>
-<main class="wrap" id="app"></main>
-<footer><div class="wrap"><div class="cols"><div><h4>Mercado Norte Sur</h4><p>El marketplace outdoor de Latinoamérica. Conectamos aventureros de norte a sur.</p></div>
-<div><h4>Marketplace</h4><a href="#comprar">Explorar productos</a><a href="#comprar" onclick="cond='DESC'">Ofertas</a><a href="#comprar">Nuevos productos</a></div>
-<div><h4>Vendedores</h4><a href="#vender">Comenzar a vender</a><a href="#vender">Cómo se publica</a><a href="#pedidos">Mis ventas</a></div>
-<div><h4>Empresa</h4><a>Sobre nosotros</a><a>Blog</a><a>Prensa</a></div><div><h4>Soporte</h4><a>Centro de ayuda</a><a>Contacto</a><a>Términos y condiciones</a></div></div>
-<small>© 2026 Mercado Norte Sur · Visa · Mastercard · Webpay · Mockup navegable.</small></div></footer>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+
+  :root{
+    --bg: #FFFFFF;
+    --bg-subtle: #F6F4EF;
+    --ink: #1B1A17;
+    --ink-soft: #635E55;
+    --ink-faint: #96907F;
+    --rust: #D2551F;
+    --rust-dark: #B5461A;
+    --forest: #223B2C;
+    --forest-soft: #DCE6DD;
+    --line: #E7E2D8;
+    --card-bg: #FFFFFF;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(27,26,23,0.04), 0 8px 24px rgba(27,26,23,0.05);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Roboto', -apple-system, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit; text-decoration:none; cursor:pointer;}
+  ul{list-style:none; margin:0; padding:0;}
+  img{max-width:100%; display:block;}
+
+  .price{font-family:'Roboto', sans-serif; font-weight:600; letter-spacing:-0.01em;}
+  .eyebrow{
+    font-family:'Roboto', sans-serif;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    font-weight:600;
+  }
+  h1,h2,h3{font-family:'Roboto', sans-serif; margin:0; letter-spacing:-0.01em;}
+
+  .wrap{max-width:1280px; margin:0 auto; padding:0 32px;}
+
+  /* ---------- ANNOUNCEMENT BAR ---------- */
+  .announce{
+    background:var(--forest);
+    color:#EDF3EE;
+    font-size:12.5px;
+    text-align:center;
+    padding:7px 12px;
+    letter-spacing:0.01em;
+  }
+  .announce b{color:#fff;}
+
+  /* ---------- HEADER ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(255,255,255,0.94);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-top{
+    display:flex; align-items:center; gap:28px;
+    padding:14px 32px;
+    max-width:1280px; margin:0 auto;
+  }
+  .logo{display:flex; align-items:center; gap:9px; font-weight:700; font-size:18px; flex-shrink:0;}
+  .logo-mark{
+    width:30px; height:30px; border-radius:8px;
+    background:var(--rust);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .search-bar{
+    flex:1; display:flex; align-items:center;
+    background:var(--bg-subtle);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:0 14px;
+    height:42px;
+    max-width:620px;
+  }
+  .search-bar input{
+    border:none; background:transparent; outline:none;
+    font-family:'Roboto',sans-serif; font-size:14px; flex:1; color:var(--ink);
+  }
+  .search-bar input::placeholder{color:var(--ink-faint);}
+  .header-actions{display:flex; align-items:center; gap:18px; flex-shrink:0;}
+  .icon-btn{
+    display:flex; align-items:center; gap:6px;
+    font-size:13.5px; font-weight:600; color:var(--ink);
+    position:relative;
+  }
+  .cart-dot{
+    position:absolute; top:-6px; right:-9px;
+    background:var(--rust); color:#fff; font-size:9.5px; font-weight:700;
+    width:15px; height:15px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .btn-sell{
+    background:var(--rust); color:#fff; font-weight:700; font-size:13.5px;
+    padding:10px 18px; border-radius:7px;
+    display:flex; align-items:center; gap:7px;
+    transition:background .15s ease;
+    border:none; font-family:'Roboto',sans-serif;
+  }
+  .btn-sell:hover{background:var(--rust-dark);}
+
+  .cat-nav{
+    border-top:1px solid var(--line);
+    display:flex; align-items:center; gap:2px;
+    max-width:1280px; margin:0 auto; padding:0 32px;
+    overflow-x:auto;
+  }
+  .cat-nav a{
+    font-size:13px; font-weight:600; color:var(--ink-soft);
+    padding:11px 14px; white-space:nowrap;
+    border-bottom:2px solid transparent;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .cat-nav a:hover{color:var(--rust); border-color:var(--rust);}
+  .cat-nav a.active{color:var(--ink); border-color:var(--ink);}
+
+  /* ---------- BUTTONS (reused across sections) ---------- */
+  .btn-primary{
+    background:var(--rust); color:#fff; font-weight:700; font-size:14px;
+    padding:12px 20px; border-radius:7px; display:inline-flex; align-items:center; gap:8px;
+    border:none; font-family:'Roboto',sans-serif; cursor:pointer;
+  }
+  .btn-primary:hover{background:var(--rust-dark);}
+  .btn-ghost{
+    background:transparent; color:var(--ink); font-weight:700; font-size:14px;
+    padding:12px 20px; border-radius:7px; border:1.5px solid var(--ink); cursor:pointer;
+  }
+  .tag{
+    font-size:12.5px; font-weight:600; color:var(--ink-soft);
+    border:1px solid var(--line); background:#fff;
+    padding:6px 12px; border-radius:100px;
+  }
+
+  /* ---------- HERO CAROUSEL ---------- */
+  .hero-carousel{
+    position:relative; overflow:hidden; background:var(--bg-subtle);
+    border-bottom:1px solid var(--line);
+  }
+  .hero-track{position:relative; height:420px; overflow:hidden;}
+  .hero-slide{
+    position:absolute; inset:0; height:100%; display:flex; opacity:0; pointer-events:none;
+    transition:opacity .45s ease;
+  }
+  .hero-slide.active{opacity:1; pointer-events:auto;}
+  .hero-slide .h-img{flex:1; position:relative; overflow:hidden; height:100%;}
+  .hero-slide .h-img img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;}
+  .hero-copy{
+    position:absolute; inset:0; z-index:2;
+    display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start;
+    padding:0 6% 36px; gap:10px;
+    background:linear-gradient(0deg, rgba(10,12,8,0.78) 0%, rgba(10,12,8,0.42) 42%, rgba(10,12,8,0) 72%);
+  }
+  .hero-copy .eyebrow-pill{
+    display:inline-flex; align-items:center; gap:6px; background:var(--rust); color:#fff;
+    font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    padding:5px 11px; border-radius:5px;
+  }
+  .hero-copy .brand{
+    font-family:'Roboto', sans-serif; font-weight:900; font-size:44px; color:#fff;
+    letter-spacing:-0.01em; line-height:1; text-transform:uppercase;
+  }
+  .hero-copy .tagline{font-size:16px; font-weight:500; color:#F0EEE7; line-height:1.3;}
+  .hero-copy .btn-hero{
+    margin-top:6px; background:#fff; color:var(--ink); font-weight:700; font-size:14px;
+    padding:12px 22px; border-radius:6px; border:none; cursor:pointer;
+  }
+  .hero-copy .btn-hero:hover{background:#F0EEE7;}
+
+  .hero-arrow{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:5;
+    width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.9);
+    border:none; display:flex; align-items:center; justify-content:center; cursor:pointer;
+    color:var(--ink); transition:background .15s ease;
+  }
+  .hero-arrow:hover{background:#fff;}
+  .hero-arrow.prev{left:16px;}
+  .hero-arrow.next{right:16px;}
+
+  .hero-dots{
+    position:absolute; bottom:16px; left:50%; transform:translateX(-50%); z-index:5;
+    display:flex; gap:7px;
+  }
+  .hero-dot{
+    width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.45); border:none; cursor:pointer;
+    padding:0; transition:background .15s ease, width .15s ease;
+  }
+  .hero-dot.active{background:#fff; width:20px; border-radius:4px;}
+
+  .brand-strip{
+    display:flex; align-items:center; gap:0; padding:18px 32px; background:#fff;
+    border-bottom:1px solid var(--line); overflow-x:auto;
+    -ms-overflow-style:none; scrollbar-width:none;
+  }
+  .brand-strip::-webkit-scrollbar{display:none;}
+  .brand-strip .brand-name{
+    flex:0 0 auto; padding:0 26px; font-size:16px; font-weight:700; color:#B8B4A8;
+    letter-spacing:0.01em; white-space:nowrap; cursor:default; transition:color .15s ease;
+    border-right:1px solid var(--line);
+  }
+  .brand-strip .brand-name:last-child{border-right:none;}
+  .brand-strip .brand-name:hover{color:var(--ink);}
+  .brand-strip .brand-name.script{font-family:'Roboto',sans-serif; font-style:italic; font-weight:500;}
+
+  /* ---------- QUICK CATEGORY ROW ---------- */
+  section{padding:44px 0;}
+  .section-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom:22px; gap:16px;
+  }
+  .section-head h2{font-size:24px;}
+  .section-head .see-all{
+    font-size:13px; font-weight:700; color:var(--rust);
+    display:flex; align-items:center; gap:5px; white-space:nowrap;
+    background:none; border:none; font-family:'Roboto',sans-serif; cursor:pointer;
+  }
+
+  .cat-strip{
+    display:grid; grid-template-columns:repeat(9,1fr); gap:10px;
+  }
+  .cat-chip{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    padding:16px 8px; border:1px solid var(--line); border-radius:9px;
+    background:#fff; transition:border-color .15s ease, transform .15s ease;
+    text-align:center;
+  }
+  .cat-chip:hover{border-color:var(--rust); transform:translateY(-2px);}
+  .cat-chip.active{border-color:var(--rust); background:#FDF4EF;}
+  .cat-chip .ic{
+    width:34px; height:34px; border-radius:8px;
+    background:var(--bg-subtle);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--rust);
+  }
+  .cat-chip .name{font-size:12.5px; font-weight:700;}
+  .cat-chip .count{font-size:11px; color:var(--ink-faint); font-family:'Roboto',sans-serif;}
+
+  /* ---------- PRODUCT GRID ---------- */
+  .filters-row{
+    display:flex; align-items:center; gap:10px; margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .chip-filter{
+    font-size:12.5px; font-weight:600; padding:7px 13px; border-radius:100px;
+    border:1px solid var(--line); color:var(--ink-soft); display:flex; align-items:center; gap:6px;
+    background:#fff; cursor:pointer; font-family:'Roboto',sans-serif;
+  }
+  .chip-filter.on{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  .product-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:18px;
+  }
+  .empty-state{
+    border:1px dashed var(--line); border-radius:var(--radius);
+    padding:50px 20px; text-align:center; color:var(--ink-soft);
+    grid-column:1/-1; font-size:14px;
+  }
+  .p-card{
+    border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--card-bg); overflow:hidden;
+    transition:box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+    display:flex; flex-direction:column;
+  }
+  .p-card:hover{box-shadow:var(--shadow); transform:translateY(-3px); border-color:#DCD5C6;}
+  .p-media{
+    aspect-ratio:1/1; position:relative; overflow:hidden;
+    background:var(--bg-subtle);
+  }
+  .p-media img{width:100%; height:100%; object-fit:cover;}
+  .p-badge{
+    position:absolute; top:10px; left:10px; z-index:2;
+    font-size:10.5px; font-weight:700; font-family:'Roboto',sans-serif;
+    padding:4px 8px; border-radius:5px; letter-spacing:0.02em;
+  }
+  .p-badge.usado{background:#EFE9DA; color:var(--ink-soft);}
+  .p-badge.nuevo{background:var(--forest-soft); color:var(--forest);}
+  .p-badge.servicio{background:#FDE7DB; color:var(--rust-dark);}
+  .p-fav{
+    position:absolute; top:10px; right:10px; z-index:2;
+    width:28px; height:28px; border-radius:50%;
+    background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft);
+  }
+  .p-body{padding:13px 14px 15px;}
+  .p-cat{font-size:10.5px; color:var(--ink-faint); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;}
+  .p-name{font-size:14px; font-weight:600; margin-bottom:8px; line-height:1.3;}
+  .p-price-row{display:flex; align-items:baseline; gap:8px; margin-bottom:9px;}
+  .p-price{font-size:17px;}
+  .p-price-old{font-size:12.5px; color:var(--ink-faint); text-decoration:line-through;}
+  .p-unit{font-size:11.5px; color:var(--ink-faint); font-weight:600; margin-left:2px;}
+  .p-seller{
+    display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-soft);
+    border-top:1px solid var(--line); padding-top:9px;
+  }
+  .p-seller .dot{width:6px; height:6px; border-radius:50%; background:var(--forest); flex-shrink:0;}
+
+  /* ---------- TRUST ROW ---------- */
+  .trust-row{
+    background:var(--bg-subtle); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:0;
+  }
+  .trust-inner{
+    max-width:1280px; margin:0 auto; padding:22px 32px;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:20px;
+  }
+  .trust-item{display:flex; align-items:center; gap:11px;}
+  .trust-item .ic{color:var(--rust); flex-shrink:0;}
+  .trust-item .t{font-size:13px; font-weight:700;}
+  .trust-item .d{font-size:11.5px; color:var(--ink-soft);}
+
+  /* ---------- SELLER BAND ---------- */
+  .seller-band{
+    background:#fff; padding:56px 0;
+  }
+  .seller-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center;
+  }
+  .seller-copy .eyebrow{margin-bottom:10px; display:block;}
+  .seller-copy h2{font-size:30px; line-height:1.15; margin-bottom:14px;}
+  .seller-copy p{font-size:14.5px; color:var(--ink-soft); line-height:1.6; margin-bottom:20px; max-width:440px;}
+  .seller-list{display:flex; flex-direction:column; gap:11px; margin-bottom:26px;}
+  .seller-list li{display:flex; align-items:center; gap:10px; font-size:13.5px; font-weight:500;}
+  .seller-list .ic{
+    width:22px; height:22px; border-radius:6px; background:var(--forest-soft); color:var(--forest);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .seller-ctas{display:flex; gap:12px;}
+
+  .stat-card{
+    background:var(--forest); border-radius:14px; padding:26px;
+    display:grid; grid-template-columns:1fr 1fr; gap:1px;
+    position:relative; overflow:hidden;
+  }
+  .stat-card::before{
+    content:''; position:absolute; inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1' opacity='0.06'%3E%3Ccircle cx='150' cy='150' r='60'/%3E%3Ccircle cx='150' cy='150' r='100'/%3E%3Ccircle cx='150' cy='150' r='140'/%3E%3C/g%3E%3C/svg%3E");
+    background-size:300px;
+  }
+  .stat{padding:14px; position:relative; z-index:1;}
+  .stat .num{font-family:'Roboto',sans-serif; font-size:26px; color:#fff; font-weight:600;}
+  .stat .lbl{font-size:11.5px; color:#B9C6BC; margin-top:2px;}
+
+  /* ---------- FOOTER ---------- */
+  footer{background:var(--forest); color:#D7DFD9; padding:52px 0 0;}
+  .footer-grid{
+    display:grid; grid-template-columns:1.4fr repeat(4,1fr); gap:32px;
+    padding-bottom:40px; border-bottom:1px solid rgba(255,255,255,0.1);
+  }
+  .footer-brand .logo{color:#fff; margin-bottom:10px;}
+  .footer-brand p{font-size:13px; line-height:1.6; color:#AEB9B1; max-width:260px; margin-bottom:16px;}
+  .footer-col h4{font-family:'Roboto',sans-serif; font-size:12.5px; font-weight:700; color:#fff; margin-bottom:14px; letter-spacing:0.02em;}
+  .footer-col ul{display:flex; flex-direction:column; gap:9px;}
+  .footer-col a{font-size:13px; color:#AEB9B1;}
+  .footer-col a:hover{color:#fff;}
+  .footer-bottom{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:20px 0; font-size:12px; color:#8A968E;
+  }
+  .social{display:flex; gap:10px;}
+  .social a{
+    width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,0.08);
+    display:flex; align-items:center; justify-content:center; color:#D7DFD9;
+  }
+
+  .mock-note{
+    max-width:1280px; margin:0 auto; padding:10px 32px;
+    font-size:11.5px; color:var(--ink-faint); text-align:center;
+  }
+
+  @media (max-width:960px){
+    .hero-track{height:340px;}
+    .hero-copy .brand{font-size:34px;}
+    .cat-strip{grid-template-columns:repeat(4,1fr);}
+    .product-grid{grid-template-columns:repeat(2,1fr);}
+    .trust-inner{grid-template-columns:repeat(2,1fr);}
+    .seller-grid{grid-template-columns:1fr;}
+    .footer-grid{grid-template-columns:repeat(2,1fr);}
+  }
+
+  /* ---------- MOBILE (phones) ---------- */
+  @media (max-width:680px){
+    .wrap{padding:0 16px;}
+    .announce{font-size:11px; padding:6px 10px;}
+
+    .header-top{
+      flex-wrap:wrap; gap:10px 14px; padding:12px 16px;
+    }
+    .logo{font-size:16px; order:1;}
+    .header-actions{order:2; margin-left:auto; gap:12px;}
+    .search-bar{order:3; width:100%; max-width:none; flex-basis:100%;}
+    .lbl-text{display:none;}
+    .icon-btn{padding:6px; }
+    .btn-sell{padding:9px 12px;}
+
+    .cat-nav{padding:0 16px 2px; -ms-overflow-style:none; scrollbar-width:none;}
+    .cat-nav::-webkit-scrollbar{display:none;}
+    .cat-nav a{padding:9px 11px; font-size:12.5px;}
+
+    .hero-track{height:280px;}
+    .hero-copy{
+      padding:0 18px 20px; gap:6px;
+    }
+    .hero-copy .brand{font-size:26px;}
+    .hero-copy .tagline{font-size:13.5px;}
+    .hero-copy .btn-hero{padding:10px 16px; font-size:12.5px;}
+    .hero-arrow{width:32px; height:32px;}
+    .brand-strip{padding:14px 16px;}
+    .brand-strip .brand-name{font-size:13px; padding:0 16px;}
+
+    section{padding:30px 0;}
+    .section-head{margin-bottom:16px;}
+    .section-head h2{font-size:19px;}
+
+    .cat-strip{
+      display:flex; overflow-x:auto; gap:8px; grid-template-columns:none;
+      -ms-overflow-style:none; scrollbar-width:none; margin:0 -16px; padding:0 16px 4px;
+    }
+    .cat-strip::-webkit-scrollbar{display:none;}
+    .cat-chip{flex:0 0 84px; padding:12px 6px;}
+    .cat-chip .name{font-size:11.5px;}
+
+    .filters-row{
+      flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px;
+      -ms-overflow-style:none; scrollbar-width:none; margin:0 -16px; padding-left:16px; padding-right:16px;
+    }
+    .filters-row::-webkit-scrollbar{display:none;}
+    .chip-filter{flex-shrink:0;}
+
+    .product-grid{grid-template-columns:repeat(2,1fr); gap:11px;}
+    .p-name{font-size:13px;}
+    .p-price{font-size:15px;}
+    .p-body{padding:10px 11px 12px;}
+
+    .trust-inner{grid-template-columns:1fr 1fr; gap:14px; padding:16px;}
+    .trust-item{gap:8px;}
+    .trust-item .t{font-size:12px;}
+    .trust-item .d{font-size:10.5px;}
+
+    .seller-band{padding:36px 0;}
+    .seller-copy h2{font-size:24px;}
+    .seller-ctas{flex-direction:column;}
+    .seller-ctas .btn-primary, .seller-ctas .btn-ghost{width:100%; justify-content:center;}
+    .stat-card{grid-template-columns:1fr 1fr; padding:18px;}
+    .stat .num{font-size:20px;}
+
+    .footer-grid{grid-template-columns:1fr 1fr; gap:22px 16px;}
+    .footer-bottom{flex-direction:column; gap:6px; text-align:center;}
+  }
+
+  @media (max-width:420px){
+    .footer-grid{grid-template-columns:1fr;}
+  }
+
+  /* ---------- HAMBURGER + DRAWER (categorías) ---------- */
+  .hamburger-btn{
+    display:none; background:none; border:none; padding:6px; margin-right:2px; color:var(--ink); cursor:pointer;
+  }
+  .drawer-overlay, .sheet-overlay{
+    display:none; position:fixed; inset:0; background:rgba(20,18,14,0.45); z-index:120;
+  }
+  .drawer-overlay.open, .sheet-overlay.open{display:block;}
+  .cat-drawer{
+    position:fixed; top:0; left:0; height:100vh; width:82%; max-width:320px; background:#fff; z-index:121;
+    transform:translateX(-100%); transition:transform .22s ease; overflow-y:auto; padding:18px 16px 30px;
+    box-shadow:0 0 30px rgba(0,0,0,0.15);
+  }
+  .cat-drawer.open{transform:translateX(0);}
+  .drawer-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .drawer-close{background:none; border:none; color:var(--ink-soft); padding:6px; cursor:pointer;}
+  .drawer-account-row{display:flex; gap:8px; margin-bottom:20px;}
+  .drawer-account-row a{padding:9px 10px; font-size:12.5px;}
+  .drawer-section-label{
+    font-family:'Roboto',sans-serif; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--ink-faint); margin:18px 4px 8px;
+  }
+  .drawer-cats{display:flex; flex-direction:column;}
+  .drawer-cats a{
+    display:flex; align-items:center; justify-content:space-between; padding:11px 8px; font-size:14px; font-weight:600;
+    border-bottom:1px solid var(--line);
+  }
+  .drawer-cats a span{font-size:11px; font-weight:600; color:var(--ink-faint); font-family:'Roboto',sans-serif;}
+  .drawer-cats a.active{color:var(--rust);}
+
+  /* ---------- BOTTOM SHEET (filtros) ---------- */
+  .bottom-sheet{
+    position:fixed; left:0; right:0; bottom:0; background:#fff; z-index:121;
+    border-radius:16px 16px 0 0; padding:10px 20px 24px; transform:translateY(100%);
+    transition:transform .22s ease; box-shadow:0 -8px 30px rgba(0,0,0,0.15);
+  }
+  .bottom-sheet.open{transform:translateY(0);}
+  .sheet-handle{width:36px; height:4px; background:var(--line); border-radius:10px; margin:4px auto 14px;}
+  .sheet-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .sheet-head h3{font-size:17px;}
+  .sheet-options{display:flex; flex-direction:column; gap:2px; margin-bottom:18px;}
+  .sheet-option{display:flex; align-items:center; gap:10px; padding:11px 4px; font-size:14px; font-weight:600; border-bottom:1px solid var(--line);}
+  .sheet-option input{width:17px; height:17px; accent-color:var(--rust);}
+
+  .mobile-search-inline{display:none;}
+  .desktop-only{display:flex;}
+  .mobile-filter-bar{display:none;}
+
+  @media (max-width:680px){
+    .hamburger-btn{display:flex;}
+    .header-top{flex-wrap:nowrap; gap:10px;}
+    .search-bar{display:none;}
+    .desktop-only{display:none !important;}
+    .search-toggle-btn{background:none; border:none; padding:6px; cursor:pointer;}
+
+    .mobile-search-inline{
+      display:none; align-items:center; gap:8px; background:var(--bg-subtle); border:1px solid var(--line);
+      border-radius:8px; padding:0 12px; height:40px; margin:0 16px 10px;
+    }
+    .mobile-search-inline.open{display:flex;}
+    .mobile-search-inline input{border:none; background:transparent; outline:none; font-size:14px; flex:1; color:var(--ink);}
+
+    .cat-nav{display:none;}
+
+    .filters-row{display:none;}
+    .mobile-filter-bar{display:flex; gap:8px; margin-bottom:16px;}
+    .sort-btn{
+      flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+      border:1px solid var(--line); border-radius:8px; padding:10px; font-size:12.5px; font-weight:700;
+      background:#fff; color:var(--ink); cursor:pointer;
+    }
+    #mobileFilterLabel{color:var(--rust);}
+  }
+</style>
+</head>
+<body>
+
+<div class="announce">🚚 <b>Envío gratis</b> en compras sobre $50.000 · Devolución fácil en 15 días</div>
+
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<aside class="cat-drawer" id="catDrawer">
+  <div class="drawer-head">
+    <a href="#" class="logo" data-cat="all" onclick="closeDrawer()">
+      <span class="logo-mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>
+      Mercado Norte Sur
+    </a>
+    <button class="drawer-close" onclick="closeDrawer()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-account-row" id="drawerAccountRow">
+    <a href="auth/login.html" class="btn-ghost" style="flex:1; justify-content:center;">Iniciar sesión</a>
+    <a href="auth/register.html" class="btn-primary" style="flex:1; justify-content:center;">Crear cuenta</a>
+  </div>
+  <div class="drawer-section-label">Categorías</div>
+  <nav class="drawer-cats">
+    <a href="#" class="drawer-cat-link active" data-cat="all" onclick="drawerSelect('all')">Todos los productos</a>
+    <a href="#" class="drawer-cat-link" data-cat="camping" onclick="drawerSelect('camping')">⛺ Camping <span>2.4K</span></a>
+    <a href="#" class="drawer-cat-link" data-cat="escalada" onclick="drawerSelect('escalada')">🧗 Escalada <span>1.8K</span></a>
+    <a href="#" class="drawer-cat-link" data-cat="trekking" onclick="drawerSelect('trekking')">🥾 Trekking <span>3.2K</span></a>
+    <a href="#" class="drawer-cat-link" data-cat="surf" onclick="drawerSelect('surf')">🏄 Surf <span>980</span></a>
+    <a href="#" class="drawer-cat-link" data-cat="pesca" onclick="drawerSelect('pesca')">🎣 Pesca <span>1.5K</span></a>
+    <a href="#" class="drawer-cat-link" data-cat="ciclismo" onclick="drawerSelect('ciclismo')">🚵 Ciclismo <span>2.1K</span></a>
+    <a href="#" class="drawer-cat-link" data-cat="nieve" onclick="drawerSelect('nieve')">❄️ Nieve <span>890</span></a>
+    <a href="#" class="drawer-cat-link" data-cat="navegacion" onclick="drawerSelect('navegacion')">🧭 Navegación <span>620</span></a>
+    <a href="#" class="drawer-cat-link" data-cat="servicios" onclick="drawerSelect('servicios')">🏕️ Servicios y arriendos <span>340</span></a>
+  </nav>
+  <div class="drawer-section-label">Cuenta</div>
+  <nav class="drawer-cats">
+    <a href="auth/login.html" id="drawerSell">Vender un producto</a>
+    <a href="#">Ayuda y contacto</a>
+  </nav>
+</aside>
+
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+<div class="bottom-sheet" id="filterSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <h3>Filtrar</h3>
+    <button class="drawer-close" onclick="closeSheet()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="sheet-options">
+    <label class="sheet-option"><input type="radio" name="sheetFilter" value="all" checked> Todos</label>
+    <label class="sheet-option"><input type="radio" name="sheetFilter" value="nuevo"> Nuevo</label>
+    <label class="sheet-option"><input type="radio" name="sheetFilter" value="usado"> Usado</label>
+    <label class="sheet-option"><input type="radio" name="sheetFilter" value="oferta"> Con descuento</label>
+  </div>
+  <button class="btn-primary" style="width:100%; justify-content:center;" onclick="applySheetFilter()">Ver resultados</button>
+</div>
+
+<header>
+  <div class="header-top">
+    <button class="hamburger-btn" onclick="openDrawer()">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <a href="#" class="logo" data-cat="all">
+      <span class="logo-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg>
+      </span>
+      Mercado Norte Sur
+    </a>
+    <div class="search-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#96907F" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Buscar carpas, mochilas, botas de trekking...">
+    </div>
+    <div class="header-actions">
+      <a href="auth/register.html" class="icon-btn desktop-only" id="hdrAccount">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="lbl-text" id="hdrAccountLbl">Crea tu cuenta</span>
+      </a>
+      <button class="icon-btn search-toggle-btn" onclick="toggleMobileSearch()">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </button>
+      <a href="auth/login.html" class="icon-btn">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-dot">3</span>
+      </a>
+      <a href="auth/login.html" class="btn-sell desktop-only" id="hdrSell">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="lbl-text">Vender</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="mobile-search-inline" id="mobileSearchInline">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#96907F" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="text" id="searchInputMobile" placeholder="Buscar carpas, mochilas, botas...">
+  </div>
+
+  <nav class="cat-nav" id="catNav">
+    <a href="#" class="active" data-cat="all">Todos</a>
+    <a href="#" data-cat="camping">Camping</a>
+    <a href="#" data-cat="escalada">Escalada</a>
+    <a href="#" data-cat="trekking">Trekking</a>
+    <a href="#" data-cat="surf">Surf</a>
+    <a href="#" data-cat="pesca">Pesca</a>
+    <a href="#" data-cat="ciclismo">Ciclismo</a>
+    <a href="#" data-cat="nieve">Nieve</a>
+    <a href="#" data-cat="navegacion">Navegación</a>
+    <a href="#" data-cat="servicios">Servicios y arriendos</a>
+  </nav>
+</header>
+
+<section class="hero-carousel">
+  <div class="hero-track" id="heroTrack">
+
+    <div class="hero-slide active" data-slide="0">
+      <div class="h-img"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Camping_among_beautiful_mountains.jpg?width=1400" alt=""></div>
+      <div class="hero-copy">
+        <span class="eyebrow-pill">Temporada de verano</span>
+        <div class="brand">Doite</div>
+        <div class="tagline">Carpas para toda condición</div>
+        <button class="btn-hero" onclick="selectCategory('camping')">Ver colección</button>
+      </div>
+    </div>
+
+    <div class="hero-slide" data-slide="1">
+      <div class="h-img"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Adventurous_Mountain_Hikes_(Unsplash).jpg?width=1400" alt=""></div>
+      <div class="hero-copy">
+        <span class="eyebrow-pill">Nueva colección</span>
+        <div class="brand">Osprey</div>
+        <div class="tagline">Mochilas que cargan tu aventura</div>
+        <button class="btn-hero" onclick="selectCategory('trekking')">Ver colección</button>
+      </div>
+    </div>
+
+    <div class="hero-slide" data-slide="2">
+      <div class="h-img"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Snowboarding.jpg?width=1400" alt=""></div>
+      <div class="hero-copy">
+        <span class="eyebrow-pill">Pre-temporada</span>
+        <div class="brand">Burton</div>
+        <div class="tagline">Nieve sin límites</div>
+        <button class="btn-hero" onclick="selectCategory('nieve')">Ver colección</button>
+      </div>
+    </div>
+
+    <div class="hero-slide" data-slide="3">
+      <div class="h-img"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Man_rock_climbing_(Unsplash).jpg?width=1400" alt=""></div>
+      <div class="hero-copy">
+        <span class="eyebrow-pill">Recomendado</span>
+        <div class="brand">Black Diamond</div>
+        <div class="tagline">Escalada con equipo verificado</div>
+        <button class="btn-hero" onclick="selectCategory('escalada')">Ver colección</button>
+      </div>
+    </div>
+
+    <button class="hero-arrow prev" onclick="heroPrev()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="hero-arrow next" onclick="heroNext()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <div class="hero-dots" id="heroDots">
+      <button class="hero-dot active" onclick="heroGoTo(0)"></button>
+      <button class="hero-dot" onclick="heroGoTo(1)"></button>
+      <button class="hero-dot" onclick="heroGoTo(2)"></button>
+      <button class="hero-dot" onclick="heroGoTo(3)"></button>
+    </div>
+  </div>
+</section>
+
+<div class="brand-strip">
+  <span class="brand-name">SALOMON</span>
+  <span class="brand-name">ADIDAS</span>
+  <span class="brand-name">PETZL</span>
+  <span class="brand-name">COLUMBIA</span>
+  <span class="brand-name">LA SPORTIVA</span>
+  <span class="brand-name">BLACK DIAMOND</span>
+  <span class="brand-name">OSPREY</span>
+  <span class="brand-name">SEA TO SUMMIT</span>
+  <span class="brand-name">SALEWA</span>
+  <span class="brand-name">MERRELL</span>
+  <span class="brand-name">MAMMUT</span>
+  <span class="brand-name">FJÄLLRÄVEN</span>
+</div>
+
+<div class="wrap">
+
+<section>
+  <div class="section-head">
+    <h2>Explora por categoría</h2>
+  </div>
+  <div class="cat-strip" id="catStrip">
+    <div class="cat-chip" data-cat="camping"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20h18L12 4z"/><path d="M9 13h6"/></svg></div><span class="name">Camping</span><span class="count">2.4K</span></div>
+    <div class="cat-chip" data-cat="escalada"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21l4-13 4 13M5 13l3-9M19 13l-3-9"/></svg></div><span class="name">Escalada</span><span class="count">1.8K</span></div>
+    <div class="cat-chip" data-cat="trekking"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-6 4 4 5-7 4 6"/></svg></div><span class="name">Trekking</span><span class="count">3.2K</span></div>
+    <div class="cat-chip" data-cat="surf"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M4 8c2 2 4 2 6 0s4-2 6 0 4 2 6 0"/></svg></div><span class="name">Surf</span><span class="count">980</span></div>
+    <div class="cat-chip" data-cat="pesca"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg></div><span class="name">Pesca</span><span class="count">1.5K</span></div>
+    <div class="cat-chip" data-cat="ciclismo"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 100-2 1 1 0 000 2zM12 17.5V14l-3-3 4-3 2 3h3"/></svg></div><span class="name">Ciclismo</span><span class="count">2.1K</span></div>
+    <div class="cat-chip" data-cat="nieve"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1M2 12h20"/></svg></div><span class="name">Nieve</span><span class="count">890</span></div>
+    <div class="cat-chip" data-cat="navegacion"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M16 8l-3 6-6 2 3-6z"/></svg></div><span class="name">Navegación</span><span class="count">620</span></div>
+    <div class="cat-chip" data-cat="servicios"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10l7-6 7 6v11M9 21v-6h6v6"/></svg></div><span class="name">Servicios</span><span class="count">340</span></div>
+  </div>
+</section>
+
+<section id="gridSection">
+  <div class="section-head">
+    <h2 id="gridTitle">Recién publicados</h2>
+    <button class="see-all" onclick="selectCategory('all')">Ver todos los productos →</button>
+  </div>
+  <div class="filters-row">
+    <button class="chip-filter on" data-filter="all">Todos</button>
+    <button class="chip-filter" data-filter="nuevo">Nuevo</button>
+    <button class="chip-filter" data-filter="usado">Usado</button>
+    <button class="chip-filter" data-filter="oferta">Con descuento</button>
+  </div>
+  <div class="mobile-filter-bar" id="mobileFilterBar">
+    <button class="sort-btn" onclick="openSheet()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      Filtrar <span id="mobileFilterLabel"></span>
+    </button>
+    <button class="sort-btn" onclick="document.getElementById('catStrip').scrollIntoView({behavior:'smooth'})">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      Categorías
+    </button>
+  </div>
+  <div class="product-grid" id="productGrid"></div>
+</section>
+
+</div>
+
+<div class="trust-row">
+  <div class="trust-inner">
+    <div class="trust-item">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/></svg></span>
+      <div><div class="t">Pagos seguros</div><div class="d">Retenidos hasta confirmar entrega</div></div>
+    </div>
+    <div class="trust-item">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/></svg></span>
+      <div><div class="t">Vendedores verificados</div><div class="d">Identidad validada</div></div>
+    </div>
+    <div class="trust-item">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v13H3zM3 16l4 5M21 16l-4 5"/></svg></span>
+      <div><div class="t">Envío a todo Chile</div><div class="d">Coordinado entre las partes</div></div>
+    </div>
+    <div class="trust-item">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3M12 22a10 10 0 100-20 10 10 0 000 20z"/></svg></span>
+      <div><div class="t">Devolución fácil</div><div class="d">15 días si el ítem no calza</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+<section class="seller-band">
+  <div class="seller-grid">
+    <div class="seller-copy">
+      <span class="eyebrow">Para vendedores</span>
+      <h2>Vende tu equipo a miles de aventureros</h2>
+      <p>Únete a la comunidad de vendedores más grande de equipamiento outdoor en Latinoamérica. Publica gratis y llega a compradores apasionados.</p>
+      <ul class="seller-list">
+        <li><span class="ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span> Acceso a +50.000 compradores activos</li>
+        <li><span class="ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span> Comisiones competitivas del mercado</li>
+        <li><span class="ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span> Pagos seguros garantizados</li>
+        <li><span class="ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span> Panel de vendedor profesional</li>
+      </ul>
+      <div class="seller-ctas">
+        <a href="#" class="btn-primary">Comenzar a vender</a>
+        <a href="#" class="btn-ghost">Conocer más</a>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat"><div class="num price">$2.5M</div><div class="lbl">Vendidos este mes</div></div>
+      <div class="stat"><div class="num price">5,200+</div><div class="lbl">Vendedores activos</div></div>
+      <div class="stat"><div class="num price">4.8/5</div><div class="lbl">Satisfacción promedio</div></div>
+      <div class="stat"><div class="num price">48h</div><div class="lbl">Tiempo prom. de venta</div></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="logo" data-cat="all">
+          <span class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>
+          Mercado Norte Sur
+        </a>
+        <p>El marketplace outdoor más grande de Latinoamérica. Conectamos aventureros de norte a sur.</p>
+        <div class="social">
+          <a href="#">ig</a><a href="#">fb</a><a href="#">tw</a><a href="#">yt</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Marketplace</h4>
+        <ul>
+          <li><a href="#" onclick="selectCategory('all')">Explorar productos</a></li>
+          <li><a href="#" onclick="document.getElementById('catStrip').scrollIntoView()">Categorías</a></li>
+          <li><a href="#" data-filter-shortcut="oferta">Ofertas</a></li>
+          <li><a href="#" onclick="selectCategory('all')">Nuevos productos</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Vendedores</h4>
+        <ul>
+          <li><a href="#">Comenzar a vender</a></li>
+          <li><a href="#">Centro de vendedores</a></li>
+          <li><a href="#">Comisiones</a></li>
+          <li><a href="#">Guía de envíos</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Empresa</h4>
+        <ul>
+          <li><a href="#">Sobre nosotros</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Prensa</a></li>
+          <li><a href="#">Trabaja con nosotros</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Soporte</h4>
+        <ul>
+          <li><a href="#">Centro de ayuda</a></li>
+          <li><a href="#">Contacto</a></li>
+          <li><a href="#">Términos y condiciones</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Mercado Norte Sur. Todos los derechos reservados.</span>
+      <span>Visa · Mastercard · Webpay</span>
+    </div>
+  </div>
+</footer>
+
+<p class="mock-note">Mockup navegable — las fotos son placeholders (Picsum Photos, estáticos y estables) para ilustrar el layout, a reemplazar por fotos reales de cada publicación. · <a href="admin/dashboard.html" style="color:var(--rust); font-weight:600;">Ver panel de administrador (demo)</a></p>
+
 <script>
-const K='mns-site1',CATS=['Camping','Escalada','Trekking','Surf','Pesca','Ciclismo','Nieve','Navegación'];
-const EM={Camping:'⛺',Escalada:'🧗',Trekking:'🥾',Surf:'🏄',Pesca:'🎣',Ciclismo:'🚵',Nieve:'❄️',Navegación:'🧭'};
-const BR=['SALOMON','ADIDAS','PETZL','COLUMBIA','LA SPORTIVA','BLACK DIAMOND','OSPREY','SEA TO SUMMIT','SALEWA','MERRELL','MAMMUT','FJÄLLRÄVEN'];
-const SL=[['Temporada de verano','Doite','Carpas para toda condición','Compra y vende equipamiento outdoor nuevo y usado, entre la comunidad aventurera.','Camping','⛺','linear-gradient(90deg,#000a,#0003),url(https://commons.wikimedia.org/wiki/Special:FilePath/Camping_among_beautiful_mountains.jpg?width=1400) center/cover,linear-gradient(120deg,#1F4D3A,#3F7F5E)'],
-['Nueva colección','Osprey','Mochilas que cargan tu aventura','Diseñadas para largas travesías, con la mejor relación peso-comodidad.','Trekking','🎒','linear-gradient(90deg,#000a,#0003),url(https://commons.wikimedia.org/wiki/Special:FilePath/Adventurous_Mountain_Hikes_%28Unsplash%29.jpg?width=1400) center/cover,linear-gradient(120deg,#2C3E50,#4F6D7A)'],
-['Pre-temporada','Burton','Nieve sin límites','Tablas, chaquetas y accesorios técnicos, verificados y listos para la temporada.','Nieve','🏂','linear-gradient(90deg,#000a,#0003),url(https://commons.wikimedia.org/wiki/Special:FilePath/Snowboarding.jpg?width=1400) center/cover,linear-gradient(120deg,#1D3F5C,#3F79A6)'],
-['Recomendado','Black Diamond','Escalada con equipo verificado','Arneses, cuerdas y cascos revisados antes de llegar a ti.','Escalada','🧗','linear-gradient(90deg,#000a,#0003),url(https://commons.wikimedia.org/wiki/Special:FilePath/Man_rock_climbing_%28Unsplash%29.jpg?width=1400) center/cover,linear-gradient(120deg,#3B2F2A,#7A5B48)']];
-const seed=[{"id": "p0", "title": "Carpa Doite Kaiku 4 personas", "cat": "Camping", "price": 89990, "cond": "USADO", "comuna": "Puerto Varas", "emoji": "⛺", "was": 140000, "img": "https://picsum.photos/seed/mns-tent1/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "Camila R.", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p1", "title": "Saco de dormir Kelty -5°C", "cat": "Camping", "price": 54990, "cond": "NUEVO", "comuna": "Santiago", "emoji": "⛺", "was": 0, "img": "https://picsum.photos/seed/mns-sleepingbag/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "TiendaAndes", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p2", "title": "Cocinilla portátil MSR WhisperLite", "cat": "Camping", "price": 38000, "cond": "USADO", "comuna": "Temuco", "emoji": "⛺", "was": 52000, "img": "https://picsum.photos/seed/mns-stove/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "Rodrigo P.", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p3", "title": "Arnés de escalada Black Diamond", "cat": "Escalada", "price": 42000, "cond": "NUEVO", "comuna": "Santiago", "emoji": "🧗", "was": 0, "img": "https://picsum.photos/seed/mns-harness/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "VertexGear", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p4", "title": "Cuerda dinámica 60m Mammut", "cat": "Escalada", "price": 95000, "cond": "USADO", "comuna": "Valdivia", "emoji": "🧗", "was": 130000, "img": "https://picsum.photos/seed/mns-rope/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "Ignacio T.", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p5", "title": "Casco de escalada Petzl Meteor", "cat": "Escalada", "price": 36000, "cond": "NUEVO", "comuna": "Santiago", "emoji": "🧗", "was": 0, "img": "https://picsum.photos/seed/mns-climb-helmet/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "VertexGear", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p6", "title": "Botas Salomon Quest 4D GTX 42", "cat": "Trekking", "price": 65000, "cond": "USADO", "comuna": "Valdivia", "emoji": "🥾", "was": 120000, "img": "https://picsum.photos/seed/mns-boots1/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "Ignacio T.", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p7", "title": "Bastones de trekking Black Diamond", "cat": "Trekking", "price": 28000, "cond": "NUEVO", "comuna": "Concepción", "emoji": "🥾", "was": 0, "img": "https://picsum.photos/seed/mns-poles/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "OutdoorPro", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p8", "title": "Mochila Osprey Atmos AG 65L", "cat": "Trekking", "price": 210000, "cond": "NUEVO", "comuna": "Santiago", "emoji": "🥾", "was": 0, "img": "https://picsum.photos/seed/mns-backpack1/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "TiendaAndes", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p9", "title": "Tabla de surf shortboard 6'2\"", "cat": "Surf", "price": 180000, "cond": "USADO", "comuna": "Pichilemu", "emoji": "🏄", "was": 240000, "img": "https://picsum.photos/seed/mns-surfboard/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "Matías C.", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p10", "title": "Traje de neopreno 3/2mm", "cat": "Surf", "price": 75000, "cond": "NUEVO", "comuna": "Concón", "emoji": "🏄", "was": 0, "img": "https://picsum.photos/seed/mns-wetsuit/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "SurfShop Sur", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p11", "title": "Caña de pescar spinning Shimano", "cat": "Pesca", "price": 32000, "cond": "USADO", "comuna": "Puerto Montt", "emoji": "🎣", "was": 45000, "img": "https://picsum.photos/seed/mns-rod/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "Pedro A.", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p12", "title": "Kayak de pesca inflable", "cat": "Pesca", "price": 220000, "cond": "NUEVO", "comuna": "Valdivia", "emoji": "🎣", "was": 0, "img": "https://picsum.photos/seed/mns-kayak/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "RíoSur", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p13", "title": "Bicicleta MTB rodado 29 Trek", "cat": "Ciclismo", "price": 450000, "cond": "USADO", "comuna": "Santiago", "emoji": "🚵", "was": 590000, "img": "https://picsum.photos/seed/mns-mtb/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "BikeStore", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p14", "title": "Casco de ciclismo MET Trenta", "cat": "Ciclismo", "price": 58000, "cond": "NUEVO", "comuna": "Santiago", "emoji": "🚵", "was": 0, "img": "https://picsum.photos/seed/mns-bike-helmet/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "BikeStore", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p15", "title": "Tabla de snowboard Burton Custom", "cat": "Nieve", "price": 270000, "cond": "USADO", "comuna": "Chillán", "emoji": "❄️", "was": 350000, "img": "https://picsum.photos/seed/mns-snowboard/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "Andes Snow", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p16", "title": "Chaqueta técnica para nieve Columbia", "cat": "Nieve", "price": 85000, "cond": "NUEVO", "comuna": "Chillán", "emoji": "❄️", "was": 0, "img": "https://picsum.photos/seed/mns-skiwear/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "Andes Snow", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p17", "title": "GPS Garmin GPSMAP 66i", "cat": "Navegación", "price": 310000, "cond": "NUEVO", "comuna": "Concepción", "emoji": "🧭", "was": 0, "img": "https://picsum.photos/seed/mns-gps/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "OutdoorPro", "sellerId": "demo", "status": "ACTIVE"}, {"id": "p18", "title": "Chaleco salvavidas náutico", "cat": "Navegación", "price": 29000, "cond": "USADO", "comuna": "Valparaíso", "emoji": "🧭", "was": 39000, "img": "https://picsum.photos/seed/mns-lifejacket/500/500", "desc": "Producto en buen estado, listo para tu próxima salida.", "seller": "Marina Sur", "sellerId": "demo", "status": "ACTIVE"}];
-let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
-if(!S)S={users:[],me:null,orders:[],listings:seed};
-const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
-const $=id=>document.getElementById(id),clp=n=>'$'+n.toLocaleString('es-CL'),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const me=()=>S.users.find(u=>u.id===S.me);let flash='',q='',cat='',cond='',slide=0;
-const go=h=>{location.hash=h},tg=v=>{$('drawer').hidden=!v;if(v)drawer()};
-const msg=(t,k='err')=>{flash=t?`<p class="${k}">${esc(t)}</p>`:''};
-const cleanRut=(s='')=>{const c=s.replace(/[^0-9kK]/g,'').toUpperCase();return c.length<2?'':c.slice(0,-1)+'-'+c.slice(-1)};
-function validRut(s){const r=cleanRut(s);if(!r)return false;const[b,d]=r.split('-');let sum=0,m=2;for(let i=b.length-1;i>=0;i--){sum+=+b[i]*m;m=m===7?2:m+1}const e=11-sum%11;return d===(e===11?'0':e===10?'K':String(e))}
-const LABEL={PENDING:'Pago pendiente',PAID_HELD:'Pagado, retenido',SHIPPED:'En camino',RELEASED:'Entregado, pago liberado',CANCELLED:'Cancelado'};
-const lst=()=>S.listings.filter(l=>l.status==='ACTIVE'&&(!cat||l.cat===cat)&&(!cond||(cond==='DESC'?l.was:l.cond===cond))&&l.title.toLowerCase().includes(q.toLowerCase()));
-function browse(c){cat=c;q='';cond='';tg(0);location.hash==='#comprar'?render():go('comprar')}
-function hsearch(f){q=f.elements.q.value;cat='';cond='';location.hash==='#comprar'?render():go('comprar')}
-function setCond(v){cond=v;render();if(!$('drawer').hidden)drawer()}
-const A={
- register(f){const email=f.email.trim().toLowerCase(),rut=cleanRut(f.rut);
-  if(!f.name.trim())return msg('Escribe tu nombre.');if(!validRut(f.rut))return msg('El RUT no es válido. Revisa el dígito verificador.');
-  if(f.password.length<8)return msg('La contraseña debe tener al menos 8 caracteres.');
-  if(S.users.some(u=>u.rut===rut||u.email===email))return msg('Ya existe una cuenta con ese RUT o correo.');
-  const u={id:'u'+Date.now(),name:f.name.trim(),email,rut,password:f.password};S.users.push(u);S.me=u.id;msg('Cuenta creada. Ya puedes comprar y vender.','ok');save();go('')},
- login(f){const u=S.users.find(u=>u.email===f.email.trim().toLowerCase()&&u.password===f.password);if(!u)return msg('Correo o contraseña incorrectos.');S.me=u.id;msg('');save();go('')},
- publish(f){const p=parseInt(f.price,10);if(!f.title.trim()||!(p>=1000))return msg('Completa el título y un precio desde $1.000.');
-  const id='p'+Date.now();S.listings.unshift({id,title:f.title.trim(),cat:f.cat,price:p,cond:f.cond,comuna:f.comuna,emoji:EM[f.cat],was:0,desc:f.desc,seller:me().name,sellerId:S.me,status:'ACTIVE'});msg('Anuncio publicado.','ok');save();go('anuncio-'+id)}
-};
-const act={
- buy(id){const l=S.listings.find(l=>l.id===id);if(l.sellerId===S.me)return msg('No puedes comprar tu propio anuncio.'),render();
-  const o={id:'o'+Date.now(),lid:id,buyer:S.me,amount:l.price,status:'PENDING',track:''};S.orders.push(o);save();go('pagar-'+o.id)},
- pay(id,ok){const o=S.orders.find(o=>o.id===id),l=S.listings.find(l=>l.id===o.lid);
-  if(ok){o.status='PAID_HELD';l.status='RESERVED';msg('Pago recibido. Tu dinero queda retenido hasta que confirmes la entrega.','ok')}else{o.status='CANCELLED';msg('Pago cancelado.')}save();go('pedidos')},
- ship(id){const t=$('t-'+id).value.trim();if(!t)return;const o=S.orders.find(o=>o.id===id);o.status='SHIPPED';o.track=t;save();render()},
- deliver(id){const o=S.orders.find(o=>o.id===id);o.status='RELEASED';S.listings.find(l=>l.id===o.lid).status='SOLD';msg('Entrega confirmada. El pago se libera al vendedor.','ok');save();render()},
- out(){S.me=null;save();go('')}
-};
-function demoShip(id){const o=S.orders.find(o=>o.id===id);o.status='SHIPPED';o.track='CHX'+Math.floor(Math.random()*9e6+1e6);save();render()}
-const im=l=>l.img?`<img src="${l.img}" alt="${esc(l.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.replaceWith(document.createTextNode('${l.emoji}'))">`:l.emoji;
-const pr=l=>clp(l.price)+(l.was?`<span class="was">${clp(l.was)}</span>`:'');
-const card=l=>`<a class="item" onclick="go('anuncio-${l.id}')">${l.was?`<span class="off">−${Math.round(100-l.price*100/l.was)}%</span>`:''}<div class="ph">${im(l)}</div><div class="in"><h3>${esc(l.title)}</h3><div class="price">${pr(l)}</div><div class="mute">${l.cond==='NUEVO'?'Nuevo':'Usado'} · ${esc(l.comuna)}</div></div></a>`;
-const chips=()=>`<nav class="chips" aria-label="Filtrar">${[['','Todos'],['NUEVO','Nuevo'],['USADO','Usado'],['DESC','Con descuento']].map(([v,t])=>`<a class="${cond===v?'on':''}" onclick="setCond('${v}')">${t}</a>`).join('')}</nav>`;
-const field=(l,n,t='text',x='')=>`<label>${l}<input name="${n}" type="${t}" required ${x}></label>`;
-const views={
- home(){const a=S.listings.filter(l=>l.status==='ACTIVE'),n=c=>a.filter(l=>l.cat===c).length,s=SL[slide],ls=a.filter(l=>!cond||(cond==='DESC'?l.was:l.cond===cond)).slice(0,8);
-  return `${flash}<section class="hero" style="background:${s[6]}"><div><span>${s[0]}</span><p class="brand">${s[1]}</p><h1>${s[2]}</h1><p>${s[3]}</p><button class="cta" onclick="browse('${s[4]}')">Ver ${s[4].toLowerCase()}</button></div><div class="dots">${SL.map((_,i)=>`<button class="${i===slide?'on':''}" aria-label="Diapositiva ${i+1}" onclick="slide=${i};render()"></button>`).join('')}</div></section>
-  <div class="brands" aria-label="Marcas">${BR.map(b=>`<span>${b}</span>`).join('')}</div>
-  <h2 style="margin-top:.4em">Explora por categoría</h2><div class="cats">${CATS.map(c=>`<a onclick="browse('${c}')"><span>${EM[c]}</span>${c}<small>${n(c)} productos</small></a>`).join('')}</div>
-  <div class="row"><h2>Recién publicados</h2><a class="more" onclick="browse('')">Ver todos los productos</a></div>${chips()}<div class="grid">${ls.length?ls.map(card).join(''):'<p>No hay productos con ese filtro.</p>'}</div>
-  <div class="trust"><p><b>Pagos seguros</b><br><span class="mute">Retenidos hasta confirmar entrega</span></p><p><b>Vendedores verificados</b><br><span class="mute">Identidad validada con RUT</span></p><p><b>Envío a todo Chile</b><br><span class="mute">Coordinado entre las partes</span></p><p><b>Devolución fácil</b><br><span class="mute">15 días si el ítem no calza</span></p></div>
-  <section class="sell"><div><h2 style="margin-top:0">Vende tu equipo a miles de aventureros</h2><p>Publica gratis y llega a compradores apasionados.</p><ul><li>Acceso a compradores activos</li><li>Comisiones competitivas del mercado</li><li>Pagos seguros garantizados</li><li>Panel de vendedor profesional</li></ul><a class="cta" href="#vender">Comenzar a vender</a></div><div class="stats"><div><b>$2.5M</b>Vendidos este mes</div><div><b>5.200+</b>Vendedores activos</div><div><b>4,8/5</b>Satisfacción promedio</div><div><b>48 h</b>Tiempo prom. de venta</div></div></section>`},
- comprar(){const ls=lst();return `<h1>${cat||'Todo el mercado'}</h1><p class="mute">${ls.length} productos disponibles${q?` para “${esc(q)}”`:''}.</p>${flash}${chips()}${ls.length?`<div class="grid">${ls.map(card).join('')}</div>`:'<p>No encontramos productos con ese filtro. <a class="more" href="#vender">Publica uno.</a></p>'}`},
- registro(){return `<h1>Crea tu cuenta</h1><p class="mute">Validamos tu RUT y no permitimos dos cuentas con el mismo.</p>${flash}<form class="f" data-a="register">${field('Nombre completo','name')}${field('RUT','rut','text','placeholder="12.345.678-5"')}${field('Correo','email','email')}${field('Contraseña (mínimo 8 caracteres)','password','password','minlength=8')}<button>Crear cuenta</button><p class="mute">¿Ya tienes cuenta? <a href="#entrar">Inicia sesión</a></p></form>`},
- entrar(){return `<h1>Inicia sesión</h1>${flash}<form class="f" data-a="login">${field('Correo','email','email')}${field('Contraseña','password','password')}<button>Entrar</button><p class="mute">¿Primera vez? <a href="#registro">Crea tu cuenta</a></p></form>`},
- vender(){if(!me())return `<h1>Vende tu equipo</h1><p class="mute">Publicar es gratis. Así funciona:</p><ol class="steps"><li>Crea tu cuenta con tu RUT validado.</li><li>Publica tu producto con precio, estado y comuna.</li><li>Cuando alguien paga, el dinero queda retenido. Envía el producto e ingresa el código de seguimiento.</li><li>El comprador confirma la entrega y recibes el pago.</li></ol><p><a class="cta" href="#registro">Crear cuenta para vender</a> &nbsp;<a href="#entrar">Ya tengo cuenta</a></p>`;
-  return `<h1>Vende tu equipo</h1><p class="mute">Cuando alguien compre, enviarás el producto y recibirás el pago al confirmarse la entrega.</p>${flash}<form class="f" data-a="publish">${field('Título','title')}<label>Categoría<select name="cat">${CATS.map(c=>`<option>${c}</option>`).join('')}</select></label><label>Estado<select name="cond"><option value="USADO">Usado</option><option value="NUEVO">Nuevo</option></select></label>${field('Precio (CLP)','price','number','min=1000')}${field('Comuna','comuna')}<label>Descripción<textarea name="desc" rows="4"></textarea></label><button>Publicar</button></form>`},
- anuncio(id){const l=S.listings.find(l=>l.id===id);if(!l)return '<h1>No encontramos este anuncio</h1>';
-  const buy=l.status!=='ACTIVE'?'<p class="ok">Este producto ya no está disponible.</p>':me()?`<button onclick="act.buy('${l.id}')">Comprar con Webpay</button><p class="mute">El pago queda retenido hasta que confirmes que recibiste el producto.</p>`:'<a class="btn" href="#entrar">Inicia sesión para comprar</a>';
-  return `<div class="two"><div class="ph">${im(l)}</div><div><p class="mute">${l.cat} · ${l.cond==='NUEVO'?'Nuevo':'Usado'} · ${esc(l.comuna)}</p><h1>${esc(l.title)}</h1><div class="price" style="font-size:1.8rem">${pr(l)}</div><p>${esc(l.desc)}</p><p class="mute">Vendedor: ${esc(l.seller)}</p>${flash}${buy}</div></div>`},
- pagar(id){const o=S.orders.find(o=>o.id===id);if(!o||o.status!=='PENDING')return '<h1>Pedido no disponible</h1>';
-  return `<div class="wp"><span class="demo">Simulación de Webpay</span><h2>Webpay Plus</h2><p>Comercio: Mercado Norte Sur<br>Monto a pagar: <b>${clp(o.amount)}</b></p><p class="mute">En producción aquí ingresas tu tarjeta en el sitio de Transbank.</p><button onclick="act.pay('${o.id}',true)">Pagar</button> <button class="ghost" onclick="act.pay('${o.id}',false)">Anular compra</button></div>`},
- pedidos(){if(!me())return views.entrar();
-  const L=id=>S.listings.find(l=>l.id===id),buys=S.orders.filter(o=>o.buyer===S.me&&o.status!=='PENDING'),sales=S.orders.filter(o=>L(o.lid).sellerId===S.me&&o.status!=='PENDING');
-  const row=(o,x)=>`<div class="order"><div><b>${esc(L(o.lid).title)}</b><br><span class="mute">${clp(o.amount)}${o.track?' · Seguimiento '+esc(o.track):''}</span></div><span class="tag ${o.status==='PAID_HELD'?'hold':''}">${LABEL[o.status]}</span>${x}</div>`;
-  return `<h1>Mis pedidos</h1>${flash}<h2>Mis compras</h2>${buys.length?'':'<p class="mute">Aún no has comprado nada.</p>'}${buys.map(o=>row(o,o.status==='SHIPPED'?`<button onclick="act.deliver('${o.id}')">Confirmar que lo recibí</button>`:o.status==='PAID_HELD'?`<span class="demo">Demo: el vendedor es ficticio. <a href="#" onclick="event.preventDefault();demoShip('${o.id}')">Simular envío</a></span>`:'')).join('')}
-  <h2>Mis ventas</h2>${sales.length?'':'<p class="mute">Aún no tienes ventas.</p>'}${sales.map(o=>row(o,o.status==='PAID_HELD'?`<span><input id="t-${o.id}" placeholder="Código de seguimiento"> <button onclick="act.ship('${o.id}')">Marcar enviado</button></span>`:'')).join('')}<div style="height:40px"></div>`}
-};
-function drawer(){const a=S.listings.filter(l=>l.status==='ACTIVE');
- $('aside').innerHTML=`<h3 style="margin-top:0">Categorías</h3><a onclick="browse('')">Todos los productos</a>${CATS.map(c=>`<a onclick="browse('${c}')"><span>${EM[c]} ${c}</span><span class="mute">${a.filter(l=>l.cat===c).length}</span></a>`).join('')}<h3>Cuenta</h3><a href="#vender" onclick="tg(0)">Vender un producto</a><a href="#pedidos" onclick="tg(0)">Mis pedidos</a><h3>Filtrar</h3>${chips()}<button onclick="browse(cat)">Ver resultados</button>`}
-function render(){const u=me(),[v,...r]=location.hash.slice(1).split('-');
- $('nav').innerHTML='<a href="#comprar">Comprar</a><a href="#vender">Vender</a><i class="sep"></i>'+(u?`<a href="#pedidos">Mis pedidos</a><a href="#" onclick="event.preventDefault();act.out()">Salir (${esc(u.name.split(' ')[0])})</a>`:'<a href="#entrar">Entrar</a><a class="cta" href="#registro">Crear cuenta</a>');
- $('catrow').innerHTML=`<a class="${cat?'':'on'}" onclick="browse('')">Todos</a>`+CATS.map(c=>`<a class="${cat===c?'on':''}" onclick="browse('${c}')">${c}</a>`).join('');
- $('app').innerHTML=(views[v||'home']||views.home)(r.join('-'))}
-document.addEventListener('submit',e=>{const f=e.target;if(!f.dataset.a)return;e.preventDefault();A[f.dataset.a](Object.fromEntries(new FormData(f)));if(flash.includes('err'))render()});
-addEventListener('hashchange',()=>{tg(0);render();flash='';window.scrollTo(0,0)});render();
-</script></body></html>
+  const CAT_LABELS = {
+    all: 'Todas las categorías',
+    camping: 'Camping',
+    escalada: 'Escalada',
+    trekking: 'Trekking',
+    surf: 'Surf',
+    pesca: 'Pesca',
+    ciclismo: 'Ciclismo',
+    nieve: 'Nieve',
+    navegacion: 'Navegación',
+    servicios: 'Servicios y arriendos'
+  };
+
+  let PRODUCTS = [
+    {cat:'camping', name:'Carpa Doite Kaiku 4 personas', price:89990, oldPrice:140000, cond:'usado', seller:'Camila R.', loc:'Puerto Varas', img:'https://picsum.photos/seed/mns-tent1/500/500'},
+    {cat:'camping', name:'Saco de dormir Kelty -5°C', price:54990, oldPrice:null, cond:'nuevo', seller:'TiendaAndes', loc:'Santiago', img:'https://picsum.photos/seed/mns-sleepingbag/500/500'},
+    {cat:'camping', name:'Cocinilla portátil MSR WhisperLite', price:38000, oldPrice:52000, cond:'usado', seller:'Rodrigo P.', loc:'Temuco', img:'https://picsum.photos/seed/mns-stove/500/500'},
+    {cat:'escalada', name:'Arnés de escalada Black Diamond', price:42000, oldPrice:null, cond:'nuevo', seller:'VertexGear', loc:'Santiago', img:'https://picsum.photos/seed/mns-harness/500/500'},
+    {cat:'escalada', name:'Cuerda dinámica 60m Mammut', price:95000, oldPrice:130000, cond:'usado', seller:'Ignacio T.', loc:'Valdivia', img:'https://picsum.photos/seed/mns-rope/500/500'},
+    {cat:'escalada', name:'Casco de escalada Petzl Meteor', price:36000, oldPrice:null, cond:'nuevo', seller:'VertexGear', loc:'Santiago', img:'https://picsum.photos/seed/mns-climb-helmet/500/500'},
+    {cat:'trekking', name:'Botas Salomon Quest 4D GTX 42', price:65000, oldPrice:120000, cond:'usado', seller:'Ignacio T.', loc:'Valdivia', img:'https://picsum.photos/seed/mns-boots1/500/500'},
+    {cat:'trekking', name:'Bastones de trekking Black Diamond', price:28000, oldPrice:null, cond:'nuevo', seller:'OutdoorPro', loc:'Concepción', img:'https://picsum.photos/seed/mns-poles/500/500'},
+    {cat:'trekking', name:'Mochila Osprey Atmos AG 65L', price:210000, oldPrice:null, cond:'nuevo', seller:'TiendaAndes', loc:'Santiago', img:'https://picsum.photos/seed/mns-backpack1/500/500'},
+    {cat:'surf', name:'Tabla de surf shortboard 6\'2"', price:180000, oldPrice:240000, cond:'usado', seller:'Matías C.', loc:'Pichilemu', img:'https://picsum.photos/seed/mns-surfboard/500/500'},
+    {cat:'surf', name:'Traje de neopreno 3/2mm', price:75000, oldPrice:null, cond:'nuevo', seller:'SurfShop Sur', loc:'Concón', img:'https://picsum.photos/seed/mns-wetsuit/500/500'},
+    {cat:'pesca', name:'Caña de pescar spinning Shimano', price:32000, oldPrice:45000, cond:'usado', seller:'Pedro A.', loc:'Puerto Montt', img:'https://picsum.photos/seed/mns-rod/500/500'},
+    {cat:'pesca', name:'Kayak de pesca inflable', price:220000, oldPrice:null, cond:'nuevo', seller:'RíoSur', loc:'Valdivia', img:'https://picsum.photos/seed/mns-kayak/500/500'},
+    {cat:'ciclismo', name:'Bicicleta MTB rodado 29 Trek', price:450000, oldPrice:590000, cond:'usado', seller:'BikeStore', loc:'Santiago', img:'https://picsum.photos/seed/mns-mtb/500/500'},
+    {cat:'ciclismo', name:'Casco de ciclismo MET Trenta', price:58000, oldPrice:null, cond:'nuevo', seller:'BikeStore', loc:'Santiago', img:'https://picsum.photos/seed/mns-bike-helmet/500/500'},
+    {cat:'nieve', name:'Tabla de snowboard Burton Custom', price:270000, oldPrice:350000, cond:'usado', seller:'Andes Snow', loc:'Chillán', img:'https://picsum.photos/seed/mns-snowboard/500/500'},
+    {cat:'nieve', name:'Chaqueta técnica para nieve Columbia', price:85000, oldPrice:null, cond:'nuevo', seller:'Andes Snow', loc:'Chillán', img:'https://picsum.photos/seed/mns-skiwear/500/500'},
+    {cat:'navegacion', name:'GPS Garmin GPSMAP 66i', price:310000, oldPrice:null, cond:'nuevo', seller:'OutdoorPro', loc:'Concepción', img:'https://picsum.photos/seed/mns-gps/500/500'},
+    {cat:'navegacion', name:'Chaleco salvavidas náutico', price:29000, oldPrice:39000, cond:'usado', seller:'Marina Sur', loc:'Valparaíso', img:'https://picsum.photos/seed/mns-lifejacket/500/500'},
+    {cat:'servicios', name:'Arriendo kayak inflable — medio día', price:15000, unit:'/medio día', cond:'servicio', seller:'RíoSur Rentals', loc:'Valdivia', img:'https://picsum.photos/seed/mns-serv-kayak/500/500'},
+    {cat:'servicios', name:'Tour guiado Torres del Paine 3D/2N', price:180000, unit:'/persona', cond:'servicio', seller:'Andes Trek Tours', loc:'Puerto Natales', img:'https://picsum.photos/seed/mns-serv-tour/500/500'},
+    {cat:'servicios', name:'Arriendo bicicleta MTB — día completo', price:25000, unit:'/día', cond:'servicio', seller:'BikeStore', loc:'Santiago', img:'https://picsum.photos/seed/mns-serv-bike/500/500'},
+    {cat:'servicios', name:'Clase de escalada con guía certificado', price:45000, unit:'/persona', cond:'servicio', seller:'VertexGear', loc:'Santiago', img:'https://picsum.photos/seed/mns-serv-climb/500/500'},
+  ];
+
+  let currentCat = 'all';
+  let currentFilter = 'all';
+
+  function money(n){ return '$' + n.toLocaleString('es-CL'); }
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function cardHTML(p){
+    const cond = ['nuevo','usado','servicio'].includes(p.cond) ? p.cond : 'usado';
+    const isService = cond === 'servicio';
+    const badgeLabel = isService ? 'SERVICIO' : (cond === 'nuevo' ? 'NUEVO' : 'USADO');
+    return `
+      <div class="p-card">
+        <div class="p-media">
+          <span class="p-badge ${cond}">${badgeLabel}</span>
+          <div class="p-fav"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg></div>
+          ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy">` : ''}
+        </div>
+        <div class="p-body">
+          <div class="p-cat">${esc(CAT_LABELS[p.cat] || p.cat)}</div>
+          <div class="p-name">${esc(p.name)}</div>
+          <div class="p-price-row">
+            <span class="price p-price">${money(p.price)}${p.unit ? `<span class="p-unit">${esc(p.unit)}</span>` : ''}</span>
+            ${p.oldPrice ? `<span class="p-price-old">${money(p.oldPrice)}</span>` : ''}
+          </div>
+          <div class="p-seller"><span class="dot"></span> ${isService ? 'Ofrecido por' : 'Vendido por'} ${esc(p.seller)} · ${esc(p.loc)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Reemplaza el catálogo (lo llama el módulo de Firebase al cargar las publicaciones aprobadas)
+  function setProducts(list){
+    PRODUCTS = list;
+    const counts = { all: list.length };
+    list.forEach(p => { counts[p.cat] = (counts[p.cat] || 0) + 1; });
+    document.querySelectorAll('#catStrip .cat-chip').forEach(chip => {
+      const el = chip.querySelector('.count');
+      if(el) el.textContent = counts[chip.dataset.cat] || 0;
+    });
+    document.querySelectorAll('.drawer-cat-link').forEach(a => {
+      const el = a.querySelector('span');
+      if(el) el.textContent = counts[a.dataset.cat] || 0;
+    });
+    renderGrid();
+  }
+
+  function renderGrid(){
+    let items = PRODUCTS.filter(p => currentCat === 'all' || p.cat === currentCat);
+    if(currentFilter === 'nuevo') items = items.filter(p => p.cond === 'nuevo');
+    if(currentFilter === 'usado') items = items.filter(p => p.cond === 'usado');
+    if(currentFilter === 'oferta') items = items.filter(p => p.oldPrice);
+
+    const grid = document.getElementById('productGrid');
+    if(items.length === 0){
+      grid.innerHTML = `<div class="empty-state">Aún no hay productos publicados en esta categoría.<br>¡Sé el primero en publicar!</div>`;
+    } else {
+      grid.innerHTML = items.map(cardHTML).join('');
+    }
+    document.getElementById('gridTitle').textContent =
+      currentCat === 'all' ? 'Recién publicados' : 'Productos en ' + CAT_LABELS[currentCat];
+  }
+
+  function selectCategory(cat){
+    currentCat = cat;
+    document.querySelectorAll('#catNav a').forEach(a => a.classList.toggle('active', a.dataset.cat === cat));
+    document.querySelectorAll('#catStrip .cat-chip').forEach(c => c.classList.toggle('active', c.dataset.cat === cat));
+    document.querySelectorAll('.drawer-cat-link').forEach(a => a.classList.toggle('active', a.dataset.cat === cat));
+    renderGrid();
+    document.getElementById('gridSection').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  document.querySelectorAll('#catNav a[data-cat]').forEach(a=>{
+    a.addEventListener('click', e=>{ e.preventDefault(); selectCategory(a.dataset.cat); });
+  });
+  document.querySelectorAll('#catStrip .cat-chip').forEach(c=>{
+    c.addEventListener('click', ()=> selectCategory(c.dataset.cat));
+  });
+  document.querySelectorAll('.logo[data-cat]').forEach(l=>{
+    l.addEventListener('click', e=>{ e.preventDefault(); selectCategory('all'); });
+  });
+  document.querySelectorAll('.chip-filter').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentFilter = btn.dataset.filter;
+      document.querySelectorAll('.chip-filter').forEach(b=>b.classList.toggle('on', b === btn));
+      renderGrid();
+    });
+  });
+  document.querySelector('[data-filter-shortcut="oferta"]').addEventListener('click', e=>{
+    e.preventDefault();
+    currentFilter = 'oferta';
+    document.querySelectorAll('.chip-filter').forEach(b=>b.classList.toggle('on', b.dataset.filter==='oferta'));
+    selectCategory('all');
+  });
+
+  function runSearch(value){
+    const q = value.toLowerCase().trim();
+    const grid = document.getElementById('productGrid');
+    if(!q){ renderGrid(); return; }
+    const items = PRODUCTS.filter(p => p.name.toLowerCase().includes(q));
+    grid.innerHTML = items.length
+      ? items.map(cardHTML).join('')
+      : `<div class="empty-state">No encontramos resultados para "${value}".</div>`;
+    document.getElementById('gridTitle').textContent = 'Resultados de búsqueda';
+  }
+  document.getElementById('searchInput').addEventListener('input', (e)=> runSearch(e.target.value));
+  document.getElementById('searchInputMobile').addEventListener('input', (e)=> runSearch(e.target.value));
+
+  /* ---------- Mobile: hamburger drawer ---------- */
+  /* ---------- Hero carousel ---------- */
+  let heroIndex = 0;
+  const heroSlides = document.querySelectorAll('.hero-slide');
+  const heroDots = document.querySelectorAll('.hero-dot');
+  let heroTimer = null;
+
+  function heroGoTo(i){
+    heroIndex = (i + heroSlides.length) % heroSlides.length;
+    heroSlides.forEach((s, idx) => s.classList.toggle('active', idx === heroIndex));
+    heroDots.forEach((d, idx) => d.classList.toggle('active', idx === heroIndex));
+    resetHeroAutoplay();
+  }
+  function heroNext(){ heroGoTo(heroIndex + 1); }
+  function heroPrev(){ heroGoTo(heroIndex - 1); }
+  function resetHeroAutoplay(){
+    clearInterval(heroTimer);
+    heroTimer = setInterval(heroNext, 6000);
+  }
+  resetHeroAutoplay();
+  const heroCarouselEl = document.querySelector('.hero-carousel');
+  if(heroCarouselEl){
+    heroCarouselEl.addEventListener('mouseenter', ()=> clearInterval(heroTimer));
+    heroCarouselEl.addEventListener('mouseleave', resetHeroAutoplay);
+  }
+
+  function openDrawer(){
+    document.getElementById('catDrawer').classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('open');
+  }
+  function closeDrawer(){
+    document.getElementById('catDrawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('open');
+  }
+  function drawerSelect(cat){
+    closeDrawer();
+    selectCategory(cat);
+  }
+
+  /* ---------- Mobile: expandable search ---------- */
+  function toggleMobileSearch(){
+    document.getElementById('mobileSearchInline').classList.toggle('open');
+    if(document.getElementById('mobileSearchInline').classList.contains('open')){
+      document.getElementById('searchInputMobile').focus();
+    }
+  }
+
+  /* ---------- Mobile: filter bottom sheet ---------- */
+  function openSheet(){
+    document.getElementById('filterSheet').classList.add('open');
+    document.getElementById('sheetOverlay').classList.add('open');
+    document.querySelector('input[name="sheetFilter"][value="'+currentFilter+'"]').checked = true;
+  }
+  function closeSheet(){
+    document.getElementById('filterSheet').classList.remove('open');
+    document.getElementById('sheetOverlay').classList.remove('open');
+  }
+  function applySheetFilter(){
+    const val = document.querySelector('input[name="sheetFilter"]:checked').value;
+    currentFilter = val;
+    document.querySelectorAll('.chip-filter').forEach(b=>b.classList.toggle('on', b.dataset.filter===val));
+    const labels = {all:'', nuevo:'· Nuevo', usado:'· Usado', oferta:'· Con descuento'};
+    document.getElementById('mobileFilterLabel').textContent = labels[val];
+    renderGrid();
+    closeSheet();
+  }
+
+  renderGrid();
+</script>
+
+
+<script type="module">
+  import { watchUser, fetchApprovedListings, safeUrl } from "./assets/firebase.js";
+
+  // true: mientras no haya publicaciones aprobadas reales, se muestran las de ejemplo.
+  // Ponlo en false cuando quieras lanzar el sitio solo con contenido real.
+  const SHOW_DEMO_WHEN_EMPTY = true;
+
+  function toProduct(l) {
+    return {
+      id: l.id,
+      cat: l.category,
+      name: l.title,
+      price: l.price,
+      oldPrice: l.oldPrice || null,
+      cond: l.condition,
+      unit: l.unit ? '/' + l.unit : '',
+      seller: l.sellerName,
+      loc: l.location,
+      img: safeUrl(l.images && l.images[0])
+    };
+  }
+
+  (async () => {
+    try {
+      const list = await fetchApprovedListings();
+      if (list.length) window.setProducts(list.map(toProduct));
+      else if (!SHOW_DEMO_WHEN_EMPTY) window.setProducts([]);
+    } catch (err) {
+      // Si Firestore no responde, el sitio sigue mostrando el catálogo de ejemplo
+      console.error('No se pudieron cargar las publicaciones:', err);
+    }
+  })();
+
+  // Encabezado según haya sesión o no
+  watchUser((user, profile) => {
+    if (!user || !profile) return;
+    const first = (profile.name || '').split(' ')[0] || 'Mi cuenta';
+    const acc = document.getElementById('hdrAccount');
+    acc.href = 'cuenta/dashboard.html';
+    document.getElementById('hdrAccountLbl').textContent = first;
+    document.getElementById('hdrSell').href = 'cuenta/publicar.html';
+    document.getElementById('drawerSell').href = 'cuenta/publicar.html';
+    document.getElementById('drawerAccountRow').innerHTML =
+      '<a href="cuenta/dashboard.html" class="btn-ghost" style="flex:1; justify-content:center;">Mi cuenta</a>' +
+      '<a href="cuenta/publicar.html" class="btn-primary" style="flex:1; justify-content:center;">Publicar</a>';
+  });
+</script>
+</body>
+</html>

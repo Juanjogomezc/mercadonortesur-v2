@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Publicar anuncio · Mercado Norte Sur</title>
+<link rel="icon" href="../assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="../assets/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <style>
 /* ============================================================
    Mercado Norte Sur — Design system compartido
@@ -298,6 +301,23 @@ footer.site a{color:#D7DFD9;}
     .form-actions{flex-direction:column-reverse; gap:10px;}
     .form-actions button{width:100%; justify-content:center;}
   }
+
+  .photo-thumb{position:relative;}
+  .thumb-x{
+    position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; border:none;
+    background:rgba(0,0,0,0.6); color:#fff; font-size:13px; line-height:1; cursor:pointer;
+  }
+  .upload-zone{display:block;}
+  .upload-zone.drag{border-color:var(--rust); background:#FDF4EF;}
+  .form-error{
+    display:none; background:#FBE2E0; color:#B3261E; border-radius:8px; padding:10px 12px;
+    font-size:12.5px; font-weight:500; line-height:1.4; margin-top:16px;
+  }
+  .edit-note{background:var(--amber-soft); color:var(--amber); border-radius:8px; padding:10px 12px; font-size:12.5px; margin-bottom:16px; display:none;}
+  .hint-sm{font-size:11.5px; color:var(--ink-faint); margin-top:8px;}
+  #gate{text-align:center; padding:44px 24px;}
+  #gate h2{font-size:19px; margin-bottom:8px;}
+  #gate .sub{margin-bottom:18px;}
 </style>
 </head>
 <body>
@@ -318,7 +338,10 @@ footer.site a{color:#D7DFD9;}
 <main class="wrap">
 <div class="steps-wrap">
 
-  <div id="wizard">
+  <div id="gate" class="form-card"><div class="sub" style="margin:0;">Cargando…</div></div>
+
+  <div id="wizard" style="display:none;">
+    <div class="edit-note" id="editNote">Estás editando una publicación. Al reenviarla volverá a revisión.</div>
     <div class="stepper" id="stepper">
       <div class="step-item"><div class="step-dot active" data-step="1">1</div><div class="step-label">Fotos</div></div>
       <div class="step-line"></div>
@@ -332,42 +355,45 @@ footer.site a{color:#D7DFD9;}
     <div class="form-card">
 
       <div class="fase active" id="fase-1">
-        <h2>Agrega fotos del producto</h2>
-        <div class="sub">Sube al menos 3 fotos claras, incluyendo el estado real del equipo.</div>
-        <div class="upload-zone">📷 Arrastra tus fotos aquí o haz clic para subir</div>
-        <div class="photo-row">
-          <div class="photo-thumb"><img src="https://picsum.photos/seed/mns-newlisting1/150/150"></div>
-          <div class="photo-thumb"><img src="https://picsum.photos/seed/mns-newlisting2/150/150"></div>
-          <div class="photo-thumb"><img src="https://picsum.photos/seed/mns-newlisting3/150/150"></div>
-        </div>
+        <h2>Agrega fotos</h2>
+        <div class="sub">Recomendamos al menos 3 fotos claras, incluyendo el estado real del equipo. Máximo 4.</div>
+        <label class="upload-zone" id="dropZone" for="photoInput">📷 Haz clic o arrastra tus fotos aquí</label>
+        <input type="file" id="photoInput" accept="image/*" multiple hidden>
+        <div class="photo-row" id="photoRow"></div>
+        <div class="hint-sm" id="photoHint"></div>
       </div>
 
       <div class="fase" id="fase-2">
-        <h2>Cuéntanos sobre el producto</h2>
+        <h2>Cuéntanos sobre la publicación</h2>
         <div class="sub">Sé específico: marca, modelo y detalles ayudan a vender más rápido.</div>
-        <div class="field"><label>Título de la publicación</label><input type="text" id="f-titulo" placeholder="Ej: Carpa Doite Kaiku 4 personas" value="Mochila Deuter Aircontact 55L"></div>
+        <div class="field"><label>Título de la publicación</label><input type="text" id="f-titulo" maxlength="120" placeholder="Ej: Carpa Doite Kaiku 4 personas"></div>
         <div class="row-2">
           <div class="field"><label>Categoría</label>
             <select id="f-categoria">
-              <option>Camping</option><option>Escalada</option><option selected>Trekking</option>
-              <option>Surf</option><option>Pesca</option><option>Ciclismo</option><option>Nieve</option><option>Navegación</option>
+              <option value="camping">Camping</option><option value="escalada">Escalada</option><option value="trekking" selected>Trekking</option>
+              <option value="surf">Surf</option><option value="pesca">Pesca</option><option value="ciclismo">Ciclismo</option>
+              <option value="nieve">Nieve</option><option value="navegacion">Navegación</option>
+              <option value="servicios">Servicios y arriendos</option>
             </select>
           </div>
-          <div class="field"><label>Condición</label>
+          <div class="field" id="condWrap"><label>Condición</label>
             <select id="f-condicion"><option value="nuevo">Nuevo</option><option value="usado" selected>Usado</option></select>
           </div>
         </div>
-        <div class="field"><label>Descripción</label><textarea id="f-desc" rows="4" placeholder="Describe el uso, estado y detalles relevantes...">Usada 3 temporadas, buen estado, correas ajustables, incluye cubre mochila.</textarea></div>
+        <div class="field"><label>Descripción</label><textarea id="f-desc" rows="4" maxlength="1500" placeholder="Describe el uso, estado y detalles relevantes..."></textarea></div>
       </div>
 
       <div class="fase" id="fase-3">
         <h2>Precio y ubicación</h2>
         <div class="sub">Puedes revisar precios de referencia de productos similares en tu categoría.</div>
         <div class="row-2">
-          <div class="field"><label>Precio (CLP)</label><input type="number" id="f-precio" placeholder="0" value="145000"></div>
-          <div class="field"><label>Precio anterior (opcional)</label><input type="number" id="f-precioold" placeholder="0"></div>
+          <div class="field"><label>Precio (CLP)</label><input type="number" id="f-precio" min="0" step="1" placeholder="0"></div>
+          <div class="field"><label>Precio anterior (opcional)</label><input type="number" id="f-precioold" min="0" step="1" placeholder="0"></div>
         </div>
-        <div class="field"><label>Ubicación</label><input type="text" id="f-ubicacion" placeholder="Ciudad" value="Santiago"></div>
+        <div class="field" id="unitWrap" style="display:none;"><label>El precio es por…</label>
+          <select id="f-unit"><option value="día">Día</option><option value="medio día">Medio día</option><option value="hora">Hora</option><option value="persona">Persona</option><option value="noche">Noche</option></select>
+        </div>
+        <div class="field"><label>Ubicación</label><input type="text" id="f-ubicacion" maxlength="80" placeholder="Ciudad o comuna"></div>
       </div>
 
       <div class="fase" id="fase-4">
@@ -375,14 +401,17 @@ footer.site a{color:#D7DFD9;}
         <div class="sub">Al enviar, tu publicación queda <b>en revisión</b> por el equipo de Mercado Norte Sur antes de aparecer en el sitio.</div>
         <div class="review-row"><span class="k">Título</span><span id="rev-titulo"></span></div>
         <div class="review-row"><span class="k">Categoría</span><span id="rev-categoria"></span></div>
-        <div class="review-row"><span class="k">Condición</span><span id="rev-condicion"></span></div>
+        <div class="review-row" id="rev-cond-row"><span class="k">Condición</span><span id="rev-condicion"></span></div>
         <div class="review-row"><span class="k">Precio</span><span id="rev-precio"></span></div>
         <div class="review-row"><span class="k">Ubicación</span><span id="rev-ubicacion"></span></div>
+        <div class="review-row"><span class="k">Fotos</span><span id="rev-fotos"></span></div>
       </div>
 
+      <div class="form-error" id="formError" role="alert"></div>
+
       <div class="form-actions">
-        <button class="btn-ghost" id="btnBack" onclick="prevStep()" style="visibility:hidden;">← Atrás</button>
-        <button class="btn-primary" id="btnNext" onclick="nextStep()">Continuar →</button>
+        <button class="btn-ghost" id="btnBack" type="button" style="visibility:hidden;">← Atrás</button>
+        <button class="btn-primary" id="btnNext" type="button">Continuar →</button>
       </div>
     </div>
   </div>
@@ -392,49 +421,202 @@ footer.site a{color:#D7DFD9;}
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v5l3 3M12 22a10 10 0 100-20 10 10 0 000 20z"/></svg>
     </div>
     <h2>Tu publicación fue enviada a revisión</h2>
-    <div class="sub">Un administrador la revisará y aprobará en un plazo de hasta 24 horas. Te avisaremos por correo cuando esté publicada.</div>
+    <div class="sub">Un administrador la revisará. Verás el resultado en tu panel, en "Mis publicaciones".</div>
     <a href="dashboard.html" class="btn-primary">Volver a mi cuenta</a>
   </div>
 
 </div>
 </main>
 
-<script src="../assets/app.js"></script>
-<script>
-  if(!MNS.me()) location.href='../auth/login.html';
+<script type="module">
+  import {
+    watchUser, createListing, resubmitListing, fetchListing, uploadListingImages, friendlyError, safeUrl, esc
+  } from "../assets/firebase.js";
+  import { CAT_LABELS } from "../assets/reports.js";
+
+  const $ = (id) => document.getElementById(id);
+  const MAX_PHOTOS = 4;
+  const editId = new URLSearchParams(location.search).get('edit');
+
   let step = 1;
-  function updateStepper(){
-    document.querySelectorAll('.step-dot').forEach(d=>{
+  let me = null, myProfile = null;
+  let files = [];            // fotos nuevas (File)
+  let existingImages = [];   // fotos ya guardadas (al editar)
+
+  /* ---------- Pantalla de bloqueo / carga ---------- */
+  function gate(title, msg, linkHref, linkText) {
+    $('gate').style.display = 'block';
+    $('wizard').style.display = 'none';
+    $('gate').innerHTML = '<h2>' + esc(title) + '</h2><div class="sub">' + esc(msg) + '</div>' +
+      (linkHref ? '<a href="' + linkHref + '" class="btn-primary">' + esc(linkText) + '</a>' : '');
+  }
+
+  /* ---------- Stepper ---------- */
+  function updateStepper() {
+    document.querySelectorAll('.step-dot').forEach(d => {
       const n = parseInt(d.dataset.step);
       d.classList.toggle('active', n === step);
       d.classList.toggle('done', n < step);
     });
-    document.getElementById('btnBack').style.visibility = step === 1 ? 'hidden' : 'visible';
-    document.getElementById('btnNext').textContent = step === 4 ? 'Enviar a revisión' : 'Continuar →';
-    document.querySelectorAll('.fase').forEach(f=>f.classList.remove('active'));
-    document.getElementById('fase-'+step).classList.add('active');
+    $('btnBack').style.visibility = step === 1 ? 'hidden' : 'visible';
+    $('btnNext').textContent = step === 4 ? (editId ? 'Reenviar a revisión' : 'Enviar a revisión') : 'Continuar →';
+    document.querySelectorAll('.fase').forEach(f => f.classList.remove('active'));
+    $('fase-' + step).classList.add('active');
+    showError('');
   }
-  function nextStep(){
-    if(step === 4){ submitListing(); return; }
+  function showError(m) { $('formError').textContent = m || ''; $('formError').style.display = m ? 'block' : 'none'; }
+
+  /* ---------- Fotos ---------- */
+  function renderPhotos() {
+    const row = $('photoRow');
+    const items = files.length
+      ? files.map((f, i) => '<div class="photo-thumb"><img src="' + URL.createObjectURL(f) + '" alt=""><button type="button" class="thumb-x" data-i="' + i + '" aria-label="Quitar">×</button></div>')
+      : existingImages.map(u => '<div class="photo-thumb"><img src="' + esc(safeUrl(u)) + '" alt=""></div>');
+    row.innerHTML = items.join('');
+    $('photoHint').textContent = files.length
+      ? files.length + ' foto(s) nueva(s) seleccionada(s).'
+      : (existingImages.length ? 'Estas son tus fotos actuales. Si subes nuevas, las reemplazan.' : '');
+  }
+  function addFiles(list) {
+    const imgs = Array.from(list).filter(f => f.type.startsWith('image/'));
+    files = files.concat(imgs).slice(0, MAX_PHOTOS);
+    renderPhotos();
+  }
+  $('photoInput').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
+  $('photoRow').addEventListener('click', (e) => {
+    const b = e.target.closest('.thumb-x');
+    if (b) { files.splice(Number(b.dataset.i), 1); renderPhotos(); }
+  });
+  const dz = $('dropZone');
+  ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('drag'); }));
+  dz.addEventListener('drop', (e) => addFiles(e.dataTransfer.files));
+
+  /* ---------- Formulario ---------- */
+  function isService() { return $('f-categoria').value === 'servicios'; }
+  function syncCategoryUI() {
+    $('condWrap').style.display = isService() ? 'none' : 'block';
+    $('unitWrap').style.display = isService() ? 'block' : 'none';
+  }
+  $('f-categoria').addEventListener('change', syncCategoryUI);
+
+  function readForm() {
+    return {
+      title: $('f-titulo').value,
+      category: $('f-categoria').value,
+      condition: isService() ? 'servicio' : $('f-condicion').value,
+      description: $('f-desc').value,
+      price: $('f-precio').value,
+      oldPrice: $('f-precioold').value,
+      unit: isService() ? $('f-unit').value : '',
+      location: $('f-ubicacion').value
+    };
+  }
+
+  function validate(n) {
+    const f = readForm();
+    if (n === 2) {
+      if (f.title.trim().length < 3) return 'Escribe un título de al menos 3 caracteres.';
+      if (f.description.trim().length < 10) return 'Escribe una descripción de al menos 10 caracteres.';
+    }
+    if (n === 3) {
+      const price = Number(f.price);
+      if (f.price === '' || !(price > 0)) return 'Ingresa un precio mayor a 0.';
+      if (f.oldPrice !== '' && !(Number(f.oldPrice) > price)) return 'El precio anterior debe ser mayor al precio actual (o déjalo vacío).';
+      if (f.location.trim().length < 2) return 'Indica la ubicación (ciudad o comuna).';
+    }
+    return '';
+  }
+
+  function fillReview() {
+    const f = readForm();
+    $('rev-titulo').textContent = f.title;
+    $('rev-categoria').textContent = CAT_LABELS[f.category] || f.category;
+    $('rev-cond-row').style.display = f.condition === 'servicio' ? 'none' : 'flex';
+    $('rev-condicion').textContent = f.condition === 'nuevo' ? 'Nuevo' : 'Usado';
+    $('rev-precio').textContent = '$' + Number(f.price).toLocaleString('es-CL') + (f.unit ? ' / ' + f.unit : '');
+    $('rev-ubicacion').textContent = f.location;
+    $('rev-fotos').textContent = files.length ? files.length + ' nueva(s)' : (existingImages.length ? existingImages.length + ' actual(es)' : 'Sin fotos');
+  }
+
+  async function submit() {
+    const btn = $('btnNext');
+    btn.disabled = true; btn.textContent = 'Enviando…'; showError('');
+    try {
+      let images = [];
+      if (files.length) {
+        try {
+          images = await uploadListingImages(me.uid, files);
+        } catch (err) {
+          const ok = confirm('No pudimos subir las fotos (' + friendlyError(err) + ').\n\n¿Quieres publicar sin fotos de todas formas?');
+          if (!ok) { btn.disabled = false; updateStepper(); return; }
+        }
+      }
+      const form = readForm();
+      if (editId) await resubmitListing(editId, form, images);
+      else await createListing(form, images, me, myProfile);
+      $('wizard').style.display = 'none';
+      $('sentState').style.display = 'block';
+    } catch (err) {
+      showError(friendlyError(err));
+      btn.disabled = false;
+      updateStepper();
+    }
+  }
+
+  $('btnBack').addEventListener('click', () => { if (step > 1) { step--; updateStepper(); } });
+  $('btnNext').addEventListener('click', () => {
+    if (step === 4) { submit(); return; }
+    const err = validate(step);
+    if (err) { showError(err); return; }
     step++;
-    if(step === 4) fillReview();
+    if (step === 4) fillReview();
     updateStepper();
-  }
-  function prevStep(){ if(step>1){ step--; updateStepper(); } }
-  function fillReview(){
-    document.getElementById('rev-titulo').textContent = document.getElementById('f-titulo').value;
-    document.getElementById('rev-categoria').textContent = document.getElementById('f-categoria').value;
-    document.getElementById('rev-condicion').textContent = document.getElementById('f-condicion').selectedOptions[0].text;
-    const precio = document.getElementById('f-precio').value;
-    document.getElementById('rev-precio').textContent = precio ? '$' + Number(precio).toLocaleString('es-CL') : '—';
-    document.getElementById('rev-ubicacion').textContent = document.getElementById('f-ubicacion').value;
-  }
-  function submitListing(){
-    MNS.publish({name:document.getElementById('f-titulo').value, cat:document.getElementById('f-categoria').value, cond:document.getElementById('f-condicion').value, price:Number(document.getElementById('f-precio').value)||0, old:Number(document.getElementById('f-precioold').value)||0, loc:document.getElementById('f-ubicacion').value, desc:document.getElementById('f-desc').value});
-    document.getElementById('wizard').style.display = 'none';
-    document.getElementById('sentState').style.display = 'block';
-  }
-  updateStepper();
+  });
+
+  /* ---------- Arranque ---------- */
+  watchUser(async (user, profile, error) => {
+    if (!user) { location.href = '../auth/login.html'; return; }
+    if (!profile) { gate('No pudimos cargar tu perfil', friendlyError(error), 'dashboard.html', 'Volver a mi cuenta'); return; }
+    me = user; myProfile = profile;
+
+    if (profile.status === 'suspended') {
+      gate('Tu cuenta está suspendida', 'No puedes publicar por ahora. Escríbenos si crees que es un error.', 'dashboard.html', 'Volver a mi cuenta');
+      return;
+    }
+    if (profile.status !== 'approved') {
+      const extra = profile.role === 'admin' ? ' Como administrador, puedes aprobarla desde el panel de administración.' : '';
+      gate('Tu cuenta está en revisión', 'Un administrador debe aprobarla antes de que puedas publicar.' + extra,
+           profile.role === 'admin' ? '../admin/dashboard.html' : 'dashboard.html', profile.role === 'admin' ? 'Ir al panel admin' : 'Volver a mi cuenta');
+      return;
+    }
+
+    if (editId) {
+      try {
+        const l = await fetchListing(editId);
+        if (!l || l.sellerId !== user.uid) { gate('No encontramos esa publicación', 'Puede que haya sido eliminada o no sea tuya.', 'dashboard.html', 'Volver a mi cuenta'); return; }
+        $('f-titulo').value = l.title || '';
+        $('f-categoria').value = l.category || 'trekking';
+        if (l.condition === 'nuevo' || l.condition === 'usado') $('f-condicion').value = l.condition;
+        $('f-desc').value = l.description || '';
+        $('f-precio').value = l.price ?? '';
+        $('f-precioold').value = l.oldPrice ?? '';
+        if (l.unit) $('f-unit').value = l.unit;
+        $('f-ubicacion').value = l.location || '';
+        existingImages = Array.isArray(l.images) ? l.images : [];
+        $('editNote').style.display = 'block';
+      } catch (err) {
+        gate('No pudimos cargar la publicación', friendlyError(err), 'dashboard.html', 'Volver a mi cuenta');
+        return;
+      }
+    }
+
+    syncCategoryUI();
+    renderPhotos();
+    $('gate').style.display = 'none';
+    $('wizard').style.display = 'block';
+    updateStepper();
+  });
 </script>
 </body>
 </html>

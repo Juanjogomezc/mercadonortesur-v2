@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel de administración · Mercado Norte Sur</title>
+<link rel="icon" href="../assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="../assets/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <style>
 /* ============================================================
    Mercado Norte Sur — Design system compartido
@@ -202,6 +205,33 @@ table.data-table{width:100%; border-collapse:collapse; font-size:13.5px;}
   text-align:center; color:var(--ink-soft); font-size:14px;
 }
 
+/* ---------- Publicaciones activas ---------- */
+.activas-toolbar{display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
+.search-mini{
+  display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--line);
+  border-radius:8px; padding:0 12px; height:38px; flex:1; min-width:220px; color:var(--ink-faint);
+}
+.search-mini input{border:none; outline:none; font-size:13.5px; flex:1; color:var(--ink); background:transparent;}
+.sort-select{
+  border:1px solid var(--line); border-radius:8px; padding:0 12px; height:38px; font-size:13px;
+  background:#fff; color:var(--ink); font-weight:600;
+}
+.table-scroll{overflow-x:auto;}
+.table-scroll table{min-width:640px;}
+.row-visits{font-weight:600;}
+.btn-outline-sm{
+  padding:6px 10px; font-size:12px; font-weight:700; border-radius:6px; border:1px solid var(--line);
+  background:#fff; color:var(--ink); cursor:pointer; margin-right:4px;
+}
+.btn-outline-sm.paused{background:var(--amber-soft); color:var(--amber); border-color:transparent;}
+
+/* ---------- Reportes ---------- */
+.card{border:1px solid var(--line); border-radius:var(--radius); background:#fff; padding:18px 20px;}
+.card-title{font-size:14px; font-weight:700; margin-bottom:14px;}
+.card-sub{font-size:12px; font-weight:500; color:var(--ink-faint);}
+.report-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+@media(max-width:900px){.report-grid{grid-template-columns:1fr;}}
+
 /* ---------- FORMS ---------- */
 .field{margin-bottom:16px;}
 .field label{display:block; font-size:12.5px; font-weight:700; margin-bottom:6px;}
@@ -334,160 +364,425 @@ footer.site a{color:#D7DFD9;}
     </a>
     <span class="admin-tag">Panel admin</span>
     <nav class="admin-nav">
-      <button class="active" data-panel="publicaciones">📦 Publicaciones pendientes <span class="count" id="countPub">3</span></button>
-      <button data-panel="cuentas">👤 Cuentas nuevas <span class="count" id="countUsers">2</span></button>
-      <a href="#">✅ Publicaciones activas</a>
-      <a href="#">🚫 Reportes</a>
-      <a href="#">⚙️ Configuración</a>
+      <button class="active" data-panel="publicaciones">📦 Publicaciones pendientes <span class="count" id="countPub">0</span></button>
+      <button data-panel="cuentas">👤 Cuentas nuevas <span class="count" id="countUsers">0</span></button>
+      <button data-panel="activas">✅ Publicaciones activas</button>
+      <button data-panel="reportes">📊 Reportes</button>
       <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:14px 4px;">
-      <a href="../auth/login.html">← Salir del panel</a>
+      <a href="../index.html">← Volver al sitio</a>
+      <a href="#" id="adminLogout">Cerrar sesión</a>
     </nav>
   </aside>
 
   <main class="admin-main">
     <div class="admin-head">
       <h1 id="mainTitle">Publicaciones pendientes de aprobación</h1>
-      <span class="eyebrow">3 en cola</span>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span class="eyebrow" id="queueLabel"></span>
+        <button class="btn-outline-sm" id="refreshBtn" type="button" style="margin:0; display:none;">↻ Actualizar</button>
+      </div>
     </div>
 
-    <div class="panel active" id="panel-publicaciones">
+    <div id="gateMsg" class="empty-state">Verificando acceso…</div>
 
-      <div class="queue-card" data-id="p1">
-        <img class="queue-thumb" src="https://picsum.photos/seed/mns-rod/120/120">
-        <div class="queue-info">
-          <div class="t">Caña de pescar spinning Shimano — $32.000</div>
-          <div class="m">Publicado por Pedro A. · Puerto Montt · Categoría: Pesca · hace 2 horas</div>
-        </div>
-        <div class="queue-actions">
-          <button class="btn-approve btn-sm" onclick="approve(this)">Aprobar</button>
-          <button class="btn-danger btn-sm" onclick="toggleReject(this)">Rechazar</button>
-        </div>
+    <div id="adminApp" style="display:none;">
+
+      <!-- ===== Publicaciones pendientes ===== -->
+      <div class="panel active" id="panel-publicaciones">
+        <div id="pubQueue"></div>
+        <div class="empty-state" id="emptyPub" style="display:none;">No hay publicaciones pendientes 🎉</div>
       </div>
-      <div class="reject-box" data-for="p1"></div>
 
-      <div class="queue-card" data-id="p2">
-        <img class="queue-thumb" src="https://picsum.photos/seed/mns-wetsuit/120/120">
-        <div class="queue-info">
-          <div class="t">Traje de neopreno 3/2mm — $75.000</div>
-          <div class="m">Publicado por SurfShop Sur · Concón · Categoría: Surf · hace 5 horas</div>
-        </div>
-        <div class="queue-actions">
-          <button class="btn-approve btn-sm" onclick="approve(this)">Aprobar</button>
-          <button class="btn-danger btn-sm" onclick="toggleReject(this)">Rechazar</button>
-        </div>
+      <!-- ===== Cuentas nuevas ===== -->
+      <div class="panel" id="panel-cuentas">
+        <div id="userQueue"></div>
+        <div class="empty-state" id="emptyUsers" style="display:none;">No hay cuentas nuevas pendientes 🎉</div>
       </div>
-      <div class="reject-box" data-for="p2"></div>
 
-      <div class="queue-card" data-id="p3">
-        <img class="queue-thumb" src="https://picsum.photos/seed/mns-skiwear/120/120">
-        <div class="queue-info">
-          <div class="t">Chaqueta técnica para nieve Columbia — $85.000</div>
-          <div class="m">Publicado por Andes Snow · Chillán · Categoría: Nieve · hace 1 día</div>
+      <!-- ===== Publicaciones activas ===== -->
+      <div class="panel" id="panel-activas">
+        <div class="activas-toolbar">
+          <div class="search-mini">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="activasSearch" placeholder="Buscar publicación, vendedor o categoría...">
+          </div>
+          <select id="activasSort" class="sort-select">
+            <option value="recent">Ordenar por: más recientes</option>
+            <option value="price">Ordenar por: precio mayor a menor</option>
+            <option value="priceAsc">Ordenar por: precio menor a mayor</option>
+          </select>
         </div>
-        <div class="queue-actions">
-          <button class="btn-approve btn-sm" onclick="approve(this)">Aprobar</button>
-          <button class="btn-danger btn-sm" onclick="toggleReject(this)">Rechazar</button>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Vendedor</th><th>Estado</th><th>Publicado</th><th></th></tr></thead>
+            <tbody id="activasBody"></tbody>
+          </table>
         </div>
+        <div class="empty-state" id="emptyActivas" style="display:none;">No hay publicaciones activas que coincidan.</div>
       </div>
-      <div class="reject-box" data-for="p3"></div>
 
-      <div class="empty-state" id="emptyPub" style="display:none;">No hay más publicaciones pendientes 🎉</div>
+      <!-- ===== Reportes ===== -->
+      <div class="panel" id="panel-reportes">
+
+        <div class="stat-grid" style="margin-bottom:14px;">
+          <div class="stat-box"><div class="num price" id="kpiInventory">—</div><div class="lbl">Valor del catálogo activo</div></div>
+          <div class="stat-box"><div class="num price" id="kpiApproval">—</div><div class="lbl">Tasa de aprobación de publicaciones</div></div>
+          <div class="stat-box"><div class="num price" id="kpiReview">—</div><div class="lbl">Tiempo promedio de revisión</div></div>
+          <div class="stat-box"><div class="num price" id="kpiNewUsers">—</div><div class="lbl">Usuarios nuevos (últimos 30 días)</div></div>
+        </div>
+        <div class="stat-grid" style="margin-bottom:26px;">
+          <div class="stat-box"><div class="num price" id="kpiActive">—</div><div class="lbl">Publicaciones activas</div></div>
+          <div class="stat-box"><div class="num price" id="kpiPending">—</div><div class="lbl">Publicaciones en revisión</div></div>
+          <div class="stat-box"><div class="num price" id="kpiUsersPending">—</div><div class="lbl">Cuentas por aprobar</div></div>
+          <div class="stat-box"><div class="num price" id="kpiUsers">—</div><div class="lbl">Usuarios registrados</div></div>
+        </div>
+
+        <div id="chartNote" class="empty-state" style="display:none; margin-bottom:16px;">No se pudieron cargar los gráficos (revisa tu conexión). Los números de arriba sí están actualizados.</div>
+
+        <div class="report-grid">
+          <div class="card">
+            <div class="card-title">Publicaciones activas por categoría <span class="card-sub">— dónde enfocar promoción e inventario</span></div>
+            <canvas id="chartCategorias" height="200"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title">Estado de publicaciones <span class="card-sub">— salud del proceso de moderación</span></div>
+            <canvas id="chartEstados" height="200"></canvas>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title">Usuarios nuevos por mes <span class="card-sub">— últimos 6 meses</span></div>
+          <canvas id="chartUsuarios" height="90"></canvas>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Top vendedores <span class="card-sub">— por valor de catálogo activo</span></span>
+            <button class="btn-ghost btn-sm" id="exportBtn" type="button">⬇ Exportar CSV</button>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table" style="margin-top:6px;">
+              <thead><tr><th>Vendedor</th><th>Categoría principal</th><th>Publicaciones activas</th><th>Valor del catálogo</th></tr></thead>
+              <tbody id="sellersBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
     </div>
-
-    <div class="panel" id="panel-cuentas">
-
-      <div class="queue-card" data-id="u1">
-        <div class="avatar" style="width:44px; height:44px; font-size:14px;">RT</div>
-        <div class="queue-info">
-          <div class="t">Rodrigo T. — rodrigo.t@correo.cl</div>
-          <div class="m">Registrado con correo · Sin publicaciones aún · hace 40 min</div>
-        </div>
-        <div class="queue-actions">
-          <button class="btn-approve btn-sm" onclick="approve(this)">Aprobar</button>
-          <button class="btn-danger btn-sm" onclick="toggleReject(this)">Suspender</button>
-        </div>
-      </div>
-      <div class="reject-box" data-for="u1"></div>
-
-      <div class="queue-card" data-id="u2">
-        <div class="avatar" style="width:44px; height:44px; font-size:14px;">CV</div>
-        <div class="queue-info">
-          <div class="t">Constanza V. — constanza.v@gmail.com</div>
-          <div class="m">Registrado con Google · Sin publicaciones aún · hace 3 horas</div>
-        </div>
-        <div class="queue-actions">
-          <button class="btn-approve btn-sm" onclick="approve(this)">Aprobar</button>
-          <button class="btn-danger btn-sm" onclick="toggleReject(this)">Suspender</button>
-        </div>
-      </div>
-      <div class="reject-box" data-for="u2"></div>
-
-      <div class="empty-state" id="emptyUsers" style="display:none;">No hay cuentas nuevas pendientes 🎉</div>
-    </div>
-
   </main>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script>
-  document.querySelectorAll('.admin-nav button[data-panel]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.getElementById('adminSidebar').classList.remove('open');
-      document.getElementById('adminOverlay').classList.remove('open');
-      document.querySelectorAll('.admin-nav button').forEach(b=>b.classList.remove('active'));
-      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script type="module">
+  import {
+    watchUser, logout, fetchAllListings, fetchAllUsers, setListingStatus, setUserStatus,
+    removeListing, esc, safeUrl, ms, friendlyError
+  } from "../assets/firebase.js";
+  import { CAT_LABELS, computeReport, toCSV, reportRows } from "../assets/reports.js";
+
+  const $ = (id) => document.getElementById(id);
+  const money = (n) => '$' + Number(n || 0).toLocaleString('es-CL');
+  const catLabel = (k) => CAT_LABELS[k] || k || '—';
+
+  let listings = [], users = [];
+  let activePanel = 'publicaciones';
+  const charts = {};
+
+  /* ---------- Utilidades ---------- */
+  function showToast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+  function ago(t) {
+    if (!t) return '';
+    const m = Math.max(1, Math.round((Date.now() - t) / 60000));
+    if (m < 60) return 'hace ' + m + ' min';
+    const h = Math.round(m / 60);
+    if (h < 24) return 'hace ' + h + ' h';
+    const d = Math.round(h / 24);
+    return 'hace ' + d + ' día' + (d === 1 ? '' : 's');
+  }
+  const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  const thumb = (l) => {
+    const u = safeUrl(l.images && l.images[0]);
+    return u ? '<img class="queue-thumb" src="' + esc(u) + '" alt="">' : '<div class="queue-thumb"></div>';
+  };
+
+  /* ---------- Colas de aprobación ---------- */
+  const pendingListings = () => listings.filter(l => l.status === 'pending').sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
+  const pendingUsers = () => users.filter(u => u.status === 'pending' && u.role !== 'admin').sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
+
+  function updateLabel() {
+    const n = { publicaciones: pendingListings().length, cuentas: pendingUsers().length };
+    $('countPub').textContent = n.publicaciones;
+    $('countUsers').textContent = n.cuentas;
+    const labels = {
+      publicaciones: n.publicaciones + ' en cola',
+      cuentas: n.cuentas + ' en cola',
+      activas: listings.filter(l => l.status === 'approved' || l.status === 'paused').length + ' publicaciones',
+      reportes: ''
+    };
+    $('queueLabel').textContent = labels[activePanel];
+  }
+
+  function renderQueues() {
+    const pl = pendingListings();
+    $('pubQueue').innerHTML = pl.map(l =>
+      '<div class="queue-card">' + thumb(l) +
+      '<div class="queue-info"><div class="t">' + esc(l.title) + ' — ' + money(l.price) + (l.unit ? ' / ' + esc(l.unit) : '') + '</div>' +
+      '<div class="m">Publicado por ' + esc(l.sellerName) + ' · ' + esc(l.location) + ' · ' + esc(catLabel(l.category)) + ' · ' + ago(ms(l.createdAt)) + '</div>' +
+      (l.description ? '<div class="m" style="margin-top:4px; max-width:560px;">' + esc(l.description.slice(0, 160)) + (l.description.length > 160 ? '…' : '') + '</div>' : '') +
+      '</div><div class="queue-actions">' +
+      '<button class="btn-approve btn-sm" data-act="approve" data-id="' + esc(l.id) + '">Aprobar</button>' +
+      '<button class="btn-danger btn-sm" data-act="reject" data-id="' + esc(l.id) + '">Rechazar</button></div></div>' +
+      '<div class="reject-box" data-for="' + esc(l.id) + '"></div>'
+    ).join('');
+    $('emptyPub').style.display = pl.length ? 'none' : 'block';
+
+    const pu = pendingUsers();
+    $('userQueue').innerHTML = pu.map(u =>
+      '<div class="queue-card"><div class="avatar" style="width:44px; height:44px; font-size:14px;">' + esc(initials(u.name)) + '</div>' +
+      '<div class="queue-info"><div class="t">' + esc(u.name) + ' — ' + esc(u.email) + '</div>' +
+      '<div class="m">Registrado con ' + (u.provider === 'google.com' ? 'Google' : 'correo y contraseña') + ' · ' + ago(ms(u.createdAt)) + '</div></div>' +
+      '<div class="queue-actions">' +
+      '<button class="btn-approve btn-sm" data-act="u-approve" data-id="' + esc(u.uid) + '">Aprobar</button>' +
+      '<button class="btn-danger btn-sm" data-act="u-suspend" data-id="' + esc(u.uid) + '">Suspender</button></div></div>'
+    ).join('');
+    $('emptyUsers').style.display = pu.length ? 'none' : 'block';
+    updateLabel();
+  }
+
+  $('pubQueue').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const l = listings.find(x => x.id === id);
+    const box = Array.from($('pubQueue').querySelectorAll('.reject-box')).find(b => b.dataset.for === id);
+
+    if (btn.dataset.act === 'approve') {
+      btn.disabled = true;
+      try {
+        await setListingStatus(id, 'approved', { markReviewed: true });
+        l.status = 'approved'; l.rejectionReason = null; l.reviewedAt = Date.now();
+        showToast('Publicación aprobada y visible en el sitio');
+        renderQueues();
+      } catch (err) { showToast(friendlyError(err)); btn.disabled = false; }
+    }
+
+    if (btn.dataset.act === 'reject') {
+      if (box.classList.contains('open')) { box.classList.remove('open'); return; }
+      box.classList.add('open');
+      box.innerHTML = '<textarea rows="2" maxlength="300" placeholder="Motivo del rechazo (el usuario lo verá en su panel)"></textarea>' +
+        '<button class="btn-danger btn-sm" data-act="confirm-reject" data-id="' + esc(id) + '">Confirmar rechazo</button>';
+    }
+
+    if (btn.dataset.act === 'confirm-reject') {
+      const reason = box.querySelector('textarea').value.trim();
+      if (reason.length < 3) { showToast('Escribe el motivo del rechazo'); return; }
+      btn.disabled = true;
+      try {
+        await setListingStatus(id, 'rejected', { reason, markReviewed: true });
+        l.status = 'rejected'; l.rejectionReason = reason; l.reviewedAt = Date.now();
+        showToast('Publicación rechazada, el vendedor verá el motivo');
+        renderQueues();
+      } catch (err) { showToast(friendlyError(err)); btn.disabled = false; }
+    }
+  });
+
+  $('userQueue').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const u = users.find(x => x.uid === btn.dataset.id);
+    const approve = btn.dataset.act === 'u-approve';
+    if (!approve && !confirm('¿Suspender la cuenta de ' + u.name + '?')) return;
+    btn.disabled = true;
+    try {
+      await setUserStatus(u.uid, approve ? 'approved' : 'suspended');
+      u.status = approve ? 'approved' : 'suspended';
+      showToast(approve ? 'Cuenta aprobada' : 'Cuenta suspendida');
+      renderQueues();
+    } catch (err) { showToast(friendlyError(err)); btn.disabled = false; }
+  });
+
+  /* ---------- Publicaciones activas ---------- */
+  function renderActivas() {
+    const q = $('activasSearch').value.toLowerCase().trim();
+    const sort = $('activasSort').value;
+    let items = listings.filter(l => (l.status === 'approved' || l.status === 'paused') &&
+      ((l.title || '').toLowerCase().includes(q) || (l.sellerName || '').toLowerCase().includes(q) || catLabel(l.category).toLowerCase().includes(q)));
+    if (sort === 'recent') items.sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
+    if (sort === 'price') items.sort((a, b) => b.price - a.price);
+    if (sort === 'priceAsc') items.sort((a, b) => a.price - b.price);
+
+    $('emptyActivas').style.display = items.length ? 'none' : 'block';
+    $('activasBody').innerHTML = items.map(l => {
+      const paused = l.status === 'paused';
+      return '<tr><td>' + esc(l.title) + '</td><td>' + esc(catLabel(l.category)) + '</td>' +
+        '<td class="price">' + money(l.price) + '</td><td>' + esc(l.sellerName) + '</td>' +
+        '<td><span class="badge ' + (paused ? 'revision' : 'aprobado') + '">' + (paused ? 'PAUSADA' : 'ACTIVA') + '</span></td>' +
+        '<td>' + ago(ms(l.createdAt)) + '</td>' +
+        '<td style="white-space:nowrap;">' +
+        '<button class="btn-outline-sm ' + (paused ? 'paused' : '') + '" data-act="toggle" data-id="' + esc(l.id) + '">' + (paused ? 'Reactivar' : 'Pausar') + '</button>' +
+        '<button class="btn-outline-sm" data-act="delete" data-id="' + esc(l.id) + '">Eliminar</button></td></tr>';
+    }).join('');
+    updateLabel();
+  }
+  $('activasSearch').addEventListener('input', renderActivas);
+  $('activasSort').addEventListener('change', renderActivas);
+
+  $('activasBody').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const l = listings.find(x => x.id === btn.dataset.id);
+    btn.disabled = true;
+    try {
+      if (btn.dataset.act === 'toggle') {
+        const next = l.status === 'paused' ? 'approved' : 'paused';
+        await setListingStatus(l.id, next);
+        l.status = next;
+        showToast(next === 'paused' ? 'Publicación pausada: ya no aparece en el sitio' : 'Publicación reactivada');
+      } else {
+        if (!confirm('¿Eliminar "' + l.title + '"? No se puede deshacer.')) { btn.disabled = false; return; }
+        await removeListing(l.id);
+        listings = listings.filter(x => x.id !== l.id);
+        showToast('Publicación eliminada');
+      }
+      renderActivas();
+    } catch (err) { showToast(friendlyError(err)); btn.disabled = false; }
+  });
+
+  /* ---------- Reportes ---------- */
+  function drawChart(id, config) {
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart($(id), config);
+  }
+
+  function renderReports() {
+    const r = computeReport(listings, users);
+    const t = r.totals;
+    $('kpiInventory').textContent = money(t.inventoryValue);
+    $('kpiApproval').textContent = t.approvalRate == null ? '—' : t.approvalRate + '%';
+    $('kpiReview').textContent = t.avgReviewHours == null ? '—' : t.avgReviewHours + ' h';
+    $('kpiNewUsers').textContent = t.newUsers30;
+    $('kpiActive').textContent = t.approved;
+    $('kpiPending').textContent = t.pending;
+    $('kpiUsersPending').textContent = t.usersPending;
+    $('kpiUsers').textContent = t.users;
+
+    $('sellersBody').innerHTML = r.topSellers.length
+      ? r.topSellers.map(s => '<tr><td>' + esc(s.name) + '</td><td>' + esc(s.topCategory) + '</td><td>' + s.count + '</td><td class="price">' + money(s.value) + '</td></tr>').join('')
+      : '<tr><td colspan="4" style="color:var(--ink-faint);">Aún no hay publicaciones activas.</td></tr>';
+
+    if (typeof Chart === 'undefined') { $('chartNote').style.display = 'block'; return; }
+    $('chartNote').style.display = 'none';
+
+    drawChart('chartCategorias', {
+      type: 'bar',
+      data: { labels: r.categories.map(c => c.label), datasets: [{ data: r.categories.map(c => c.count), backgroundColor: '#D2551F', borderRadius: 5, maxBarThickness: 36 }] },
+      options: {
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => ctx.parsed.y + ' publicaciones · ' + money(r.categories[ctx.dataIndex].value) } }
+        },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+    drawChart('chartEstados', {
+      type: 'doughnut',
+      data: {
+        labels: ['Aprobadas', 'En revisión', 'Rechazadas', 'Pausadas'],
+        datasets: [{ data: [t.approved, t.pending, t.rejected, t.paused], backgroundColor: ['#223B2C', '#9A6B12', '#B3261E', '#96907F'] }]
+      },
+      options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11.5 } } } } }
+    });
+    drawChart('chartUsuarios', {
+      type: 'line',
+      data: {
+        labels: r.usersByMonth.labels,
+        datasets: [{ data: r.usersByMonth.data, borderColor: '#D2551F', backgroundColor: 'rgba(210,85,31,0.08)', fill: true, tension: 0.35, pointRadius: 3 }]
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+  }
+
+  $('exportBtn').addEventListener('click', () => {
+    const csv = toCSV(reportRows(computeReport(listings, users), new Date().toLocaleDateString('es-CL')));
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'reporte-mercadonortesur-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Reporte descargado');
+  });
+
+  /* ---------- Navegación entre paneles ---------- */
+  const TITLES = {
+    publicaciones: 'Publicaciones pendientes de aprobación',
+    cuentas: 'Cuentas nuevas por revisar',
+    activas: 'Publicaciones activas en el sitio',
+    reportes: 'Reportes para toma de decisiones'
+  };
+  document.querySelectorAll('.admin-nav button[data-panel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('adminSidebar').classList.remove('open');
+      $('adminOverlay').classList.remove('open');
+      document.querySelectorAll('.admin-nav button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('panel-'+btn.dataset.panel).classList.add('active');
-      document.getElementById('mainTitle').textContent = btn.dataset.panel === 'publicaciones'
-        ? 'Publicaciones pendientes de aprobación' : 'Cuentas nuevas por revisar';
+      activePanel = btn.dataset.panel;
+      $('panel-' + activePanel).classList.add('active');
+      $('mainTitle').textContent = TITLES[activePanel];
+      if (activePanel === 'activas') renderActivas();
+      if (activePanel === 'reportes') renderReports();
+      updateLabel();
     });
   });
 
-  function showToast(msg){
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(()=> t.classList.remove('show'), 2200);
+  /* ---------- Carga de datos y acceso ---------- */
+  async function loadData() {
+    [listings, users] = await Promise.all([fetchAllListings(), fetchAllUsers()]);
+    renderQueues();
+    if (activePanel === 'activas') renderActivas();
+    if (activePanel === 'reportes') renderReports();
   }
 
-  function updateCounts(){
-    const pubLeft = document.querySelectorAll('#panel-publicaciones .queue-card').length;
-    const usersLeft = document.querySelectorAll('#panel-cuentas .queue-card').length;
-    document.getElementById('countPub').textContent = pubLeft;
-    document.getElementById('countUsers').textContent = usersLeft;
-    document.getElementById('emptyPub').style.display = pubLeft === 0 ? 'block' : 'none';
-    document.getElementById('emptyUsers').style.display = usersLeft === 0 ? 'block' : 'none';
-  }
+  $('refreshBtn').addEventListener('click', async (e) => {
+    const b = e.currentTarget; b.disabled = true;
+    try { await loadData(); showToast('Datos actualizados'); }
+    catch (err) { showToast(friendlyError(err)); }
+    b.disabled = false;
+  });
 
-  function approve(btn){
-    const card = btn.closest('.queue-card');
-    const id = card.dataset.id;
-    showToast(id.startsWith('u') ? 'Cuenta aprobada' : 'Publicación aprobada y visible en el sitio');
-    document.querySelector('.reject-box[data-for="'+id+'"]').remove();
-    card.remove();
-    updateCounts();
-  }
+  $('adminLogout').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await logout();
+    location.href = '../index.html';
+  });
 
-  function toggleReject(btn){
-    const card = btn.closest('.queue-card');
-    const id = card.dataset.id;
-    const box = document.querySelector('.reject-box[data-for="'+id+'"]');
-    if(box.classList.contains('open')){ box.classList.remove('open'); return; }
-    box.classList.add('open');
-    box.innerHTML = `
-      <textarea rows="2" placeholder="Motivo del rechazo (se enviará al usuario)"></textarea>
-      <button class="btn-danger btn-sm" onclick="confirmReject('${id}', this)">Confirmar rechazo</button>
-    `;
-  }
-
-  function confirmReject(id, btn){
-    const card = document.querySelector('.queue-card[data-id="'+id+'"]');
-    showToast(id.startsWith('u') ? 'Cuenta suspendida' : 'Publicación rechazada, se notificó al vendedor');
-    document.querySelector('.reject-box[data-for="'+id+'"]').remove();
-    card.remove();
-    updateCounts();
-  }
+  watchUser(async (user, profile, error) => {
+    const gate = $('gateMsg');
+    if (!user) { location.href = '../auth/login.html'; return; }
+    if (!profile) { gate.textContent = 'No pudimos cargar tu perfil. ' + friendlyError(error); return; }
+    if (profile.role !== 'admin') {
+      gate.innerHTML = 'Esta sección es solo para administradores. <a href="../cuenta/dashboard.html" class="link-rust">Ir a mi cuenta</a>';
+      return;
+    }
+    try {
+      await loadData();
+    } catch (err) {
+      gate.textContent = 'No pudimos cargar los datos. ' + friendlyError(err);
+      return;
+    }
+    gate.style.display = 'none';
+    $('adminApp').style.display = 'block';
+    $('refreshBtn').style.display = 'inline-block';
+  });
 </script>
 </body>
 </html>

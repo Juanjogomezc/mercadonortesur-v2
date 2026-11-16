@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mi cuenta · Mercado Norte Sur</title>
+<link rel="icon" href="../assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="../assets/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <style>
 /* ============================================================
    Mercado Norte Sur — Design system compartido
@@ -282,6 +285,12 @@ footer.site a{color:#D7DFD9;}
     .banner-alert{font-size:12px; padding:11px 13px;}
     footer.site .wrap{flex-direction:column; gap:6px; text-align:center;}
   }
+
+  .banner-alert.warn{background:var(--amber-soft); color:var(--amber);}
+  .banner-alert + .banner-alert{margin-top:-10px;}
+  .reason{font-size:11.5px; color:var(--red); margin-top:3px; max-width:340px;}
+  .row-thumb-empty{width:42px; height:42px; border-radius:7px; background:var(--bg-subtle); flex-shrink:0;}
+  .btn-link-danger{background:none; border:none; color:var(--red); font-size:12.5px; font-weight:600; cursor:pointer; padding:0; margin-left:12px;}
 </style>
 </head>
 <body>
@@ -303,14 +312,15 @@ footer.site a{color:#D7DFD9;}
       </a>
       <div class="user-menu">
         <button class="avatar-btn" onclick="document.getElementById('userDropdown').classList.toggle('open')">
-          <span class="avatar">MP</span>
-          <span class="avatar-name">María P.</span>
+          <span class="avatar" id="avatarInitials">··</span>
+          <span class="avatar-name" id="avatarName">Mi cuenta</span>
         </button>
         <div class="dropdown" id="userDropdown">
           <a href="dashboard.html">Mi cuenta</a>
           <a href="publicar.html">Publicar anuncio</a>
           <hr>
-          <a href="../auth/login.html">Cerrar sesión</a>
+          <a href="../admin/dashboard.html" id="adminLink" style="display:none;">Panel de administración</a>
+          <a href="#" id="logoutLink">Cerrar sesión</a>
         </div>
       </div>
     </div>
@@ -318,112 +328,49 @@ footer.site a{color:#D7DFD9;}
 </header>
 
 <div class="wrap page-head">
-  <h1>Hola, María 👋</h1>
+  <h1 id="greeting">Hola 👋</h1>
   <div class="sub">Desde acá gestionas tus compras y tus publicaciones — la misma cuenta sirve para ambas cosas.</div>
 </div>
 
 <main class="wrap">
 
-  <div class="banner-alert">
-    <span>⚠️</span>
-    <span><b>Tu publicación "Carpa Doite Kaiku 4 personas" fue rechazada.</b> Motivo: las fotos no muestran el estado real del producto. <a href="publicar.html" class="link-rust" style="color:var(--red); text-decoration:underline;">Editar y reenviar</a></span>
-  </div>
+  <div id="loading" class="empty-state">Cargando tu cuenta…</div>
 
-  <div class="stat-grid" style="margin-bottom:28px;">
-    <div class="stat-box"><div class="num price">2</div><div class="lbl">Compras en curso</div></div>
-    <div class="stat-box"><div class="num price">3</div><div class="lbl">Publicaciones activas</div></div>
-    <div class="stat-box"><div class="num price">1</div><div class="lbl">En revisión</div></div>
-    <div class="stat-box"><div class="num price">$142.000</div><div class="lbl">Vendido este mes</div></div>
-  </div>
+  <div id="app" style="display:none;">
 
-  <div class="tabs">
-    <button class="tab active" data-panel="compras">Mis compras</button>
-    <button class="tab" data-panel="favoritos">Favoritos</button>
-    <button class="tab" data-panel="publicaciones">Mis publicaciones</button>
-    <button class="tab" data-panel="ventas">Ventas</button>
-  </div>
+    <div id="accountBanner"></div>
+    <div id="rejectedBanners"></div>
 
-  <div class="panel active" id="panel-compras">
-    <div class="table-scroll"><table class="data-table">
-      <thead><tr><th>Producto</th><th>Vendedor</th><th>Precio</th><th>Estado</th><th></th></tr></thead>
-      <tbody>
-        <tr>
-          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-boots1/100/100"><span>Botas Salomon Quest 4D GTX 42</span></td>
-          <td>Ignacio T.</td>
-          <td class="price">$65.000</td>
-          <td><span class="badge revision">EN CAMINO</span></td>
-          <td><a href="#" class="link-rust" style="font-size:12.5px;">Ver detalle</a></td>
-        </tr>
-        <tr>
-          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-gps/100/100"><span>GPS Garmin GPSMAP 66i</span></td>
-          <td>OutdoorPro</td>
-          <td class="price">$310.000</td>
-          <td><span class="badge aprobado">ENTREGADO</span></td>
-          <td><a href="#" class="link-rust" style="font-size:12.5px;">Ver detalle</a></td>
-        </tr>
-      </tbody>
-    </table></div>
-  </div>
-
-  <div class="panel" id="panel-favoritos">
-    <div class="fav-grid">
-      <div class="fav-card">
-        <div class="fav-media"><img src="https://picsum.photos/seed/mns-mtb/300/300"></div>
-        <div class="fav-body"><div class="n">Bicicleta MTB rodado 29 Trek</div><span class="price">$450.000</span></div>
-      </div>
-      <div class="fav-card">
-        <div class="fav-media"><img src="https://picsum.photos/seed/mns-surfboard/300/300"></div>
-        <div class="fav-body"><div class="n">Tabla de surf shortboard 6'2"</div><span class="price">$180.000</span></div>
-      </div>
-      <div class="fav-card">
-        <div class="fav-media"><img src="https://picsum.photos/seed/mns-snowboard/300/300"></div>
-        <div class="fav-body"><div class="n">Tabla de snowboard Burton</div><span class="price">$270.000</span></div>
-      </div>
+    <div class="stat-grid" style="margin-bottom:28px;">
+      <div class="stat-box"><div class="num price" id="statActive">0</div><div class="lbl">Publicaciones activas</div></div>
+      <div class="stat-box"><div class="num price" id="statReview">0</div><div class="lbl">En revisión</div></div>
+      <div class="stat-box"><div class="num price" id="statRejected">0</div><div class="lbl">Rechazadas</div></div>
+      <div class="stat-box"><div class="num price" id="statTotal">0</div><div class="lbl">Publicaciones totales</div></div>
     </div>
-  </div>
 
-  <div class="panel" id="panel-publicaciones">
-    <div class="table-scroll"><table class="data-table">
-      <thead><tr><th>Producto</th><th>Precio</th><th>Estado</th><th>Visitas</th><th></th></tr></thead>
-      <tbody>
-        <tr>
-          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-tent1/100/100"><span>Carpa Doite Kaiku 4 personas</span></td>
-          <td class="price">$89.990</td>
-          <td><span class="badge rechazado">RECHAZADO</span></td>
-          <td>—</td>
-          <td><a href="publicar.html" class="link-rust" style="font-size:12.5px;">Editar</a></td>
-        </tr>
-        <tr>
-          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-poles/100/100"><span>Bastones de trekking Black Diamond</span></td>
-          <td class="price">$28.000</td>
-          <td><span class="badge aprobado">APROBADO</span></td>
-          <td>214</td>
-          <td><a href="#" class="link-rust" style="font-size:12.5px;">Pausar</a></td>
-        </tr>
-        <tr>
-          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-rod/100/100"><span>Caña de pescar spinning Shimano</span></td>
-          <td class="price">$32.000</td>
-          <td><span class="badge revision">EN REVISIÓN</span></td>
-          <td>—</td>
-          <td><span style="font-size:12.5px; color:var(--ink-faint);">Esperando aprobación</span></td>
-        </tr>
-      </tbody>
-    </table></div>
-  </div>
+    <div class="tabs">
+      <button class="tab active" data-panel="publicaciones">Mis publicaciones</button>
+      <button class="tab" data-panel="compras">Mis compras</button>
+      <button class="tab" data-panel="favoritos">Favoritos</button>
+      <button class="tab" data-panel="ventas">Ventas</button>
+    </div>
 
-  <div class="panel" id="panel-ventas">
-    <div class="table-scroll"><table class="data-table">
-      <thead><tr><th>Producto</th><th>Comprador</th><th>Precio</th><th>Estado</th><th></th></tr></thead>
-      <tbody>
-        <tr>
-          <td class="row-prod"><img class="row-thumb" src="https://picsum.photos/seed/mns-poles/100/100"><span>Bastones de trekking Black Diamond</span></td>
-          <td>Camila R.</td>
-          <td class="price">$28.000</td>
-          <td><span class="badge revision">POR ENVIAR</span></td>
-          <td><a href="#" class="link-rust" style="font-size:12.5px;">Marcar enviado</a></td>
-        </tr>
-      </tbody>
-    </table></div>
+    <div class="panel active" id="panel-publicaciones">
+      <div class="table-scroll" id="listingsWrap"></div>
+    </div>
+
+    <div class="panel" id="panel-compras">
+      <div class="empty-state">Aún no tienes compras. Cuando compres un producto, lo verás acá con su estado de envío.</div>
+    </div>
+
+    <div class="panel" id="panel-favoritos">
+      <div class="empty-state">Todavía no guardaste favoritos.</div>
+    </div>
+
+    <div class="panel" id="panel-ventas">
+      <div class="empty-state">Tus ventas aparecerán acá cuando se concrete la primera.</div>
+    </div>
+
   </div>
 
 </main>
@@ -435,17 +382,120 @@ footer.site a{color:#D7DFD9;}
   </div>
 </footer>
 
-<script>
-  document.querySelectorAll('.tab').forEach(tab=>{
-    tab.addEventListener('click', ()=>{
-      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+<script type="module">
+  import { watchUser, logout, fetchMyListings, removeListing, esc, safeUrl, friendlyError } from "../assets/firebase.js";
+  import { CAT_LABELS } from "../assets/reports.js";
+
+  const money = (n) => '$' + Number(n || 0).toLocaleString('es-CL');
+  const STATUS = {
+    approved: ['APROBADO', 'aprobado'],
+    pending:  ['EN REVISIÓN', 'revision'],
+    rejected: ['RECHAZADO', 'rechazado'],
+    paused:   ['PAUSADO', 'usado']
+  };
+  let listings = [];
+  let currentUser = null;
+
+  const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+  function renderBanners(profile) {
+    const box = document.getElementById('accountBanner');
+    if (profile.status === 'pending') {
+      box.innerHTML = '<div class="banner-alert warn"><span>⏳</span><span><b>Tu cuenta está en revisión.</b> Un administrador la aprobará pronto. Mientras tanto puedes explorar el sitio; podrás publicar apenas esté aprobada.</span></div>';
+    } else if (profile.status === 'suspended') {
+      box.innerHTML = '<div class="banner-alert"><span>⛔</span><span><b>Tu cuenta está suspendida.</b> No puedes publicar por ahora. Escríbenos si crees que es un error.</span></div>';
+    } else { box.innerHTML = ''; }
+  }
+
+  function renderListings() {
+    const by = (s) => listings.filter(l => l.status === s).length;
+    document.getElementById('statActive').textContent = by('approved');
+    document.getElementById('statReview').textContent = by('pending');
+    document.getElementById('statRejected').textContent = by('rejected');
+    document.getElementById('statTotal').textContent = listings.length;
+
+    document.getElementById('rejectedBanners').innerHTML = listings.filter(l => l.status === 'rejected').slice(0, 3).map(l =>
+      '<div class="banner-alert"><span>⚠️</span><span><b>Tu publicación "' + esc(l.title) + '" fue rechazada.</b> Motivo: ' +
+      esc(l.rejectionReason || 'sin detalle') + '. <a href="publicar.html?edit=' + encodeURIComponent(l.id) +
+      '" class="link-rust" style="color:var(--red); text-decoration:underline;">Editar y reenviar</a></span></div>'
+    ).join('');
+
+    const wrap = document.getElementById('listingsWrap');
+    if (!listings.length) {
+      wrap.innerHTML = '<div class="empty-state">Aún no has publicado nada. <a href="publicar.html" class="link-rust">Publica tu primer anuncio</a></div>';
+      return;
+    }
+    wrap.innerHTML = '<table class="data-table"><thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Estado</th><th></th></tr></thead><tbody>' +
+      listings.map(l => {
+        const [label, cls] = STATUS[l.status] || ['—', 'usado'];
+        const img = safeUrl(l.images && l.images[0]);
+        const thumb = img ? '<img class="row-thumb" src="' + esc(img) + '" alt="">' : '<div class="row-thumb-empty"></div>';
+        const reason = l.status === 'rejected' && l.rejectionReason ? '<div class="reason">Motivo: ' + esc(l.rejectionReason) + '</div>' : '';
+        return '<tr><td><div class="row-prod">' + thumb + '<div><div>' + esc(l.title) + '</div>' + reason + '</div></div></td>' +
+          '<td>' + esc(CAT_LABELS[l.category] || l.category) + '</td>' +
+          '<td class="price">' + money(l.price) + (l.unit ? ' <span style="font-size:11px;color:var(--ink-faint);">/' + esc(l.unit) + '</span>' : '') + '</td>' +
+          '<td><span class="badge ' + cls + '">' + label + '</span></td>' +
+          '<td style="white-space:nowrap;"><a href="publicar.html?edit=' + encodeURIComponent(l.id) + '" class="link-rust" style="font-size:12.5px;">Editar</a>' +
+          '<button class="btn-link-danger" data-del="' + esc(l.id) + '">Eliminar</button></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  document.getElementById('listingsWrap').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-del]');
+    if (!btn) return;
+    if (!confirm('¿Eliminar esta publicación? No se puede deshacer.')) return;
+    btn.disabled = true;
+    try {
+      await removeListing(btn.dataset.del);
+      listings = listings.filter(l => l.id !== btn.dataset.del);
+      renderListings();
+    } catch (err) {
+      alert(friendlyError(err));
+      btn.disabled = false;
+    }
+  });
+
+  watchUser(async (user, profile, error) => {
+    if (!user) { location.href = '../auth/login.html'; return; }
+    const loading = document.getElementById('loading');
+    if (!profile) {
+      loading.textContent = 'No pudimos cargar tu perfil. ' + friendlyError(error);
+      return;
+    }
+    currentUser = user;
+    document.getElementById('avatarInitials').textContent = initials(profile.name);
+    document.getElementById('avatarName').textContent = (profile.name || 'Mi cuenta').split(' ')[0];
+    document.getElementById('greeting').textContent = 'Hola, ' + (profile.name || '').split(' ')[0] + ' 👋';
+    if (profile.role === 'admin') document.getElementById('adminLink').style.display = 'flex';
+    renderBanners(profile);
+
+    try {
+      listings = await fetchMyListings(user.uid);
+    } catch (err) {
+      loading.textContent = 'No pudimos cargar tus publicaciones. ' + friendlyError(err);
+      return;
+    }
+    renderListings();
+    loading.style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  });
+
+  document.getElementById('logoutLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await logout();
+    location.href = '../index.html';
+  });
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
-      document.getElementById('panel-'+tab.dataset.panel).classList.add('active');
+      document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
     });
   });
-  document.addEventListener('click', (e)=>{
-    if(!e.target.closest('.user-menu')) document.getElementById('userDropdown').classList.remove('open');
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.user-menu')) document.getElementById('userDropdown').classList.remove('open');
   });
 </script>
 </body>
