@@ -33,7 +33,6 @@ function render(p,demo=false){
  <button id="favoriteBtn" class="favorite-btn" type="button">♡ Guardar en favoritos</button></div></div></div>`;
  syncFavoriteButton();
  document.getElementById("favoriteBtn").addEventListener("click",async()=>{
-   if(demo){alert("Los productos de ejemplo no se pueden guardar. Prueba con una publicación real.");return}
    if(!uid){location.href="auth/login.html?next="+encodeURIComponent(location.pathname+location.search);return}
    const b=document.getElementById("favoriteBtn");b.disabled=true;
    try{saved=await toggleFavorite(uid,id);syncFavoriteButton()}catch(e){alert("No pudimos actualizar tus favoritos.")}finally{b.disabled=false}
@@ -41,7 +40,7 @@ function render(p,demo=false){
 }
 watchUser(async user=>{
  uid=user?.uid||null;
- if(uid&&id&&!id.startsWith("s")){
+ if(uid&&id){
    try{saved=(await fetchFavoriteIds(uid)).includes(id);if(rendered)syncFavoriteButton()}catch(e){}
  }
 });
