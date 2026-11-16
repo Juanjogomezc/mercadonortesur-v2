@@ -572,16 +572,26 @@ footer.site a{color:#1B1A17;}
     ).join('');
     $('emptyPub').style.display = pl.length ? 'none' : 'block';
 
-    const pu = pendingUsers();
-    $('userQueue').innerHTML = pu.map(u =>
-      '<div class="queue-card"><div class="avatar" style="width:44px; height:44px; font-size:14px;">' + esc(initials(u.name)) + '</div>' +
-      '<div class="queue-info"><div class="t">' + esc(u.name) + ' — ' + esc(u.email) + '</div>' +
-      '<div class="m">Registrado con ' + (u.provider === 'google.com' ? 'Google' : 'correo y contraseña') + ' · ' + ago(ms(u.createdAt)) + '</div></div>' +
-      '<div class="queue-actions">' +
-      '<button class="btn-approve btn-sm" data-act="u-approve" data-id="' + esc(u.uid) + '">Aprobar</button>' +
-      '<button class="btn-danger btn-sm" data-act="u-suspend" data-id="' + esc(u.uid) + '">Suspender</button></div></div>'
-    ).join('');
-    $('emptyUsers').style.display = pu.length ? 'none' : 'block';
+    const accountList = users.filter(u => u.role !== 'admin').sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
+    const statusInfo = {
+      pending: ['PENDIENTE', 'revision'],
+      approved: ['APROBADA', 'aprobado'],
+      suspended: ['SUSPENDIDA', 'rechazado'],
+      rejected: ['RECHAZADA', 'rechazado']
+    };
+    $('userQueue').innerHTML = accountList.map(u => {
+      const info = statusInfo[u.status] || [String(u.status || 'SIN ESTADO').toUpperCase(), 'revision'];
+      const action = u.status === 'approved'
+        ? '<button class="btn-danger btn-sm" data-act="u-suspend" data-id="' + esc(u.uid) + '">Suspender</button>'
+        : '<button class="btn-approve btn-sm" data-act="u-approve" data-id="' + esc(u.uid) + '">' + (u.status === 'pending' ? 'Aprobar' : 'Reactivar') + '</button>';
+      return '<div class="queue-card"><div class="avatar" style="width:44px; height:44px; font-size:14px;">' + esc(initials(u.name)) + '</div>' +
+        '<div class="queue-info"><div class="t">' + esc(u.name || 'Usuario') + ' — ' + esc(u.email || 'Sin correo') + '</div>' +
+        '<div class="m">Rol: ' + esc(u.role || 'user') + ' · Registrado con ' + (u.provider === 'google.com' ? 'Google' : 'correo y contraseña') + ' · ' + ago(ms(u.createdAt)) + '</div>' +
+        '<div class="m" style="margin-top:5px;"><span class="badge ' + info[1] + '">' + info[0] + '</span></div></div>' +
+        '<div class="queue-actions">' + action + '</div></div>';
+    }).join('');
+    $('emptyUsers').style.display = accountList.length ? 'none' : 'block';
+    $('emptyUsers').textContent = 'Todavía no hay cuentas registradas.';
     updateLabel();
   }
 
@@ -791,7 +801,7 @@ footer.site a{color:#1B1A17;}
     reportes: 'Reportes para toma de decisiones'
   };
   document.querySelectorAll('.admin-nav button[data-panel]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       $('adminSidebar').classList.remove('open');
       $('adminOverlay').classList.remove('open');
       document.querySelectorAll('.admin-nav button').forEach(b => b.classList.remove('active'));
@@ -800,6 +810,10 @@ footer.site a{color:#1B1A17;}
       activePanel = btn.dataset.panel;
       $('panel-' + activePanel).classList.add('active');
       $('mainTitle').textContent = TITLES[activePanel];
+      if (activePanel === 'cuentas') {
+        try { users = await fetchAllUsers(); renderQueues(); }
+        catch (err) { showToast('No pudimos actualizar las cuentas: ' + friendlyError(err)); }
+      }
       if (activePanel === 'activas') renderActivas();
       if (activePanel === 'reportes') renderReports();
       updateLabel();

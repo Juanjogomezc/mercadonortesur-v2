@@ -177,23 +177,46 @@ export async function fetchListing(id) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
-// Redimensiona en el navegador para no subir fotos de 8 MB
-async function resizeImage(file, maxSide = 1200, quality = 0.82) {
-  const bmp = await createImageBitmap(file);
-  const scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bmp.width * scale);
-  canvas.height = Math.round(bmp.height * scale);
-  canvas.getContext("2d").drawImage(bmp, 0, 0, canvas.width, canvas.height);
-  return new Promise((resolve, reject) =>
-    canvas.toBlob(b => (b ? resolve(b) : reject(new Error("No se pudo procesar la imagen"))), "image/jpeg", quality));
+// Procesa las imágenes para respetar el límite de Firebase Storage (3 MB).
+async function resizeImage(file, maxSide = 1200) {
+  let source, bitmap = null;
+  if (typeof createImageBitmap === "function") { try { bitmap = await createImageBitmap(file); source = bitmap; } catch (_) {} }
+  if (!source) {
+    source = await new Promise((resolve, reject) => {
+      const image = new Image(), url = URL.createObjectURL(file);
+      image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+      image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("No pudimos leer una de las imágenes. Usa JPG, PNG o WEBP.")); };
+      image.src = url;
+    });
+  }
+  let side = maxSide;
+  try {
+    for (let attempt = 0; attempt < 7; attempt++) {
+      const scale = Math.min(1, side / Math.max(source.width, source.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(source.width * scale));
+      canvas.height = Math.max(1, Math.round(source.height * scale));
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("No pudimos procesar la imagen en este navegador.");
+      ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+      for (const quality of [0.82, 0.72, 0.62, 0.52, 0.42]) {
+        const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error("No se pudo procesar la imagen")), "image/jpeg", quality));
+        if (blob.size <= 2.5 * 1024 * 1024) return blob;
+      }
+      side = Math.round(side * 0.78);
+    }
+    throw new Error("La imagen es demasiado grande para subirla. Prueba con otra foto.");
+  } finally { if (bitmap && typeof bitmap.close === "function") bitmap.close(); }
 }
 
 export async function uploadListingImages(uid, files) {
+  if (!uid) throw new Error("Inicia sesión para subir fotografías.");
   const urls = [];
   for (let i = 0; i < files.length; i++) {
     const blob = await resizeImage(files[i]);
-    const r = ref(storage, `listings/${uid}/${Date.now()}-${i}.jpg`);
+    const unique = (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+    const r = ref(storage, "listings/" + uid + "/" + unique + "-" + i + ".jpg");
     await uploadBytes(r, blob, { contentType: "image/jpeg" });
     urls.push(await getDownloadURL(r));
   }
