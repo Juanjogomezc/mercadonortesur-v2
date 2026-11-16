@@ -242,6 +242,55 @@ export function removeListing(id) {
 
 /* ---------- Administración (requiere role = "admin") ---------- */
 
+// Importación idempotente del catálogo institucional. Solo puede ejecutarla un administrador.
+export async function importAdminCatalog(items, user, profile) {
+  if (!user || !profile || profile.role !== "admin") throw new Error("Solo un administrador puede cargar el catálogo institucional.");
+  let created = 0, skipped = 0;
+  for (const item of items) {
+    const listingRef = doc(db, "listings", item.id);
+    const existing = await getDoc(listingRef);
+    if (existing.exists()) { skipped++; continue; }
+    await setDoc(listingRef, {
+      title: item.title,
+      category: item.category,
+      condition: item.condition,
+      description: item.description,
+      price: Number(item.price),
+      oldPrice: item.oldPrice == null ? null : Number(item.oldPrice),
+      unit: item.unit || "",
+      location: item.location || "",
+      images: item.image ? [item.image] : [],
+      attributes: item.attributes || {},
+      contactPhone: String(profile.contactPhone || profile.whatsapp || profile.phone || "").replace(/\D/g, ""),
+      sellerId: user.uid,
+      sellerName: "Mercado Norte Sur",
+      sellerType: "admin",
+      adminCatalog: true,
+      status: "pending",
+      rejectionReason: null,
+      createdAt: serverTimestamp(),
+      reviewedAt: null
+    });
+    await updateDoc(listingRef, { status: "approved", reviewedAt: serverTimestamp() });
+    created++;
+  }
+  return { created, skipped, total: items.length };
+}
+
+// Actualiza el WhatsApp institucional y las publicaciones que pertenecen a la cuenta admin.
+export async function setAdminContactPhone(uid, phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (digits.length < 10 || digits.length > 15) throw new Error("Ingresa un WhatsApp con código de país válido (por ejemplo, +56 9 1234 5678).");
+  await updateDoc(doc(db, "users", uid), { contactPhone: digits });
+  const own = await getDocs(query(collection(db, "listings"), where("sellerId", "==", uid)));
+  for (const item of own.docs) {
+    if (item.data().sellerType === "admin" || item.data().adminCatalog) {
+      await updateDoc(item.ref, { contactPhone: digits });
+    }
+  }
+  return digits;
+}
+
 export async function fetchAllListings() {
   return mapDocs(await getDocs(collection(db, "listings")));
 }

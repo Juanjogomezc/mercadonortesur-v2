@@ -52,7 +52,9 @@ service cloud.firestore {
                   || isAdmin();
 
       // Solo cuentas aprobadas publican, y siempre entra "en revisión"
-      allow create: if isApprovedUser()
+      // Los usuarios aprobados pueden publicar en revisión. El administrador también
+      // puede crear registros institucionales en revisión y aprobarlos desde el panel.
+      allow create: if (isApprovedUser() || isAdmin())
                     && request.resource.data.sellerId == request.auth.uid
                     && request.resource.data.status == 'pending'
                     && request.resource.data.title is string

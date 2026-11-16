@@ -846,7 +846,7 @@
   </div>
 </footer>
 
-<p class="mock-note">Mockup navegable — las fotos son placeholders (Picsum Photos, estáticos y estables) para ilustrar el layout, a reemplazar por fotos reales de cada publicación. · <a href="admin/dashboard.html" style="color:var(--rust); font-weight:600;">Ver panel de administrador (demo)</a></p>
+
 
 <script>
   const CAT_LABELS = {
@@ -862,31 +862,7 @@
     servicios: 'Servicios y arriendos'
   };
 
-  let PRODUCTS = [
-    {cat:'camping', name:'Carpa Doite Kaiku 4 personas', price:89990, oldPrice:140000, cond:'usado', seller:'Camila R.', loc:'Puerto Varas', img:'https://picsum.photos/seed/mns-tent1/500/500'},
-    {cat:'camping', name:'Saco de dormir Kelty -5°C', price:54990, oldPrice:null, cond:'nuevo', seller:'TiendaAndes', loc:'Santiago', img:'https://picsum.photos/seed/mns-sleepingbag/500/500'},
-    {cat:'camping', name:'Cocinilla portátil MSR WhisperLite', price:38000, oldPrice:52000, cond:'usado', seller:'Rodrigo P.', loc:'Temuco', img:'https://picsum.photos/seed/mns-stove/500/500'},
-    {cat:'escalada', name:'Arnés de escalada Black Diamond', price:42000, oldPrice:null, cond:'nuevo', seller:'VertexGear', loc:'Santiago', img:'https://picsum.photos/seed/mns-harness/500/500'},
-    {cat:'escalada', name:'Cuerda dinámica 60m Mammut', price:95000, oldPrice:130000, cond:'usado', seller:'Ignacio T.', loc:'Valdivia', img:'https://picsum.photos/seed/mns-rope/500/500'},
-    {cat:'escalada', name:'Casco de escalada Petzl Meteor', price:36000, oldPrice:null, cond:'nuevo', seller:'VertexGear', loc:'Santiago', img:'https://picsum.photos/seed/mns-climb-helmet/500/500'},
-    {cat:'trekking', name:'Botas Salomon Quest 4D GTX 42', price:65000, oldPrice:120000, cond:'usado', seller:'Ignacio T.', loc:'Valdivia', img:'https://picsum.photos/seed/mns-boots1/500/500'},
-    {cat:'trekking', name:'Bastones de trekking Black Diamond', price:28000, oldPrice:null, cond:'nuevo', seller:'OutdoorPro', loc:'Concepción', img:'https://picsum.photos/seed/mns-poles/500/500'},
-    {cat:'trekking', name:'Mochila Osprey Atmos AG 65L', price:210000, oldPrice:null, cond:'nuevo', seller:'TiendaAndes', loc:'Santiago', img:'https://picsum.photos/seed/mns-backpack1/500/500'},
-    {cat:'surf', name:'Tabla de surf shortboard 6\'2"', price:180000, oldPrice:240000, cond:'usado', seller:'Matías C.', loc:'Pichilemu', img:'https://picsum.photos/seed/mns-surfboard/500/500'},
-    {cat:'surf', name:'Traje de neopreno 3/2mm', price:75000, oldPrice:null, cond:'nuevo', seller:'SurfShop Sur', loc:'Concón', img:'https://picsum.photos/seed/mns-wetsuit/500/500'},
-    {cat:'pesca', name:'Caña de pescar spinning Shimano', price:32000, oldPrice:45000, cond:'usado', seller:'Pedro A.', loc:'Puerto Montt', img:'https://picsum.photos/seed/mns-rod/500/500'},
-    {cat:'pesca', name:'Kayak de pesca inflable', price:220000, oldPrice:null, cond:'nuevo', seller:'RíoSur', loc:'Valdivia', img:'https://picsum.photos/seed/mns-kayak/500/500'},
-    {cat:'ciclismo', name:'Bicicleta MTB rodado 29 Trek', price:450000, oldPrice:590000, cond:'usado', seller:'BikeStore', loc:'Santiago', img:'https://picsum.photos/seed/mns-mtb/500/500'},
-    {cat:'ciclismo', name:'Casco de ciclismo MET Trenta', price:58000, oldPrice:null, cond:'nuevo', seller:'BikeStore', loc:'Santiago', img:'https://picsum.photos/seed/mns-bike-helmet/500/500'},
-    {cat:'nieve', name:'Tabla de snowboard Burton Custom', price:270000, oldPrice:350000, cond:'usado', seller:'Andes Snow', loc:'Chillán', img:'https://picsum.photos/seed/mns-snowboard/500/500'},
-    {cat:'nieve', name:'Chaqueta técnica para nieve Columbia', price:85000, oldPrice:null, cond:'nuevo', seller:'Andes Snow', loc:'Chillán', img:'https://picsum.photos/seed/mns-skiwear/500/500'},
-    {cat:'navegacion', name:'GPS Garmin GPSMAP 66i', price:310000, oldPrice:null, cond:'nuevo', seller:'OutdoorPro', loc:'Concepción', img:'https://picsum.photos/seed/mns-gps/500/500'},
-    {cat:'navegacion', name:'Chaleco salvavidas náutico', price:29000, oldPrice:39000, cond:'usado', seller:'Marina Sur', loc:'Valparaíso', img:'https://picsum.photos/seed/mns-lifejacket/500/500'},
-    {cat:'servicios', name:'Arriendo kayak inflable — medio día', price:15000, unit:'/medio día', cond:'servicio', seller:'RíoSur Rentals', loc:'Valdivia', img:'https://picsum.photos/seed/mns-serv-kayak/500/500'},
-    {cat:'servicios', name:'Tour guiado Torres del Paine 3D/2N', price:180000, unit:'/persona', cond:'servicio', seller:'Andes Trek Tours', loc:'Puerto Natales', img:'https://picsum.photos/seed/mns-serv-tour/500/500'},
-    {cat:'servicios', name:'Arriendo bicicleta MTB — día completo', price:25000, unit:'/día', cond:'servicio', seller:'BikeStore', loc:'Santiago', img:'https://picsum.photos/seed/mns-serv-bike/500/500'},
-    {cat:'servicios', name:'Clase de escalada con guía certificado', price:45000, unit:'/persona', cond:'servicio', seller:'VertexGear', loc:'Santiago', img:'https://picsum.photos/seed/mns-serv-climb/500/500'},
-  ];
+  let PRODUCTS = [];
 
   let currentCat = 'all';
   let currentFilter = 'all';
@@ -897,13 +873,12 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
 
-  PRODUCTS = PRODUCTS.map((p, i) => ({ ...p, id: p.id || 's' + i, demo: true }));
   function cardHTML(p){
     const cond = ['nuevo','usado','servicio'].includes(p.cond) ? p.cond : 'usado';
     const isService = cond === 'servicio';
     const badgeLabel = isService ? 'SERVICIO' : (cond === 'nuevo' ? 'NUEVO' : 'USADO');
     return `
-      <div class="p-card" data-product-id="${esc(p.id)}" data-demo="${p.demo ? "1" : "0"}" role="link" tabindex="0" aria-label="Ver ${esc(p.name)}">
+      <div class="p-card" data-product-id="${esc(p.id)}" role="link" tabindex="0" aria-label="Ver ${esc(p.name)}">
         <div class="p-media">
           <span class="p-badge ${cond}">${badgeLabel}</span>
           <button class="p-fav" type="button" data-favorite="${esc(p.id)}" aria-label="Guardar ${esc(p.name)}" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg></button>
@@ -1083,14 +1058,11 @@
 <script type="module">
   import { watchUser, fetchApprovedListings, safeUrl, fetchFavoriteIds, toggleFavorite } from "./assets/firebase.js";
 
-  // true: mientras no haya publicaciones aprobadas reales, se muestran las de ejemplo.
-  // Ponlo en false cuando quieras lanzar el sitio solo con contenido real.
-  const SHOW_DEMO_WHEN_EMPTY = true;
+  // El catálogo público se alimenta exclusivamente desde publicaciones aprobadas en Firestore.
 
   function toProduct(l) {
     return {
       id: l.id,
-      demo: false,
       cat: l.category,
       name: l.title,
       price: l.price,
@@ -1106,11 +1078,10 @@
   (async () => {
     try {
       const list = await fetchApprovedListings();
-      if (list.length) window.setProducts(list.map(toProduct));
-      else if (!SHOW_DEMO_WHEN_EMPTY) window.setProducts([]);
+      window.setProducts(list.map(toProduct));
     } catch (err) {
-      // Si Firestore no responde, el sitio sigue mostrando el catálogo de ejemplo
       console.error('No se pudieron cargar las publicaciones:', err);
+      window.setProducts([]);
     }
   })();
 
@@ -1153,5 +1124,6 @@
       '<a href="cuenta/publicar.html" class="btn-primary" style="flex:1; justify-content:center;">Publicar</a>';
   });
 </script>
+<script src="assets/app.js"></script>
 </body>
 </html>
