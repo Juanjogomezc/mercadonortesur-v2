@@ -1120,7 +1120,6 @@
     try { const ids = new Set(await fetchFavoriteIds(currentUid)); document.querySelectorAll("[data-favorite]").forEach(btn => { const saved = ids.has(btn.dataset.favorite); btn.classList.toggle("is-favorite", saved); btn.setAttribute("aria-pressed", String(saved)); }); } catch (e) { console.warn("No se pudieron cargar favoritos", e); }
   };
   window.mnsToggleFavorite = async (id, button) => {
-    if (button.closest('.p-card')?.dataset.demo === "1") { alert("Este es un producto de demostración. Los favoritos están disponibles para publicaciones reales."); return; }
     if (!currentUid) { location.href = "auth/login.html?next=" + encodeURIComponent(location.pathname + location.search); return; }
     button.disabled = true;
     try {
