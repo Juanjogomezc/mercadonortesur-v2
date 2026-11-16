@@ -90,7 +90,7 @@ export function friendlyError(err) {
   };
   // Firebase puede entregar códigos Firestore con o sin el prefijo "firestore/".
   const rawCode = err && err.code ? String(err.code) : "";
-  const code = rawCode.replace(/^firestore\\//, "");
+  const code = rawCode.replace(/^firestore\//, "");
   if (code in map) return map[code];
   return "Ocurrió un error (" + (rawCode || "sin código") + "): " +
     ((err && err.message) || "desconocido");
