@@ -379,6 +379,7 @@ footer.site a{color:#D7DFD9;}
       <h1 id="mainTitle">Publicaciones pendientes de aprobación</h1>
       <div style="display:flex; align-items:center; gap:12px;">
         <span class="eyebrow" id="queueLabel"></span>
+        <button class="btn-outline-sm" id="importCatalogBtn" type="button" style="margin:0; display:none;">＋ Cargar catálogo institucional</button>
         <button class="btn-outline-sm" id="refreshBtn" type="button" style="margin:0; display:none;">↻ Actualizar</button>
       </div>
     </div>
@@ -414,9 +415,9 @@ footer.site a{color:#D7DFD9;}
             <option value="paused">Pausados</option>
           </select>
           <select id="activasType" class="sort-select">
-            <option value="all">Reales y demo</option>
-            <option value="real">Solo reales</option>
-            <option value="demo">Solo demo</option>
+            <option value="all">Todos los vendedores</option>
+            <option value="admin">Solo Mercado Norte Sur</option>
+            <option value="user">Solo usuarios</option>
           </select>
           <select id="activasSort" class="sort-select">
             <option value="recent">Ordenar por: más recientes</option>
@@ -426,8 +427,8 @@ footer.site a{color:#D7DFD9;}
         </div>
         <div class="stat-grid" style="margin-bottom:16px;">
           <div class="stat-box"><div class="num price" id="catalogTotal">0</div><div class="lbl">Productos en catálogo</div></div>
-          <div class="stat-box"><div class="num price" id="catalogReal">0</div><div class="lbl">Publicaciones reales</div></div>
-          <div class="stat-box"><div class="num price" id="catalogDemo">0</div><div class="lbl">Productos demo</div></div>
+          <div class="stat-box"><div class="num price" id="catalogReal">0</div><div class="lbl">Publicaciones de usuarios</div></div>
+          <div class="stat-box"><div class="num price" id="catalogAdmin">0</div><div class="lbl">Publicaciones de Mercado Norte Sur</div></div>
           <div class="stat-box"><div class="num price" id="catalogVisible">0</div><div class="lbl">Publicados / visibles</div></div>
         </div>
         <div class="table-scroll">
@@ -497,23 +498,16 @@ footer.site a{color:#D7DFD9;}
 <script type="module">
   import {
     watchUser, logout, fetchAllListings, fetchAllUsers, setListingStatus, setUserStatus,
-    removeListing, esc, safeUrl, ms, friendlyError
+    removeListing, importAdminCatalog, esc, safeUrl, ms, friendlyError
   } from "../assets/firebase.js";
   import { CAT_LABELS, computeReport, toCSV, reportRows } from "../assets/reports.js";
+  import { ADMIN_CATALOG } from "../assets/catalogo-admin.js";
 
   const $ = (id) => document.getElementById(id);
   const money = (n) => '$' + Number(n || 0).toLocaleString('es-CL');
   const catLabel = (k) => CAT_LABELS[k] || k || '—';
 
-  // Catálogo de demostración que ya se muestra en el sitio público (assets/app.js).
-  // Se presenta solo para consulta: no se mezcla con Firestore ni con métricas reales.
-  const demoListings = [["camping","Carpa Doite Kaiku 4 personas",89990,140000,"usado","Camila R.","Puerto Varas","tent1"],["camping","Saco de dormir Kelty -5°C",54990,null,"nuevo","TiendaAndes","Santiago","sleepingbag"],["camping","Cocinilla portátil MSR WhisperLite",38000,52000,"usado","Rodrigo P.","Temuco","stove"],["escalada","Arnés de escalada Black Diamond",42000,null,"nuevo","VertexGear","Santiago","harness"],["escalada","Cuerda dinámica 60m Mammut",95000,130000,"usado","Ignacio T.","Valdivia","rope"],["escalada","Casco de escalada Petzl Meteor",36000,null,"nuevo","VertexGear","Santiago","climb-helmet"],["trekking","Botas Salomon Quest 4D GTX 42",65000,120000,"usado","Ignacio T.","Valdivia","boots1"],["trekking","Bastones de trekking Black Diamond",28000,null,"nuevo","OutdoorPro","Concepción","poles"],["trekking","Mochila Osprey Atmos AG 65L",210000,null,"nuevo","TiendaAndes","Santiago","backpack1"],["surf","Tabla de surf shortboard 6'2",180000,240000,"usado","Matías C.","Pichilemu","surfboard"],["surf","Traje de neopreno 3/2mm",75000,null,"nuevo","SurfShop Sur","Concón","wetsuit"],["pesca","Caña de pescar spinning Shimano",32000,45000,"usado","Pedro A.","Puerto Montt","rod"],["pesca","Kayak de pesca inflable",220000,null,"nuevo","RíoSur","Valdivia","kayak"],["ciclismo","Bicicleta MTB rodado 29 Trek",450000,590000,"usado","BikeStore","Santiago","mtb"],["ciclismo","Casco de ciclismo MET Trenta",58000,null,"nuevo","BikeStore","Santiago","bike-helmet"],["nieve","Tabla de snowboard Burton Custom",270000,350000,"usado","Andes Snow","Chillán","snowboard"],["nieve","Chaqueta técnica para nieve Columbia",85000,null,"nuevo","Andes Snow","Chillán","skiwear"],["navegacion","GPS Garmin GPSMAP 66i",310000,null,"nuevo","OutdoorPro","Concepción","gps"],["navegacion","Chaleco salvavidas náutico",29000,39000,"usado","Marina Sur","Valparaíso","lifejacket"]].map((p, i) => ({
-    id: 's' + i, title: p[1], category: p[0], price: p[2], oldPrice: p[3],
-    condition: p[4], sellerName: p[5], location: p[6],
-    images: ['https://picsum.photos/seed/mns-' + p[7] + '/500/500'],
-    status: 'approved', createdAt: null, isDemo: true
-  }));
-  let listings = [], users = [];
+  let listings = [], users = [], adminUser = null, adminProfile = null;
   let activePanel = 'publicaciones';
   const charts = {};
 
@@ -635,17 +629,16 @@ footer.site a{color:#D7DFD9;}
     } catch (err) { showToast(friendlyError(err)); btn.disabled = false; }
   });
 
-  /* ---------- Catálogo completo: publicaciones reales + productos demo ---------- */
+  /* ---------- Catálogo real: publicaciones de usuarios y de Mercado Norte Sur ---------- */
   function renderActivas() {
     const q = $('activasSearch').value.toLowerCase().trim();
     const status = $('activasStatus').value;
     const type = $('activasType').value;
     const sort = $('activasSort').value;
-    const real = listings.map(l => ({...l, isDemo:false}));
-    const all = real.concat(demoListings);
+    const all = listings;
     $('catalogTotal').textContent = all.length;
-    $('catalogReal').textContent = real.length;
-    $('catalogDemo').textContent = demoListings.length;
+    $('catalogReal').textContent = all.filter(l => l.sellerType !== 'admin' && !l.adminCatalog).length;
+    $('catalogAdmin').textContent = all.filter(l => l.sellerType === 'admin' || l.adminCatalog).length;
     $('catalogVisible').textContent = all.filter(l => l.status === 'approved').length;
     let items = all.filter(l => {
       const title = l.title || '';
@@ -653,14 +646,15 @@ footer.site a{color:#D7DFD9;}
       const category = catLabel(l.category);
       const matchesQuery = !q || [title,seller,category,l.id].join(' ').toLowerCase().includes(q);
       const matchesStatus = status === 'all' || l.status === status;
-      const matchesType = type === 'all' || (type === 'demo' ? l.isDemo : !l.isDemo);
+      const isAdmin = l.sellerType === 'admin' || l.adminCatalog;
+      const matchesType = type === 'all' || (type === 'admin' ? isAdmin : !isAdmin);
       return matchesQuery && matchesStatus && matchesType;
     });
-    if (sort === 'recent') items.sort((a,b) => Number(b.isDemo)-Number(a.isDemo) || ms(b.createdAt)-ms(a.createdAt));
+    if (sort === 'recent') items.sort((a,b) => ms(b.createdAt)-ms(a.createdAt));
     if (sort === 'price') items.sort((a,b) => Number(b.price||0)-Number(a.price||0));
     if (sort === 'priceAsc') items.sort((a,b) => Number(a.price||0)-Number(b.price||0));
     $('emptyActivas').style.display = items.length ? 'none' : 'block';
-    $('emptyActivas').textContent = 'No hay productos que coincidan con los filtros seleccionados.';
+    $('emptyActivas').textContent = 'No hay publicaciones que coincidan con los filtros seleccionados.';
     $('activasBody').innerHTML = items.map(l => {
       const state = l.status || 'approved';
       const stateLabel = ({approved:'PUBLICADO',paused:'PAUSADO',pending:'PENDIENTE',rejected:'RECHAZADO'})[state] || state.toUpperCase();
@@ -668,19 +662,19 @@ footer.site a{color:#D7DFD9;}
       const image = safeUrl(l.images && l.images[0]);
       const product = '<div class="row-prod">' + (image ? '<img class="row-thumb" src="' + esc(image) + '" alt="">' : '<div class="row-thumb"></div>') +
         '<div><strong>' + esc(l.title || 'Sin título') + '</strong><div class="card-sub">ID: ' + esc(l.id) + '</div></div></div>';
-      const typeBadge = l.isDemo ? '<span class="badge revision">DEMO</span>' : '<span class="badge aprobado">REAL</span>';
-      const actions = l.isDemo
-        ? '<a class="btn-outline-sm" href="../producto.html?id=' + encodeURIComponent(l.id) + '" target="_blank" rel="noopener">Ver producto</a>'
-        : ((state === 'approved' || state === 'paused'
+      const isAdmin = l.sellerType === 'admin' || l.adminCatalog;
+      const typeBadge = isAdmin ? '<span class="badge aprobado">ADMIN</span>' : '<span class="badge">USUARIO</span>';
+      const actions = (state === 'approved' || state === 'paused'
           ? '<button class="btn-outline-sm ' + (state === 'paused' ? 'paused' : '') + '" data-act="toggle" data-id="' + esc(l.id) + '">' + (state === 'paused' ? 'Reactivar' : 'Pausar') + '</button>'
           : state === 'pending'
             ? '<button class="btn-approve btn-sm" data-act="approve" data-id="' + esc(l.id) + '">Aprobar</button>'
             : '<button class="btn-outline-sm" data-act="restore" data-id="' + esc(l.id) + '">Volver a revisión</button>') +
-          '<button class="btn-outline-sm" data-act="delete" data-id="' + esc(l.id) + '">Eliminar</button>');
+          '<a class="btn-outline-sm" href="../producto.html?id=' + encodeURIComponent(l.id) + '" target="_blank" rel="noopener">Ver</a>' +
+          '<button class="btn-outline-sm" data-act="delete" data-id="' + esc(l.id) + '">Eliminar</button>';
       return '<tr><td>' + product + '</td><td>' + typeBadge + '</td><td>' + esc(catLabel(l.category)) + '</td>' +
         '<td class="price">' + money(l.price) + '</td><td>' + esc(l.sellerName || '—') + '</td>' +
         '<td><span class="badge ' + stateClass + '">' + stateLabel + '</span></td>' +
-        '<td>' + (l.isDemo ? 'Catálogo de ejemplo' : ago(ms(l.createdAt))) + '</td><td style="white-space:nowrap;">' + actions + '</td></tr>';
+        '<td>' + ago(ms(l.createdAt)) + '</td><td style="white-space:nowrap;">' + actions + '</td></tr>';
     }).join('');
     updateLabel();
   }
@@ -812,6 +806,21 @@ footer.site a{color:#D7DFD9;}
     if (activePanel === 'reportes') renderReports();
   }
 
+  $('importCatalogBtn').addEventListener('click', async (e) => {
+    if (!confirm('Se cargarán los 23 artículos y servicios del catálogo institucional como publicaciones de Mercado Norte Sur. Los registros existentes no se modificarán. ¿Continuar?')) return;
+    const b = e.currentTarget; b.disabled = true;
+    try {
+      const result = await importAdminCatalog(ADMIN_CATALOG, adminUser, adminProfile);
+      await loadData();
+      showToast('Catálogo cargado: ' + result.created + ' nuevos, ' + result.skipped + ' ya existentes.');
+      activePanel = 'activas';
+      document.querySelectorAll('.admin-nav button').forEach(x => x.classList.toggle('active', x.dataset.panel === 'activas'));
+      document.querySelectorAll('.panel').forEach(x => x.classList.toggle('active', x.id === 'panel-activas'));
+      $('mainTitle').textContent = 'Publicaciones activas'; renderActivas();
+    } catch (err) { showToast(friendlyError(err)); }
+    b.disabled = false;
+  });
+
   $('refreshBtn').addEventListener('click', async (e) => {
     const b = e.currentTarget; b.disabled = true;
     try { await loadData(); showToast('Datos actualizados'); }
@@ -833,6 +842,7 @@ footer.site a{color:#D7DFD9;}
       gate.innerHTML = 'Esta sección es solo para administradores. <a href="../cuenta/dashboard.html" class="link-rust">Ir a mi cuenta</a>';
       return;
     }
+    adminUser = user; adminProfile = profile;
     try {
       await loadData();
     } catch (err) {
@@ -842,6 +852,7 @@ footer.site a{color:#D7DFD9;}
     gate.style.display = 'none';
     $('adminApp').style.display = 'block';
     $('refreshBtn').style.display = 'inline-block';
+    $('importCatalogBtn').style.display = 'inline-block';
   });
 </script>
 </body>
