@@ -379,6 +379,7 @@ footer.site a{color:#D7DFD9;}
       <h1 id="mainTitle">Publicaciones pendientes de aprobación</h1>
       <div style="display:flex; align-items:center; gap:12px;">
         <span class="eyebrow" id="queueLabel"></span>
+        <button class="btn-outline-sm" id="adminPhoneBtn" type="button" style="margin:0; display:none;">☎ WhatsApp institucional</button>
         <button class="btn-outline-sm" id="importCatalogBtn" type="button" style="margin:0; display:none;">＋ Cargar catálogo institucional</button>
         <button class="btn-outline-sm" id="refreshBtn" type="button" style="margin:0; display:none;">↻ Actualizar</button>
       </div>
@@ -498,7 +499,7 @@ footer.site a{color:#D7DFD9;}
 <script type="module">
   import {
     watchUser, logout, fetchAllListings, fetchAllUsers, setListingStatus, setUserStatus,
-    removeListing, importAdminCatalog, esc, safeUrl, ms, friendlyError
+    removeListing, importAdminCatalog, setAdminContactPhone, esc, safeUrl, ms, friendlyError
   } from "../assets/firebase.js";
   import { CAT_LABELS, computeReport, toCSV, reportRows } from "../assets/reports.js";
   import { ADMIN_CATALOG } from "../assets/catalogo-admin.js";
@@ -806,6 +807,18 @@ footer.site a{color:#D7DFD9;}
     if (activePanel === 'reportes') renderReports();
   }
 
+  $('adminPhoneBtn').addEventListener('click', async () => {
+    const current = adminProfile?.contactPhone || '';
+    const value = prompt('WhatsApp de Mercado Norte Sur con código de país (ejemplo: +56 9 1234 5678):', current);
+    if (value === null) return;
+    try {
+      const digits = await setAdminContactPhone(adminUser.uid, value);
+      adminProfile.contactPhone = digits;
+      showToast('WhatsApp institucional actualizado en las publicaciones del administrador.');
+      await loadData();
+    } catch (err) { showToast(friendlyError(err)); }
+  });
+
   $('importCatalogBtn').addEventListener('click', async (e) => {
     if (!confirm('Se cargarán los 23 artículos y servicios del catálogo institucional como publicaciones de Mercado Norte Sur. Los registros existentes no se modificarán. ¿Continuar?')) return;
     const b = e.currentTarget; b.disabled = true;
@@ -853,6 +866,7 @@ footer.site a{color:#D7DFD9;}
     $('adminApp').style.display = 'block';
     $('refreshBtn').style.display = 'inline-block';
     $('importCatalogBtn').style.display = 'inline-block';
+    $('adminPhoneBtn').style.display = 'inline-block';
   });
 </script>
 </body>
