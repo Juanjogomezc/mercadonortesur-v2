@@ -242,6 +242,41 @@ export function removeListing(id) {
 
 /* ---------- Administración (requiere role = "admin") ---------- */
 
+// Importación idempotente del catálogo institucional. Solo puede ejecutarla un administrador.
+export async function importAdminCatalog(items, user, profile) {
+  if (!user || !profile || profile.role !== "admin") throw new Error("Solo un administrador puede cargar el catálogo institucional.");
+  if (profile.status !== "approved") throw new Error("La cuenta administradora debe estar aprobada para importar publicaciones.");
+  let created = 0, skipped = 0;
+  for (const item of items) {
+    const listingRef = doc(db, "listings", item.id);
+    const existing = await getDoc(listingRef);
+    if (existing.exists()) { skipped++; continue; }
+    await setDoc(listingRef, {
+      title: item.title,
+      category: item.category,
+      condition: item.condition,
+      description: item.description,
+      price: Number(item.price),
+      oldPrice: item.oldPrice == null ? null : Number(item.oldPrice),
+      unit: item.unit || "",
+      location: item.location || "",
+      images: item.image ? [item.image] : [],
+      attributes: item.attributes || {},
+      sellerId: user.uid,
+      sellerName: "Mercado Norte Sur",
+      sellerType: "admin",
+      adminCatalog: true,
+      status: "pending",
+      rejectionReason: null,
+      createdAt: serverTimestamp(),
+      reviewedAt: null
+    });
+    await updateDoc(listingRef, { status: "approved", reviewedAt: serverTimestamp() });
+    created++;
+  }
+  return { created, skipped, total: items.length };
+}
+
 export async function fetchAllListings() {
   return mapDocs(await getDocs(collection(db, "listings")));
 }
