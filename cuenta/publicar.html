@@ -422,7 +422,7 @@ footer.site a{color:#1B1A17;}
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v5l3 3M12 22a10 10 0 100-20 10 10 0 000 20z"/></svg>
     </div>
     <h2>Tu publicación fue enviada a revisión</h2>
-    <div class="sub">Un administrador la revisará. Verás el resultado en tu panel, en "Mis publicaciones".</div>
+    <div class="sub" id="sentMessage">Un administrador la revisará. Verás el resultado en tu panel, en "Mis publicaciones".</div>
     <a href="dashboard.html" class="btn-primary">Volver a mi cuenta</a>
   </div>
 
@@ -431,7 +431,7 @@ footer.site a{color:#1B1A17;}
 
 <script type="module">
   import {
-    watchUser, createListing, resubmitListing, fetchListing, uploadListingImages, friendlyError, safeUrl, esc
+    watchUser, createListing, updateListingImages, resubmitListing, fetchListing, uploadListingImages, friendlyError, safeUrl, esc
   } from "../assets/firebase.js";
   import { CAT_LABELS } from "../assets/reports.js";
 
@@ -562,30 +562,58 @@ footer.site a{color:#1B1A17;}
 
   async function submit() {
     const btn = $('btnNext');
-    btn.disabled = true; btn.textContent = 'Guardando y enviando…'; showError('');
+    btn.disabled = true; btn.textContent = 'Guardando publicación…'; showError('');
     try {
-      let images = [];
-      if (files.length) {
-        try {
-          images = await uploadListingImages(me.uid, files);
-        } catch (err) {
-          const ok = confirm('No pudimos subir las fotos (' + friendlyError(err) + ').\n\n¿Quieres enviar la publicación sin fotos de todas formas?');
-          if (!ok) { btn.disabled = false; updateStepper(); return; }
-        }
-      }
       const form = readForm();
+      let imageWarning = '';
+
       if (editId) {
+        let images = [];
+        if (files.length) {
+          try {
+            images = await uploadListingImages(me.uid, files);
+          } catch (err) {
+            const ok = confirm('No pudimos subir las fotos (' + friendlyError(err) + ').\\n\\n¿Quieres reenviar la publicación conservando las fotos actuales?');
+            if (!ok) { btn.disabled = false; updateStepper(); return; }
+          }
+        }
         await resubmitListing(editId, form, images);
       } else {
-        // Se conserva el mismo ID durante los reintentos para no duplicar anuncios
-        // si Firebase alcanzó a guardar, pero el navegador perdió la respuesta.
-        await createListing(form, images, me, myProfile, getPendingCreateId());
+        // Primero crear el anuncio pendiente en Firestore. Las fotos nunca deben
+        // impedir que exista el registro del producto.
+        const listingId = await createListing(form, [], me, myProfile, getPendingCreateId());
         clearPendingCreateId();
+
+        if (files.length) {
+          btn.textContent = 'Publicación guardada · adjuntando fotos…';
+          const uploadTask = uploadListingImages(me.uid, files)
+            .then(urls => updateListingImages(listingId, urls))
+            .then(() => true)
+            .catch(err => {
+              console.error('La publicación se guardó, pero falló la carga de fotos:', err);
+              return err;
+            });
+
+          let timeoutId;
+          const result = await Promise.race([
+            uploadTask,
+            new Promise(resolve => { timeoutId = setTimeout(() => resolve('timeout'), 30000); })
+          ]);
+          clearTimeout(timeoutId);
+
+          if (result === 'timeout') {
+            imageWarning = 'Tu publicación ya quedó guardada y enviada a revisión. La carga de fotos está tardando más de lo esperado; si no aparecen, podrás agregarlas editando el anuncio.';
+          } else if (result !== true) {
+            imageWarning = 'Tu publicación ya quedó guardada y enviada a revisión, pero no se pudieron adjuntar las fotos (' + friendlyError(result) + '). Podrás agregarlas editando el anuncio.';
+          }
+        }
       }
+
       $('wizard').style.display = 'none';
       $('sentState').style.display = 'block';
+      $('sentMessage').textContent = imageWarning || 'Un administrador la revisará. Verás el resultado en tu panel, en "Mis publicaciones".';
     } catch (err) {
-      console.error('Error al enviar la publicación a revisión:', err);
+      console.error('Error al guardar la publicación:', err);
       showError(friendlyError(err) + ' Tus datos siguen en pantalla. Puedes corregir el problema e intentarlo nuevamente.');
       btn.disabled = false;
       updateStepper();
