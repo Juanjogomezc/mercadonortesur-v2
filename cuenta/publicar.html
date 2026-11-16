@@ -568,16 +568,26 @@ footer.site a{color:#1B1A17;}
       let imageWarning = '';
 
       if (editId) {
-        let images = [];
+        // Guardar primero los cambios y conservar fotos actuales: Storage no debe bloquear la edición.
+        await resubmitListing(editId, form, existingImages);
         if (files.length) {
-          try {
-            images = await uploadListingImages(me.uid, files);
-          } catch (err) {
-            const ok = confirm('No pudimos subir las fotos (' + friendlyError(err) + ').\\n\\n¿Quieres reenviar la publicación conservando las fotos actuales?');
-            if (!ok) { btn.disabled = false; updateStepper(); return; }
+          btn.textContent = 'Cambios guardados · adjuntando fotos…';
+          const uploadTask = uploadListingImages(me.uid, files)
+            .then(urls => updateListingImages(editId, urls))
+            .then(() => true)
+            .catch(err => { console.error('La edición se guardó, pero falló la carga de fotos:', err); return err; });
+          let timeoutId;
+          const result = await Promise.race([
+            uploadTask,
+            new Promise(resolve => { timeoutId = setTimeout(() => resolve('timeout'), 30000); })
+          ]);
+          clearTimeout(timeoutId);
+          if (result === 'timeout') {
+            imageWarning = 'Los cambios ya quedaron guardados y enviados a revisión. La carga de las nuevas fotos está tardando; si no aparecen, podrás agregarlas editando el anuncio.';
+          } else if (result !== true) {
+            imageWarning = 'Los cambios ya quedaron guardados y enviados a revisión, pero no se pudieron adjuntar las nuevas fotos (' + friendlyError(result) + '). Se conservaron las fotos anteriores.';
           }
         }
-        await resubmitListing(editId, form, images);
       } else {
         // Primero crear el anuncio pendiente en Firestore. Las fotos nunca deben
         // impedir que exista el registro del producto.
