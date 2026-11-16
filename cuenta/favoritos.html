@@ -16,4 +16,5 @@ watchUser(async user=>{
   grid.addEventListener("click",async e=>{const b=e.target.closest("[data-remove]");if(!b)return;b.disabled=true;try{await toggleFavorite(user.uid,b.dataset.remove);b.closest(".fav-card").remove();if(!grid.children.length){grid.innerHTML="";state.style.display="block";state.textContent="Todavía no tienes favoritos."}}catch(err){b.disabled=false;alert("No pudimos quitar el favorito.")}});
  }catch(e){state.textContent="No pudimos cargar tus favoritos. Revisa tu conexión e inténtalo nuevamente."}
 });
-</script></body></html>
+</script><script src="../assets/app.js"></script>
+</body></html>
