@@ -671,12 +671,12 @@ footer.site a{color:#D7DFD9;}
       const typeBadge = l.isDemo ? '<span class="badge revision">DEMO</span>' : '<span class="badge aprobado">REAL</span>';
       const actions = l.isDemo
         ? '<a class="btn-outline-sm" href="../producto.html?id=' + encodeURIComponent(l.id) + '" target="_blank" rel="noopener">Ver producto</a>'
-        : (state === 'approved' || state === 'paused'
+        : ((state === 'approved' || state === 'paused'
           ? '<button class="btn-outline-sm ' + (state === 'paused' ? 'paused' : '') + '" data-act="toggle" data-id="' + esc(l.id) + '">' + (state === 'paused' ? 'Reactivar' : 'Pausar') + '</button>'
           : state === 'pending'
             ? '<button class="btn-approve btn-sm" data-act="approve" data-id="' + esc(l.id) + '">Aprobar</button>'
             : '<button class="btn-outline-sm" data-act="restore" data-id="' + esc(l.id) + '">Volver a revisión</button>') +
-          '<button class="btn-outline-sm" data-act="delete" data-id="' + esc(l.id) + '">Eliminar</button>';
+          '<button class="btn-outline-sm" data-act="delete" data-id="' + esc(l.id) + '">Eliminar</button>');
       return '<tr><td>' + product + '</td><td>' + typeBadge + '</td><td>' + esc(catLabel(l.category)) + '</td>' +
         '<td class="price">' + money(l.price) + '</td><td>' + esc(l.sellerName || '—') + '</td>' +
         '<td><span class="badge ' + stateClass + '">' + stateLabel + '</span></td>' +
