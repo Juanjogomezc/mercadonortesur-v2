@@ -16,8 +16,8 @@
     --ink: #1B1A17;
     --ink-soft: #635E55;
     --ink-faint: #96907F;
-    --rust: #D2551F;
-    --rust-dark: #B5461A;
+    --rust: #27D3F5;
+    --rust-dark: #00AFCF;
     --forest: #223B2C;
     --forest-soft: #DCE6DD;
     --line: #E7E2D8;
@@ -54,14 +54,14 @@
 
   /* ---------- ANNOUNCEMENT BAR ---------- */
   .announce{
-    background:var(--forest);
-    color:#EDF3EE;
+    background:#27D3F5;
+    color:#1B1A17;
     font-size:12.5px;
     text-align:center;
     padding:7px 12px;
     letter-spacing:0.01em;
   }
-  .announce b{color:#fff;}
+   .announce b{color:#1B1A17;}
 
   /* ---------- HEADER ---------- */
   header{
@@ -104,18 +104,18 @@
   }
   .cart-dot{
     position:absolute; top:-6px; right:-9px;
-    background:var(--rust); color:#fff; font-size:9.5px; font-weight:700;
+    background:var(--rust); color:#1B1A17; font-size:9.5px; font-weight:700;
     width:15px; height:15px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
   }
   .btn-sell{
-    background:var(--rust); color:#fff; font-weight:700; font-size:13.5px;
+    background:var(--rust); color:#1B1A17; font-weight:700; font-size:13.5px;
     padding:10px 18px; border-radius:7px;
     display:flex; align-items:center; gap:7px;
     transition:background .15s ease;
     border:none; font-family:'Roboto',sans-serif;
   }
-  .btn-sell:hover{background:var(--rust-dark);}
+   .btn-sell:hover{background:var(--rust-dark); color:#1B1A17;}
 
   .cat-nav{
     border-top:1px solid var(--line);
@@ -134,11 +134,11 @@
 
   /* ---------- BUTTONS (reused across sections) ---------- */
   .btn-primary{
-    background:var(--rust); color:#fff; font-weight:700; font-size:14px;
+    background:var(--rust); color:#1B1A17; font-weight:700; font-size:14px;
     padding:12px 20px; border-radius:7px; display:inline-flex; align-items:center; gap:8px;
     border:none; font-family:'Roboto',sans-serif; cursor:pointer;
   }
-  .btn-primary:hover{background:var(--rust-dark);}
+   .btn-primary:hover{background:var(--rust-dark); color:#1B1A17;}
   .btn-ghost{
     background:transparent; color:var(--ink); font-weight:700; font-size:14px;
     padding:12px 20px; border-radius:7px; border:1.5px solid var(--ink); cursor:pointer;
@@ -169,7 +169,7 @@
     background:linear-gradient(0deg, rgba(10,12,8,0.78) 0%, rgba(10,12,8,0.42) 42%, rgba(10,12,8,0) 72%);
   }
   .hero-copy .eyebrow-pill{
-    display:inline-flex; align-items:center; gap:6px; background:var(--rust); color:#fff;
+    display:inline-flex; align-items:center; gap:6px; background:var(--rust); color:#1B1A17;
     font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
     padding:5px 11px; border-radius:5px;
   }
@@ -227,7 +227,7 @@
     text-align:center;
   }
   .cat-chip:hover{border-color:var(--rust); transform:translateY(-2px);}
-  .cat-chip.active{border-color:var(--rust); background:#FDF4EF;}
+  .cat-chip.active{border-color:var(--rust); background:#FFF4D9;}
   .cat-chip .ic{
     width:34px; height:34px; border-radius:8px;
     background:var(--bg-subtle);
@@ -276,7 +276,7 @@
   }
   .p-badge.usado{background:#EFE9DA; color:var(--ink-soft);}
   .p-badge.nuevo{background:var(--forest-soft); color:var(--forest);}
-  .p-badge.servicio{background:#FDE7DB; color:var(--rust-dark);}
+   .p-badge.servicio{background:#FFF0CC; color:#805300;}
   .p-fav{
     position:absolute; top:10px; right:10px; z-index:2;
     width:28px; height:28px; border-radius:50%;
@@ -524,7 +524,7 @@
     }
     #mobileFilterLabel{color:var(--rust);}
   }
-.p-card{cursor:pointer}.p-fav{position:absolute;top:12px;right:12px;cursor:pointer;z-index:3;border:0;background:#fff;border-radius:50%;width:34px;height:34px;display:grid;place-items:center;color:#635E55;box-shadow:0 2px 8px rgba(0,0,0,.12)}.p-fav.is-favorite{color:#D2551F}.p-fav.is-favorite svg{fill:#D2551F}.p-fav:focus-visible{outline:2px solid #D2551F;outline-offset:2px}</style>
+.p-card{cursor:pointer}.p-fav{position:absolute;top:12px;right:12px;cursor:pointer;z-index:3;border:0;background:#fff;border-radius:50%;width:34px;height:34px;display:grid;place-items:center;color:#635E55;box-shadow:0 2px 8px rgba(0,0,0,.12)}.p-fav.is-favorite{color:#27D3F5}.p-fav.is-favorite svg{fill:#D2551F}.p-fav:focus-visible{outline:2px solid #D2551F;outline-offset:2px}</style>
 </head>
 <body>
 
