@@ -262,6 +262,7 @@ export async function importAdminCatalog(items, user, profile) {
       location: item.location || "",
       images: item.image ? [item.image] : [],
       attributes: item.attributes || {},
+      contactPhone: String(profile.contactPhone || profile.whatsapp || profile.phone || "").replace(/\\D/g, ""),
       sellerId: user.uid,
       sellerName: "Mercado Norte Sur",
       sellerType: "admin",
@@ -275,6 +276,20 @@ export async function importAdminCatalog(items, user, profile) {
     created++;
   }
   return { created, skipped, total: items.length };
+}
+
+// Actualiza el WhatsApp institucional y las publicaciones que pertenecen a la cuenta admin.
+export async function setAdminContactPhone(uid, phone) {
+  const digits = String(phone || "").replace(/\\D/g, "");
+  if (digits.length < 10 || digits.length > 15) throw new Error("Ingresa un WhatsApp con código de país válido (por ejemplo, +56 9 1234 5678).");
+  await updateDoc(doc(db, "users", uid), { contactPhone: digits });
+  const own = await getDocs(query(collection(db, "listings"), where("sellerId", "==", uid)));
+  for (const item of own.docs) {
+    if (item.data().sellerType === "admin" || item.data().adminCatalog) {
+      await updateDoc(item.ref, { contactPhone: digits });
+    }
+  }
+  return digits;
 }
 
 export async function fetchAllListings() {
