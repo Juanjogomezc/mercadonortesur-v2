@@ -21,11 +21,11 @@
   --ink: #1B1A17;
   --ink-soft: #635E55;
   --ink-faint: #96907F;
-  --rust: #D2551F;
-  --rust-dark: #B5461A;
-  --rust-soft: #FBE9DE;
-  --forest: #223B2C;
-  --forest-soft: #DCE6DD;
+  --rust: #27D3F5;
+  --rust-dark: #00AFCF;
+  --rust-soft: #E8FAFE;
+  --forest: #F5AD27;
+  --forest-soft: #FFF0C2;
   --amber: #9A6B12;
   --amber-soft: #FBEED2;
   --red: #B3261E;
@@ -90,7 +90,7 @@ header.site{
 .header-actions{display:flex; align-items:center; gap:18px; flex-shrink:0;}
 .icon-btn{display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; color:var(--ink); position:relative;}
 .cart-dot{
-  position:absolute; top:-6px; right:-9px; background:var(--rust); color:#fff;
+  position:absolute; top:-6px; right:-9px; background:var(--rust); color:#1B1A17;
   font-size:9.5px; font-weight:700; width:15px; height:15px; border-radius:50%;
   display:flex; align-items:center; justify-content:center;
 }
@@ -102,7 +102,7 @@ header.site{
   border:1px solid var(--line); border-radius:100px; background:#fff;
 }
 .avatar{
-  width:26px; height:26px; border-radius:50%; background:var(--forest); color:#fff;
+  width:26px; height:26px; border-radius:50%; background:var(--forest); color:#1B1A17;
   display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;
 }
 .avatar-name{font-size:13px; font-weight:600;}
@@ -131,7 +131,7 @@ header.site{
 
 /* ---------- BUTTONS ---------- */
 .btn-primary, .btn-sell{
-  background:var(--rust); color:#fff; font-weight:700; font-size:13.5px;
+  background:var(--rust); color:#1B1A17; font-weight:700; font-size:13.5px;
   padding:11px 18px; border-radius:7px; display:inline-flex; align-items:center; gap:8px;
   border:none; cursor:pointer; transition:background .15s ease;
 }
@@ -152,7 +152,7 @@ header.site{
   padding:9px 14px; border-radius:7px; border:none; cursor:pointer;
 }
 .btn-approve{
-  background:var(--forest); color:#fff; font-weight:700; font-size:13px;
+  background:var(--forest); color:#1B1A17; font-weight:700; font-size:13px;
   padding:9px 14px; border-radius:7px; border:none; cursor:pointer;
 }
 .btn-sm{padding:7px 12px; font-size:12.5px;}
@@ -163,10 +163,10 @@ header.site{
   display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700;
   font-family:'Roboto',sans-serif; padding:4px 9px; border-radius:5px; letter-spacing:0.02em;
 }
-.badge.aprobado{background:var(--forest-soft); color:var(--forest);}
+.badge.aprobado{background:var(--forest-soft); color:#1B1A17;}
 .badge.revision{background:var(--amber-soft); color:var(--amber);}
 .badge.rechazado{background:var(--red-soft); color:var(--red);}
-.badge.nuevo{background:var(--forest-soft); color:var(--forest);}
+.badge.nuevo{background:var(--forest-soft); color:#1B1A17;}
 .badge.usado{background:#EFE9DA; color:var(--ink-soft);}
 
 /* ---------- CARDS / TABLE / TABS ---------- */
@@ -223,21 +223,21 @@ table.data-table{width:100%; border-collapse:collapse; font-size:13.5px;}
 .pill-toggle button{
   flex:1; padding:10px; font-size:13px; font-weight:600; border:none; background:#fff; color:var(--ink-soft); cursor:pointer;
 }
-.pill-toggle button.on{background:var(--ink); color:#fff;}
+.pill-toggle button.on{background:var(--ink); color:#1B1A17;}
 
 /* ---------- TOAST ---------- */
 .toast{
   position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
-  background:var(--ink); color:#fff; padding:12px 20px; border-radius:8px; font-size:13.5px; font-weight:600;
+  background:var(--ink); color:#1B1A17; padding:12px 20px; border-radius:8px; font-size:13.5px; font-weight:600;
   opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:200;
   display:flex; align-items:center; gap:10px;
 }
 .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
 /* ---------- FOOTER ---------- */
-footer.site{background:var(--forest); color:#D7DFD9; padding:40px 0 24px; margin-top:60px;}
-footer.site .wrap{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#8A968E; flex-wrap:wrap; gap:10px;}
-footer.site a{color:#D7DFD9;}
+footer.site{background:var(--forest); color:#1B1A17; padding:40px 0 24px; margin-top:60px;}
+footer.site .wrap{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#51401F; flex-wrap:wrap; gap:10px;}
+footer.site a{color:#1B1A17;}
 
 @media (max-width:960px){
   .stat-grid{grid-template-columns:repeat(2,1fr);}
