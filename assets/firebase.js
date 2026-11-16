@@ -88,27 +88,39 @@ export function friendlyError(err) {
     "storage/unknown": "No se pudieron subir las fotos (¿Storage está activado en Firebase?).",
     "storage/retry-limit-exceeded": "La subida de fotos tardó demasiado. Inténtalo de nuevo."
   };
-  if (err && err.code in map) return map[err.code];
-  return "Ocurrió un error: " + ((err && (err.code || err.message)) || "desconocido");
+  // Firebase puede entregar códigos Firestore con o sin el prefijo "firestore/".
+  const rawCode = err && err.code ? String(err.code) : "";
+  const code = rawCode.replace(/^firestore\\//, "");
+  if (code in map) return map[code];
+  return "Ocurrió un error (" + (rawCode || "sin código") + "): " +
+    ((err && err.message) || "desconocido");
 }
 
 /* ---------- Autenticación ---------- */
 
 export async function ensureUserDoc(user, extra = {}) {
   const refDoc = doc(db, "users", user.uid);
-  const snap = await getDoc(refDoc);
-  if (snap.exists()) return snap.data();
-  const data = {
-    name: extra.name || user.displayName || (user.email || "").split("@")[0] || "Usuario",
-    email: user.email || "",
-    photoURL: user.photoURL || "",
-    provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || "password",
-    role: "user",
-    status: "pending",
-    createdAt: serverTimestamp()
-  };
-  await setDoc(refDoc, data);
-  return { ...data, createdAt: null };
+  try {
+    const snap = await getDoc(refDoc);
+    if (snap.exists()) return snap.data();
+
+    const data = {
+      name: extra.name || user.displayName || (user.email || "").split("@")[0] || "Usuario",
+      email: user.email || "",
+      photoURL: user.photoURL || "",
+      provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || "password",
+      role: "user",
+      status: "pending",
+      createdAt: serverTimestamp()
+    };
+    await setDoc(refDoc, data);
+    return { ...data, createdAt: null };
+  } catch (err) {
+    console.error("[Mercado Norte Sur] No se pudo leer/crear el perfil en Firestore", {
+      uid: user.uid, code: err && err.code, message: err && err.message
+    });
+    throw err;
+  }
 }
 
 export async function registerWithEmail(name, email, password) {
