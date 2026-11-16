@@ -6,11 +6,12 @@
 main.wrap{padding-top:30px;padding-bottom:70px}.product-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:42px;align-items:start}.product-photo{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;background:var(--bg-subtle)}
 .product-info{position:sticky;top:24px}.product-title{font-size:32px;line-height:1.15;margin:8px 0 14px}.product-price{font-size:32px;margin:12px 0}.product-meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.product-tag{padding:6px 10px;border-radius:20px;background:var(--bg-subtle);font-size:12px;color:var(--ink-soft)}
 .seller-card{border:1px solid var(--line);border-radius:10px;padding:16px;margin:22px 0}.seller-row{display:flex;align-items:center;gap:12px}.seller-avatar{width:42px;height:42px;border-radius:50%;background:var(--forest-soft);display:grid;place-items:center;color:var(--forest);font-weight:700}
-.product-actions{display:grid;gap:10px;margin-top:18px}.contact-btn{display:flex;justify-content:center;align-items:center;gap:9px;background:#223B2C;color:white;border-radius:8px;padding:14px 18px;font-weight:700}.favorite-btn{display:flex;justify-content:center;align-items:center;gap:9px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:13px 18px;font-weight:700;cursor:pointer}.favorite-btn.is-favorite{color:var(--rust);border-color:var(--rust);background:var(--rust-soft)}
+.product-actions{display:grid;gap:10px;margin-top:18px}.contact-btn{display:flex;justify-content:center;align-items:center;gap:9px;background:#223B2C;color:white;border-radius:8px;padding:14px 18px;font-weight:700}.add-cart-btn{display:flex;justify-content:center;align-items:center;gap:9px;background:var(--rust);color:#fff;border:0;border-radius:8px;padding:14px 18px;font-weight:700;cursor:pointer}.add-cart-btn:hover{background:var(--rust-dark)}.add-cart-btn:disabled{opacity:.7;cursor:default}
+.favorite-btn{display:flex;justify-content:center;align-items:center;gap:9px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:13px 18px;font-weight:700;cursor:pointer}.favorite-btn.is-favorite{color:var(--rust);border-color:var(--rust);background:var(--rust-soft)}
 .description{line-height:1.7;color:var(--ink-soft);white-space:pre-line}.notice{padding:12px;border-radius:8px;background:var(--bg-subtle);color:var(--ink-soft);font-size:13px;margin-top:12px}
 @media(max-width:760px){.product-layout{grid-template-columns:1fr;gap:22px}.product-info{position:static}.product-title{font-size:26px}.bar nav{gap:10px;font-size:12px}main.wrap{padding-top:18px}}
 </style></head><body>
-<div class="bar"><div class="wrap"><a class="logo" href="index.html"><span class="logo-mark"></span>Mercado Norte Sur</a><nav><a href="index.html">Comprar</a><a href="cuenta/favoritos.html">Favoritos</a><a href="cuenta/dashboard.html">Mi cuenta</a></nav></div></div>
+<div class="bar"><div class="wrap"><a class="logo" href="index.html"><span class="logo-mark"></span>Mercado Norte Sur</a><nav><a href="index.html">Comprar</a><a href="cuenta/favoritos.html">Favoritos</a><a href="cuenta/carrito.html">Carrito <span class="cart-dot">0</span></a><a href="cuenta/dashboard.html">Mi cuenta</a></nav></div></div>
 <main class="wrap" id="app"><div class="empty-state">Cargando publicación…</div></main>
 <script src="assets/app.js"></script>
 <script type="module">
@@ -30,8 +31,13 @@ function render(p,demo=false){
  <div class="product-meta"><span class="product-tag">${condition==="nuevo"?"Nuevo":condition==="servicio"?"Servicio":"Usado"}</span><span class="product-tag">${esc(loc||"Ubicación no indicada")}</span>${demo?'<span class="product-tag">Producto de ejemplo</span>':""}</div>
  <div class="seller-card"><div class="seller-row"><div class="seller-avatar">${esc((seller||"V").slice(0,1).toUpperCase())}</div><div><strong>${esc(seller||"Vendedor")}</strong><div style="font-size:12px;color:var(--ink-soft);margin-top:3px">Vendedor en Mercado Norte Sur</div></div></div></div>
  <div class="product-actions">${whatsapp?'<a class="contact-btn" target="_blank" rel="noopener" href="'+whatsapp+'">◉ Contactar por WhatsApp</a>':'<div class="notice">'+(demo?'Producto demostrativo: no permite contactar a un vendedor.':'El vendedor aún no ha registrado un WhatsApp de contacto. Pídele que actualice su publicación.')+'</div>'}
- <button id="favoriteBtn" class="favorite-btn" type="button">♡ Guardar en favoritos</button></div></div></div>`;
+ <button id="addCartBtn" class="add-cart-btn" type="button">＋ Agregar al carrito</button><button id="favoriteBtn" class="favorite-btn" type="button">♡ Guardar en favoritos</button></div></div></div>`;
  syncFavoriteButton();
+ const addButton=document.getElementById("addCartBtn");
+ addButton.addEventListener("click",()=>{
+   const added=MNS.addToCart({id,name,price:p.price,image,seller,category,location:loc});
+   if(added){addButton.textContent="✓ Agregado al carrito";addButton.disabled=true;setTimeout(()=>{addButton.textContent="＋ Agregar al carrito";addButton.disabled=false},1300)}
+ });
  document.getElementById("favoriteBtn").addEventListener("click",async()=>{
    if(!uid){location.href="auth/login.html?next="+encodeURIComponent(location.pathname+location.search);return}
    const b=document.getElementById("favoriteBtn");b.disabled=true;

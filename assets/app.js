@@ -30,6 +30,16 @@ const MNS = (() => {
   let db; try { db = JSON.parse(localStorage.getItem(K)); } catch (e) {}
   db = db || { users: [], me: null, listings: [], orders: [] };
   const save = () => { try { localStorage.setItem(K, JSON.stringify(db)); } catch (e) {} };
+  const CART_KEY = 'mns_cart';
+  const readCart = () => { try { const value = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); return Array.isArray(value) ? value : []; } catch (e) { return []; } };
+  const writeCart = items => { try { localStorage.setItem(CART_KEY, JSON.stringify(items)); } catch (e) {} window.dispatchEvent(new Event('mns:cart-updated')); };
+  const cartCount = () => readCart().reduce((sum, item) => sum + Math.max(1, Number(item.qty) || 1), 0);
+  const refreshCartBadge = () => {
+    const count = cartCount();
+    document.querySelectorAll('.cart-dot').forEach(dot => { dot.textContent = count; dot.style.display = count ? '' : 'none'; });
+    document.querySelectorAll('[data-cart-link]').forEach(link => link.href = (link.dataset.cartBase || '') + 'cuenta/carrito.html');
+    return count;
+  };
   const money = n => '$' + n.toLocaleString('es-CL');
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const cleanRut = (s = '') => { const c = s.replace(/[^0-9kK]/g, '').toUpperCase(); return c.length < 2 ? '' : c.slice(0, -1) + '-' + c.slice(-1); };
@@ -46,6 +56,30 @@ const MNS = (() => {
   const find = id => all().find(p => p.id === id);
   return {
     money, me, catalog, find, validRut, db: () => db,
+    getCart: readCart, cartCount, refreshCartBadge,
+    addToCart(product) {
+      if (!product || !product.id) return false;
+      const items = readCart(), existing = items.find(item => item.id === product.id);
+      if (existing) existing.qty = Math.min(99, (Number(existing.qty) || 1) + 1);
+      else items.push({ id: String(product.id), qty: 1, snapshot: {
+        name: product.name || product.title || 'Producto',
+        price: Number(product.price) || 0,
+        image: product.image || product.img || (Array.isArray(product.images) ? product.images[0] : ''),
+        seller: product.seller || product.sellerName || 'Vendedor',
+        category: product.category || product.cat || '',
+        location: product.location || product.loc || ''
+      }});
+      writeCart(items); return true;
+    },
+    updateCartQuantity(id, qty) {
+      const items = readCart(), item = items.find(row => row.id === id);
+      if (!item) return;
+      const amount = Math.floor(Number(qty));
+      if (!Number.isFinite(amount) || amount < 1) return this.removeFromCart(id);
+      item.qty = Math.min(99, amount); writeCart(items);
+    },
+    removeFromCart(id) { writeCart(readCart().filter(item => item.id !== id)); },
+    clearCart() { writeCart([]); },
     register(f) {
       const email = f.email.trim().toLowerCase(), rut = cleanRut(f.rut);
       if (!f.name.trim()) return 'Escribe tu nombre.';
@@ -85,9 +119,15 @@ const MNS = (() => {
             dot = document.querySelector('.cart-dot'), cart = dot && dot.parentElement;
       if (u) {
         reg.href = base + 'cuenta/dashboard.html'; reg.querySelector('.lbl-text').textContent = u.name.split(' ')[0];
-        sell.href = base + 'cuenta/publicar.html'; cart.href = base + 'cuenta/pedidos.html';
-        const n = this.myOrders().length; dot.textContent = n; dot.style.display = n ? '' : 'none';
-      } else { dot.style.display = 'none'; }
+        sell.href = base + 'cuenta/publicar.html'; cart.href = base + 'cuenta/carrito.html';
+        this.refreshCartBadge();
+      } else { this.refreshCartBadge(); }
     }
   };
 })();
+
+
+// Mantiene sincronizado el contador del carrito en todas las páginas.
+window.addEventListener('mns:cart-updated', () => MNS.refreshCartBadge());
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => MNS.refreshCartBadge());
+else MNS.refreshCartBadge();
