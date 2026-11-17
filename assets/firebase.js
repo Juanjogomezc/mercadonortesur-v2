@@ -122,6 +122,10 @@ export function friendlyError(err) {
     "unavailable": "No pudimos conectar con el servidor. Inténtalo de nuevo.",
     "storage/unauthorized": "No se pudieron subir las fotos (permisos de Storage).",
     "storage/unknown": "No se pudieron subir las fotos (¿Storage está activado en Firebase?).",
+    "storage/bucket-not-found": "No encontramos el almacenamiento de fotografías. Revisa el bucket configurado en Firebase.",
+    "storage/unauthenticated": "Tu sesión venció. Inicia sesión nuevamente para subir fotografías.",
+    "storage/quota-exceeded": "Se alcanzó el límite de almacenamiento de Firebase.",
+    "storage/object-not-found": "No encontramos una de las fotografías solicitadas.",
     "storage/retry-limit-exceeded": "La subida de fotos tardó demasiado. Inténtalo de nuevo."
   };
   if (err && err.code in map) return map[err.code];
