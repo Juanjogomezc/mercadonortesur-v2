@@ -59,7 +59,7 @@ export function safeUrl(u) {
 
 // Normaliza formatos históricos de imágenes y resuelve rutas de Firebase Storage.
 // Admite arrays de URL, objetos {url/src/downloadURL/path} y campos heredados.
-export async function resolveListingImages(listing) {
+export async function resolveListingImages(listing, maxImages = 4) {
   if (!listing || typeof listing !== "object") return [];
   const candidates = [];
   for (const field of ["images", "photos", "imageUrls", "pictures"]) {
@@ -68,7 +68,7 @@ export async function resolveListingImages(listing) {
   for (const field of ["imageUrl", "image", "photo", "thumbnail"]) {
     if (listing[field]) candidates.push(listing[field]);
   }
-  const resolved = await Promise.all(candidates.map(async item => {
+  const resolved = await Promise.all(candidates.slice(0, Math.max(1, Number(maxImages) || 4)).map(async item => {
     const value = typeof item === "string" ? item : (
       item && typeof item === "object"
         ? (item.url || item.downloadURL || item.downloadUrl || item.src || item.imageUrl || item.fullPath || item.path || "")
@@ -390,8 +390,14 @@ export async function resubmitListing(id, form, images, user = null, profile = n
   await updateDoc(doc(db, "listings", id), data);
 }
 
-export function removeListing(id) {
-  return deleteDoc(doc(db, "listings", id));
+export async function removeListing(id) {
+  const listingRef = doc(db, "listings", id);
+  const snap = await getDoc(listingRef);
+  if (!snap.exists()) return;
+  const images = await resolveListingImages(snap.data()).catch(() => []);
+  await deleteDoc(listingRef);
+  // La publicación se elimina aunque Storage tenga algún archivo inaccesible.
+  if (images.length) await deleteListingImageUrls(images);
 }
 
 /* ---------- Administración (requiere role = "admin") ---------- */
