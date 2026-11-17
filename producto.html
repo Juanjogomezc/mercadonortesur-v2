@@ -48,7 +48,7 @@ function contactState(){
 }
 async function render(p){
  listing=p;
- const images=await resolveListingImages(p);
+ const images=await resolveListingImages(p, 4);
  const image=images[0]||"";
  const attrs=p.attributes&&typeof p.attributes==="object"?p.attributes:{};
  const seller=p.sellerName||"Vendedor";
