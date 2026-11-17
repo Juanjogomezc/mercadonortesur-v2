@@ -57,6 +57,36 @@ export function safeUrl(u) {
   return typeof u === "string" && /^https:\/\//i.test(u) ? u : "";
 }
 
+// Normaliza formatos históricos de imágenes y resuelve rutas de Firebase Storage.
+// Admite arrays de URL, objetos {url/src/downloadURL/path} y campos heredados.
+export async function resolveListingImages(listing) {
+  if (!listing || typeof listing !== "object") return [];
+  const candidates = [];
+  for (const field of ["images", "photos", "imageUrls", "pictures"]) {
+    if (Array.isArray(listing[field])) candidates.push(...listing[field]);
+  }
+  for (const field of ["imageUrl", "image", "photo", "thumbnail"]) {
+    if (listing[field]) candidates.push(listing[field]);
+  }
+  const resolved = await Promise.all(candidates.map(async item => {
+    const value = typeof item === "string" ? item : (
+      item && typeof item === "object"
+        ? (item.url || item.downloadURL || item.downloadUrl || item.src || item.imageUrl || item.fullPath || item.path || "")
+        : ""
+    );
+    if (typeof value !== "string" || !value.trim()) return "";
+    const raw = value.trim();
+    if (/^https:\/\//i.test(raw)) return raw;
+    if (/^(gs:\/\/|listings\/)/i.test(raw)) {
+      try { return await getDownloadURL(ref(storage, raw)); } catch (error) {
+        console.warn("No se pudo resolver una fotografía de Storage:", raw, error);
+      }
+    }
+    return "";
+  }));
+  return [...new Set(resolved.filter(Boolean))];
+}
+
 export function ms(ts) {
   if (!ts) return 0;
   if (typeof ts.toMillis === "function") return ts.toMillis();
@@ -227,8 +257,10 @@ export async function uploadListingImages(uid, files) {
   // El formulario admite hasta 4 fotos: procesarlas y subirlas en paralelo
   // reduce la espera frente a la subida secuencial.
   const tasks = files.map(async (file, index) => {
-    if (!file || !String(file.type || "").startsWith("image/")) {
-      throw new Error("Uno de los archivos no es una imagen válida.");
+    const mime = String(file?.type || "").toLowerCase();
+    const filename = String(file?.name || "").toLowerCase();
+    if (!file || (!["image/jpeg", "image/png"].includes(mime) && !/\\.(jpe?g|png)$/.test(filename))) {
+      throw new Error("Solo puedes subir fotografías JPG, JPEG o PNG.");
     }
     const blob = await resizeImage(file);
     if (blob.size >= 3 * 1024 * 1024) {
