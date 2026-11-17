@@ -173,14 +173,24 @@ export async function registerWithEmail(name, email, password) {
 
 export async function loginWithEmail(email, password) {
   const cred = await signInWithEmailAndPassword(auth, email, password);
-  const profile = await ensureUserDoc(cred.user);
-  return { user: cred.user, profile };
+  try {
+    const profile = await ensureUserDoc(cred.user);
+    return { user: cred.user, profile };
+  } catch (error) {
+    await signOut(auth).catch(() => {});
+    throw error;
+  }
 }
 
 export async function loginWithGoogle() {
   const cred = await signInWithPopup(auth, googleProvider);
-  const profile = await ensureUserDoc(cred.user);
-  return { user: cred.user, profile };
+  try {
+    const profile = await ensureUserDoc(cred.user);
+    return { user: cred.user, profile };
+  } catch (error) {
+    await signOut(auth).catch(() => {});
+    throw error;
+  }
 }
 
 export function resetPassword(email) {
@@ -275,7 +285,7 @@ async function resizeImage(file, maxSide = 1200) {
 }
 
 // Subida tolerante a fallos: valida cada archivo, limita peso y reintenta errores transitorios.
-export async function uploadListingImages(uid, files) {
+export async function uploadListingImages(uid, files, onProgress = null) {
   if (!uid) throw new Error("Inicia sesión para subir fotografías.");
   if (!Array.isArray(files) || !files.length) return [];
 
@@ -323,7 +333,12 @@ export async function uploadListingImages(uid, files) {
   });
 
   // Espera todas las subidas y limpia los archivos parciales si alguna foto falla.
-  const results = await Promise.allSettled(tasks);
+  let completed = 0;
+  const trackedTasks = tasks.map(task => task.finally(() => {
+    completed++;
+    if (typeof onProgress === "function") onProgress(completed, files.length);
+  }));
+  const results = await Promise.allSettled(trackedTasks);
   const failed = results.find(result => result.status === "rejected");
   if (failed) {
     await Promise.allSettled(uploadedRefs.map(fileRef => deleteObject(fileRef)));
