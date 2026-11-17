@@ -279,7 +279,8 @@ async function resizeImage(file, maxSide = 1200) {
       ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
       for (const quality of [0.82, 0.72, 0.62, 0.52, 0.42]) {
-        const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error("No se pudo procesar la imagen")), "image/jpeg", quality));
+        // WebP reduce el peso; los navegadores sin soporte entregan PNG/JPEG como fallback.
+        const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error("No se pudo procesar la imagen")), "image/webp", quality));
         if (blob.size <= 2.5 * 1024 * 1024) return blob;
       }
       side = Math.round(side * 0.78);
@@ -309,13 +310,14 @@ export async function uploadListingImages(uid, files, onProgress = null) {
     const unique = (globalThis.crypto && crypto.randomUUID)
       ? crypto.randomUUID()
       : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
-    const storageRef = ref(storage, "listings/" + uid + "/" + unique + "-" + index + ".jpg");
+    const extension = blob.type === "image/webp" ? "webp" : (blob.type === "image/png" ? "png" : "jpg");
+    const storageRef = ref(storage, "listings/" + uid + "/" + unique + "-" + index + "." + extension);
 
     let lastError;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         await uploadBytes(storageRef, blob, {
-          contentType: "image/jpeg",
+          contentType: blob.type || "image/jpeg",
           cacheControl: "public,max-age=31536000"
         });
         uploadedRefs.push(storageRef);
