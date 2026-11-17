@@ -445,7 +445,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
 
 <script type="module">
   import {
-    watchUser, createListing, updateListingImages, resubmitListing, fetchListing, uploadListingImages, friendlyError, safeUrl, esc
+    watchUser, createListing, updateListingImages, resubmitListing, fetchListing, uploadListingImages, deleteListingImageUrls, friendlyError, safeUrl, esc
   } from "../assets/firebase.js";
   import { CAT_LABELS } from "../assets/reports.js";
 
@@ -603,67 +603,33 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
   async function submit() {
     const btn = $('btnNext');
     btn.disabled = true; btn.textContent = 'Guardando publicación…'; showError('');
+    let uploadedUrls = [];
     try {
       const form = readForm();
-      let imageWarning = '';
+
+      // Las fotos se suben y verifican antes de escribir Firestore.
+      // Así nunca se crea una publicación nueva con images vacío por una subida fallida.
+      if (files.length) {
+        btn.textContent = 'Subiendo y verificando fotografías…';
+        uploadedUrls = await uploadListingImages(me.uid, files);
+      }
 
       if (editId) {
-        // Guardar primero los cambios y conservar fotos actuales: Storage no debe bloquear la edición.
-        await resubmitListing(editId, form, existingImages, me, myProfile);
-        if (files.length) {
-          btn.textContent = 'Cambios guardados · adjuntando fotos…';
-          const uploadTask = uploadListingImages(me.uid, files)
-            .then(urls => updateListingImages(editId, existingImages.concat(urls)))
-            .then(() => true)
-            .catch(err => { console.error('La edición se guardó, pero falló la carga de fotos:', err); return err; });
-          let timeoutId;
-          const result = await Promise.race([
-            uploadTask,
-            new Promise(resolve => { timeoutId = setTimeout(() => resolve('timeout'), 30000); })
-          ]);
-          clearTimeout(timeoutId);
-          if (result === 'timeout') {
-            imageWarning = myProfile.role === 'admin'
-              ? 'Los cambios ya están publicados. La carga de las nuevas fotos está tardando; si no aparecen, podrás agregarlas editando el anuncio.'
-              : 'Los cambios ya quedaron guardados y enviados a revisión. La carga de las nuevas fotos está tardando; si no aparecen, podrás agregarlas editando el anuncio.';
-          } else if (result !== true) {
-            imageWarning = myProfile.role === 'admin'
-              ? 'Los cambios ya están publicados, pero no se pudieron adjuntar las nuevas fotos (' + friendlyError(result) + '). Se conservaron las fotos anteriores.'
-              : 'Los cambios ya quedaron guardados y enviados a revisión, pero no se pudieron adjuntar las nuevas fotos (' + friendlyError(result) + '). Se conservaron las fotos anteriores.';
-          }
+        btn.textContent = 'Guardando cambios…';
+        try {
+          await resubmitListing(editId, form, existingImages.concat(uploadedUrls), me, myProfile);
+        } catch (err) {
+          if (uploadedUrls.length) await deleteListingImageUrls(uploadedUrls);
+          throw err;
         }
       } else {
-        // Primero crear el anuncio pendiente en Firestore. Las fotos nunca deben
-        // impedir que exista el registro del producto.
-        const listingId = await createListing(form, [], me, myProfile, getPendingCreateId());
-        clearPendingCreateId();
-
-        if (files.length) {
-          btn.textContent = 'Publicación guardada · adjuntando fotos…';
-          const uploadTask = uploadListingImages(me.uid, files)
-            .then(urls => updateListingImages(listingId, urls))
-            .then(() => true)
-            .catch(err => {
-              console.error('La publicación se guardó, pero falló la carga de fotos:', err);
-              return err;
-            });
-
-          let timeoutId;
-          const result = await Promise.race([
-            uploadTask,
-            new Promise(resolve => { timeoutId = setTimeout(() => resolve('timeout'), 30000); })
-          ]);
-          clearTimeout(timeoutId);
-
-          if (result === 'timeout') {
-            imageWarning = myProfile.role === 'admin'
-              ? 'Tu publicación ya está activa. La carga de fotos está tardando más de lo esperado; si no aparecen, podrás agregarlas editando el anuncio.'
-              : 'Tu publicación ya quedó guardada y enviada a revisión. La carga de fotos está tardando más de lo esperado; si no aparecen, podrás agregarlas editando el anuncio.';
-          } else if (result !== true) {
-            imageWarning = myProfile.role === 'admin'
-              ? 'Tu publicación ya está activa, pero no se pudieron adjuntar las fotos (' + friendlyError(result) + '). Podrás agregarlas editando el anuncio.'
-              : 'Tu publicación ya quedó guardada y enviada a revisión, pero no se pudieron adjuntar las fotos (' + friendlyError(result) + '). Podrás agregarlas editando el anuncio.';
-          }
+        btn.textContent = 'Guardando publicación…';
+        try {
+          await createListing(form, uploadedUrls, me, myProfile, getPendingCreateId());
+          clearPendingCreateId();
+        } catch (err) {
+          if (uploadedUrls.length) await deleteListingImageUrls(uploadedUrls);
+          throw err;
         }
       }
 
@@ -673,14 +639,14 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
       $('sentTitle').textContent = adminMode
         ? (editId ? 'Cambios guardados y publicados' : 'Publicación publicada')
         : (editId ? 'Cambios enviados a revisión' : 'Publicación enviada a revisión');
-      $('sentMessage').textContent = imageWarning || (adminMode
-        ? 'La publicación ya está visible en Mercado Norte Sur. No necesita aprobación.'
-        : 'Un administrador revisará tu publicación. Verás el resultado en tu panel, en "Mis publicaciones".');
+      $('sentMessage').textContent = adminMode
+        ? 'La publicación se guardó correctamente' + (files.length ? ' con sus fotografías.' : '. No necesita aprobación.')
+        : 'Tu publicación y sus fotografías quedaron guardadas. Un administrador revisará el anuncio; verás el resultado en tu panel, en "Mis publicaciones".';
       $('sentBack').href = adminMode ? '../admin/dashboard.html' : 'dashboard.html';
       $('sentBack').textContent = adminMode ? 'Volver al panel administrador' : 'Volver a mi cuenta';
     } catch (err) {
-      console.error('Error al guardar la publicación:', err);
-      showError(friendlyError(err) + ' Tus datos siguen en pantalla. Puedes corregir el problema e intentarlo nuevamente.');
+      console.error('Error al guardar la publicación o sus fotografías:', err);
+      showError(friendlyError(err) + ' No se creó ni se actualizó la publicación. Tus datos y fotografías seleccionadas siguen en pantalla; puedes reintentar.');
       btn.disabled = false;
       updateStepper();
     }
