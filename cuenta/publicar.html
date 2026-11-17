@@ -584,6 +584,33 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
     $('rev-fotos').textContent = files.length ? files.length + ' nueva(s)' : (existingImages.length ? existingImages.length + ' actual(es)' : 'Sin fotos');
   }
 
+  const DRAFT_FIELDS = ['f-titulo','f-categoria','f-condicion','f-desc','f-precio','f-precioold','f-unit','f-ubicacion','f-contacto'];
+  function draftKey() { return 'mns-listing-draft-' + me.uid; }
+  function saveDraft() {
+    if (!me || editId) return;
+    const fields = {};
+    DRAFT_FIELDS.forEach(id => { const el = $(id); if (el) fields[id] = el.value; });
+    try { sessionStorage.setItem(draftKey(), JSON.stringify({ fields, savedAt: Date.now() })); } catch (_) {}
+  }
+  function restoreDraft() {
+    if (!me || editId) return;
+    try {
+      const raw = sessionStorage.getItem(draftKey());
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      DRAFT_FIELDS.forEach(id => { const el = $(id); if (el && draft.fields && draft.fields[id] != null) el.value = draft.fields[id]; });
+      $('photoHint').textContent = 'Recuperamos los datos del borrador. Vuelve a seleccionar las fotografías si las habías agregado.';
+    } catch (_) {}
+  }
+  function clearDraft() {
+    if (!me || editId) return;
+    try { sessionStorage.removeItem(draftKey()); } catch (_) {}
+  }
+  DRAFT_FIELDS.forEach(id => {
+    const el = $(id);
+    if (el) { el.addEventListener('input', saveDraft); el.addEventListener('change', saveDraft); }
+  });
+
   function pendingCreateKey() { return 'mns-pending-listing-' + me.uid; }
   function getPendingCreateId() {
     const key = pendingCreateKey();
@@ -638,6 +665,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
         }
       }
 
+      clearDraft();
       $('wizard').style.display = 'none';
       $('sentState').style.display = 'block';
       const adminMode = myProfile && myProfile.role === 'admin';
@@ -706,6 +734,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
       }
     }
 
+    if (!editId) restoreDraft();
     syncCategoryUI();
     renderPhotos();
     $('gate').style.display = 'none';
