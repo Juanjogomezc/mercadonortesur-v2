@@ -19,7 +19,7 @@ import {
   query, where, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {
-  getStorage, ref, uploadBytes, getDownloadURL
+  getStorage, ref, uploadBytes, getDownloadURL, deleteObject
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js";
 
@@ -256,6 +256,7 @@ export async function uploadListingImages(uid, files) {
 
   // El formulario admite hasta 4 fotos: procesarlas y subirlas en paralelo
   // reduce la espera frente a la subida secuencial.
+  const uploadedRefs = [];
   const tasks = files.map(async (file, index) => {
     const mime = String(file?.type || "").toLowerCase();
     const filename = String(file?.name || "").toLowerCase();
@@ -278,6 +279,7 @@ export async function uploadListingImages(uid, files) {
           contentType: "image/jpeg",
           cacheControl: "public,max-age=31536000"
         });
+        uploadedRefs.push(storageRef);
         const url = await getDownloadURL(storageRef);
         if (!/^https:\/\//i.test(url)) {
           throw new Error("Firebase no devolvió una dirección válida para la fotografía.");
@@ -295,8 +297,21 @@ export async function uploadListingImages(uid, files) {
     throw lastError || new Error("No se pudo subir una fotografía.");
   });
 
-  // Promise.all mantiene el orden original de las fotos.
-  return Promise.all(tasks);
+  // Espera todas las subidas y limpia los archivos parciales si alguna foto falla.
+  const results = await Promise.allSettled(tasks);
+  const failed = results.find(result => result.status === "rejected");
+  if (failed) {
+    await Promise.allSettled(uploadedRefs.map(fileRef => deleteObject(fileRef)));
+    throw failed.reason;
+  }
+  // Promise.allSettled mantiene el orden original de las fotos.
+  return results.map(result => result.value);
+}
+
+// Elimina archivos recién subidos si Firestore no pudo guardar la publicación.
+export async function deleteListingImageUrls(urls) {
+  const valid = (Array.isArray(urls) ? urls : []).filter(url => typeof url === "string" && /^https:\/\//i.test(url));
+  await Promise.allSettled(valid.map(url => deleteObject(ref(storage, url))));
 }
 
 function listingPayload(f) {
