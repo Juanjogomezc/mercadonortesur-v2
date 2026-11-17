@@ -327,6 +327,11 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
 .upload-zone{font-size:14.5px;line-height:1.5}.photo-thumb{width:84px;height:84px}
 @media(max-width:640px){main{padding:18px 0 36px}.steps-wrap{width:100%}.stepper{margin-bottom:22px}.step-label{font-size:11px;white-space:nowrap}.step-dot{width:28px;height:28px;font-size:13px}.form-card{padding:20px 15px;border-radius:12px}.form-card h2{font-size:20px}.form-card .sub{font-size:14px}.field{margin-bottom:18px}.field label{font-size:14px}.field input,.field select,.field textarea{font-size:16px;min-height:48px;padding:12px}.row-2{grid-template-columns:1fr;gap:0}.upload-zone{padding:24px 14px;font-size:14px}.photo-thumb{width:72px;height:72px}.form-actions button{min-height:48px;font-size:15px}.review-row{font-size:14px;gap:12px}}
 </style>
+
+<style>
+.photo-order{display:flex;justify-content:center;gap:5px;padding:4px}.photo-order button{min-width:28px;min-height:28px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);cursor:pointer}.photo-order button:disabled{opacity:.35;cursor:not-allowed}.photo-order .thumb-x{color:var(--red);border-color:var(--red-soft)}
+@media(max-width:520px){.photo-order button{min-width:34px;min-height:34px}}
+</style>
 </head>
 <body>
 
@@ -488,10 +493,10 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
     clearPreviewUrls();
     const row = $('photoRow');
     const oldItems = existingImages.map((u, i) =>
-      '<div class="photo-thumb"><img src="' + esc(safeUrl(u)) + '" alt="Fotografía actual" loading="lazy" decoding="async" onerror="this.style.opacity=.35"><button type="button" class="thumb-x" data-existing-i="' + i + '" aria-label="Quitar fotografía">×</button></div>');
+      '<div class="photo-thumb"><img src="' + esc(safeUrl(u)) + '" alt="Fotografía actual" loading="lazy" decoding="async" onerror="this.style.opacity=.35"><div class="photo-order"><button type="button" data-move-existing="' + i + ':-1" aria-label="Mover fotografía anterior" ' + (i === 0 ? 'disabled' : '') + '>↑</button><button type="button" data-move-existing="' + i + ':1" aria-label="Mover fotografía siguiente" ' + (i === existingImages.length - 1 ? 'disabled' : '') + '>↓</button><button type="button" class="thumb-x" data-existing-i="' + i + '" aria-label="Quitar fotografía">×</button></div></div>');
     const newItems = files.map((f, i) => {
       const url = URL.createObjectURL(f); previewUrls.push(url);
-      return '<div class="photo-thumb"><img src="' + url + '" alt="Vista previa de fotografía"><button type="button" class="thumb-x" data-i="' + i + '" aria-label="Quitar fotografía">×</button></div>';
+      return '<div class="photo-thumb"><img src="' + url + '" alt="Vista previa de fotografía"><div class="photo-order"><button type="button" data-move-new="' + i + ':-1" aria-label="Mover fotografía anterior" ' + (i === 0 ? 'disabled' : '') + '>↑</button><button type="button" data-move-new="' + i + ':1" aria-label="Mover fotografía siguiente" ' + (i === files.length - 1 ? 'disabled' : '') + '>↓</button><button type="button" class="thumb-x" data-i="' + i + '" aria-label="Quitar fotografía">×</button></div></div>';
     });
     row.innerHTML = oldItems.concat(newItems).join('');
     const total = existingImages.length + files.length;
@@ -522,6 +527,16 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
   }));
   window.addEventListener('beforeunload', clearPreviewUrls);
   $('photoRow').addEventListener('click', (e) => {
+    const moveExisting = e.target.closest('[data-move-existing]');
+    const moveNew = e.target.closest('[data-move-new]');
+    if (moveExisting || moveNew) {
+      const [index, direction] = (moveExisting || moveNew).dataset[moveExisting ? 'moveExisting' : 'moveNew'].split(':').map(Number);
+      const list = moveExisting ? existingImages : files;
+      const next = index + direction;
+      if (next >= 0 && next < list.length) [list[index], list[next]] = [list[next], list[index]];
+      renderPhotos();
+      return;
+    }
     const b = e.target.closest('.thumb-x');
     if (!b) return;
     if (b.dataset.existingI !== undefined) existingImages.splice(Number(b.dataset.existingI), 1);
