@@ -1,0 +1,44 @@
+name: Validate marketplace source
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate Firebase configuration
+        run: |
+          node -e "for (const f of ['firebase.json','.firebaserc','firebase/firestore.indexes.json']) JSON.parse(require('fs').readFileSync(f,'utf8'));"
+      - name: Validate JavaScript syntax in HTML and modules
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, subprocess, sys
+          failures = []
+          for path in pathlib.Path('.').rglob('*.html'):
+              if '.git' in path.parts:
+                  continue
+              source = path.read_text(encoding='utf-8')
+              for number, match in enumerate(re.finditer(r'<script\\b([^>]*)>(.*?)</script\\s*>', source, re.I | re.S), 1):
+                  attrs, code = match.group(1), match.group(2)
+                  if re.search(r'\\bsrc\\s*=', attrs, re.I) or not code.strip():
+                      continue
+                  module = bool(re.search(r'\\btype\\s*=\\s*["\\']module["\\']', attrs, re.I))
+                  command = ['node', '--input-type=module', '--check'] if module else ['node', '--check']
+                  result = subprocess.run(command, input=code, text=True, capture_output=True)
+                  if result.returncode:
+                      failures.append(f'{path} inline script {number}:\\n{result.stderr}')
+          module = pathlib.Path('assets/firebase.js')
+          result = subprocess.run(['node', '--input-type=module', '--check'], input=module.read_text(encoding='utf-8'), text=True, capture_output=True)
+          if result.returncode:
+              failures.append(f'{module}:\\n{result.stderr}')
+          if failures:
+              print('\\n'.join(failures))
+              sys.exit(1)
+          print('JavaScript syntax OK')
+          PY
