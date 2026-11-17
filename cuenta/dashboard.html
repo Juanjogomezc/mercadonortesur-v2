@@ -433,7 +433,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
       listings.map(l => {
         const [label, cls] = STATUS[l.status] || ['—', 'usado'];
         const img = l._resolvedImage || '';
-        const thumb = img ? '<img class="row-thumb" src="' + esc(img) + '" alt="">' : '<div class="row-thumb-empty"></div>';
+        const thumb = img ? '<img class="row-thumb" src="' + esc(img) + '" alt="" loading="lazy" decoding="async">' : '<div class="row-thumb-empty"></div>';
         const reason = l.status === 'rejected' && l.rejectionReason ? '<div class="reason">Motivo: ' + esc(l.rejectionReason) + '</div>' : '';
         return '<tr><td><div class="row-prod">' + thumb + '<div><div>' + esc(l.title) + '</div>' + reason + '</div></div></td>' +
           '<td>' + esc(CAT_LABELS[l.category] || l.category) + '</td>' +
