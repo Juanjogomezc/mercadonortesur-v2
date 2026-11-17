@@ -30,7 +30,7 @@
 <main class="wrap product-page" id="app"><div class="loading">Cargando publicación…</div></main>
 <script src="assets/app.js"></script>
 <script type="module">
-import {watchUser,fetchListing,fetchFavoriteIds,toggleFavorite,safeUrl,esc} from "./assets/firebase.js";
+import {watchUser,fetchListing,fetchFavoriteIds,toggleFavorite,resolveListingImages,esc} from "./assets/firebase.js";
 const root=document.getElementById("app"),id=new URLSearchParams(location.search).get("id");
 const money=n=>"$"+Number(n||0).toLocaleString("es-CL");
 let currentUser=null,currentProfile=null,authReady=false,saved=false,listing=null;
@@ -46,10 +46,9 @@ function contactState(){
  if(!currentProfile||currentProfile.status!=="approved"){btn.disabled=true;btn.textContent=currentProfile?.status==="pending"?"Tu cuenta está en revisión": "Tu cuenta no está habilitada para contactar";return}
  btn.disabled=false;btn.textContent="Contactar por WhatsApp";
 }
-function render(p){
+async function render(p){
  listing=p;
- const imageList=Array.isArray(p.images)?p.images:(p.imageUrl||p.image?[p.imageUrl||p.image]:[]);
- const images=imageList.map(safeUrl).filter(Boolean);
+ const images=await resolveListingImages(p);
  const image=images[0]||"";
  const attrs=p.attributes&&typeof p.attributes==="object"?p.attributes:{};
  const seller=p.sellerName||"Vendedor";

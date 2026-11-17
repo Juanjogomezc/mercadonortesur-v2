@@ -307,8 +307,11 @@ footer.site a{color:#1B1A17;}
     position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; border:none;
     background:rgba(0,0,0,0.6); color:#fff; font-size:13px; line-height:1; cursor:pointer;
   }
-  .upload-zone{display:block;}
-  .upload-zone.drag{border-color:var(--rust); background:#FDF4EF;}
+  .upload-zone{display:block;margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:8px;color:var(--ink-soft);font-size:12.5px;text-align:center;}
+  .upload-zone.drag{border-color:var(--rust); background:var(--rust-soft);}
+  .photo-picker-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .photo-picker-actions button{min-height:46px;justify-content:center}
+  @media(max-width:640px){.photo-picker-actions{display:grid;grid-template-columns:1fr}.photo-picker-actions button{width:100%;font-size:15px}}
   .form-error{
     display:none; background:#FBE2E0; color:#B3261E; border-radius:8px; padding:10px 12px;
     font-size:12.5px; font-weight:500; line-height:1.4; margin-top:16px;
@@ -363,8 +366,13 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
       <div class="fase active" id="fase-1">
         <h2>Agrega fotos</h2>
         <div class="sub">Recomendamos al menos 3 fotos claras, incluyendo el estado real del equipo. Máximo 4.</div>
-        <label class="upload-zone" id="dropZone" for="photoInput">📷 Haz clic o arrastra tus fotos aquí</label>
-        <input type="file" id="photoInput" accept="image/*" multiple hidden>
+        <div class="photo-picker-actions">
+          <button class="btn-primary" id="chooseGallery" type="button">🖼️ Elegir desde galería</button>
+          <button class="btn-ghost" id="openCamera" type="button">📷 Tomar fotografía</button>
+        </div>
+        <div class="upload-zone" id="dropZone">También puedes arrastrar tus fotos aquí. Formatos admitidos: JPG, JPEG y PNG.</div>
+        <input type="file" id="photoInput" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple hidden>
+        <input type="file" id="cameraInput" accept="image/jpeg,image/png,.jpg,.jpeg,.png" capture="environment" hidden>
         <div class="photo-row" id="photoRow"></div>
         <div class="hint-sm" id="photoHint"></div>
       </div>
@@ -492,12 +500,26 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
       : 'Puedes subir hasta ' + MAX_PHOTOS + ' fotografías.';
   }
   function addFiles(list) {
-    const imgs = Array.from(list).filter(f => f.type && f.type.startsWith('image/'));
+    const allowed = Array.from(list || []).filter(file => {
+      const type = String(file.type || '').toLowerCase();
+      const name = String(file.name || '').toLowerCase();
+      return ['image/jpeg','image/png'].includes(type) || /\.(jpe?g|png)$/.test(name);
+    });
+    const rejected = Array.from(list || []).length - allowed.length;
     const available = Math.max(0, MAX_PHOTOS - existingImages.length - files.length);
-    files = files.concat(imgs.slice(0, available));
+    files = files.concat(allowed.slice(0, available));
     renderPhotos();
+    const messages = [];
+    if (rejected) messages.push('Solo se admiten archivos JPG, JPEG o PNG.');
+    if (allowed.length > available) messages.push('Puedes agregar hasta ' + MAX_PHOTOS + ' fotos en total.');
+    $('photoHint').textContent = messages.join(' ');
   }
-  $('photoInput').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
+  $('chooseGallery').addEventListener('click', () => $('photoInput').click());
+  $('openCamera').addEventListener('click', () => $('cameraInput').click());
+  ['photoInput','cameraInput'].forEach(id => $(id).addEventListener('change', e => {
+    addFiles(e.target.files);
+    e.target.value = '';
+  }));
   window.addEventListener('beforeunload', clearPreviewUrls);
   $('photoRow').addEventListener('click', (e) => {
     const b = e.target.closest('.thumb-x');
