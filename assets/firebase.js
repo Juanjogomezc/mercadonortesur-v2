@@ -210,15 +210,36 @@ async function resizeImage(file, maxSide = 1200) {
   } finally { if (bitmap && typeof bitmap.close === "function") bitmap.close(); }
 }
 
+// Subida tolerante a fallos: valida cada archivo, limita peso y reintenta errores transitorios.
 export async function uploadListingImages(uid, files) {
   if (!uid) throw new Error("Inicia sesión para subir fotografías.");
+  if (!Array.isArray(files) || !files.length) return [];
   const urls = [];
   for (let i = 0; i < files.length; i++) {
+    if (!files[i] || !String(files[i].type || "").startsWith("image/")) {
+      throw new Error("Uno de los archivos no es una imagen válida.");
+    }
     const blob = await resizeImage(files[i]);
+    if (blob.size >= 3 * 1024 * 1024) throw new Error("Una fotografía supera el límite permitido. Prueba con otra imagen.");
     const unique = (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
     const r = ref(storage, "listings/" + uid + "/" + unique + "-" + i + ".jpg");
-    await uploadBytes(r, blob, { contentType: "image/jpeg" });
-    urls.push(await getDownloadURL(r));
+    let lastError;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await uploadBytes(r, blob, { contentType: "image/jpeg", cacheControl: "public,max-age=31536000" });
+        const url = await getDownloadURL(r);
+        if (!/^https:\/\//i.test(url)) throw new Error("Firebase no devolvió una dirección válida para la fotografía.");
+        urls.push(url);
+        lastError = null;
+        break;
+      } catch (err) {
+        lastError = err;
+        if (attempt < 2 && ["storage/retry-limit-exceeded","storage/unknown","unavailable","deadline-exceeded"].includes(err?.code)) {
+          await new Promise(resolve => setTimeout(resolve, 700 * (attempt + 1)));
+        } else break;
+      }
+    }
+    if (lastError) throw lastError;
   }
   return urls;
 }

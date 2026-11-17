@@ -319,6 +319,12 @@ footer.site a{color:#1B1A17;}
   #gate h2{font-size:19px; margin-bottom:8px;}
   #gate .sub{margin-bottom:18px;}
 </style>
+<style>
+body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .sub{font-size:14.5px;line-height:1.5}
+.field label{font-size:14px}.field input,.field select,.field textarea{font-size:16px;min-height:46px}
+.upload-zone{font-size:14.5px;line-height:1.5}.photo-thumb{width:84px;height:84px}
+@media(max-width:640px){main{padding:18px 0 36px}.steps-wrap{width:100%}.stepper{margin-bottom:22px}.step-label{font-size:11px;white-space:nowrap}.step-dot{width:28px;height:28px;font-size:13px}.form-card{padding:20px 15px;border-radius:12px}.form-card h2{font-size:20px}.form-card .sub{font-size:14px}.field{margin-bottom:18px}.field label{font-size:14px}.field input,.field select,.field textarea{font-size:16px;min-height:48px;padding:12px}.row-2{grid-template-columns:1fr;gap:0}.upload-zone{padding:24px 14px;font-size:14px}.photo-thumb{width:72px;height:72px}.form-actions button{min-height:48px;font-size:15px}.review-row{font-size:14px;gap:12px}}
+</style>
 </head>
 <body>
 
@@ -468,10 +474,13 @@ footer.site a{color:#1B1A17;}
   function showError(m) { $('formError').textContent = m || ''; $('formError').style.display = m ? 'block' : 'none'; }
 
   /* ---------- Fotos ---------- */
+  let previewUrls = [];
+  function clearPreviewUrls(){previewUrls.forEach(url=>URL.revokeObjectURL(url));previewUrls=[];}
   function renderPhotos() {
+    clearPreviewUrls();
     const row = $('photoRow');
     const items = files.length
-      ? files.map((f, i) => '<div class="photo-thumb"><img src="' + URL.createObjectURL(f) + '" alt=""><button type="button" class="thumb-x" data-i="' + i + '" aria-label="Quitar">×</button></div>')
+      ? files.map((f, i) => { const url=URL.createObjectURL(f); previewUrls.push(url); return '<div class="photo-thumb"><img src="' + url + '" alt="Vista previa de fotografía"><button type="button" class="thumb-x" data-i="' + i + '" aria-label="Quitar">×</button></div>'; })
       : existingImages.map(u => '<div class="photo-thumb"><img src="' + esc(safeUrl(u)) + '" alt=""></div>');
     row.innerHTML = items.join('');
     $('photoHint').textContent = files.length
@@ -484,6 +493,7 @@ footer.site a{color:#1B1A17;}
     renderPhotos();
   }
   $('photoInput').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
+  window.addEventListener('beforeunload', clearPreviewUrls);
   $('photoRow').addEventListener('click', (e) => {
     const b = e.target.closest('.thumb-x');
     if (b) { files.splice(Number(b.dataset.i), 1); renderPhotos(); }
