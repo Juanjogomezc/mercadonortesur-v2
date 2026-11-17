@@ -1093,7 +1093,7 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
   }
 
   const PAGE_SIZE = 24;
-  let catalogCursor = null, catalogHasMore = false, catalogLoading = false;
+  let catalogCursor = null, catalogHasMore = false, catalogLoading = false, catalogLoaded = false;
   const moreButton = document.getElementById('loadMoreProducts');
   const loadStatus = document.getElementById('catalogLoadStatus');
   async function loadCatalogPage(append = false) {
@@ -1104,7 +1104,7 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
     try {
       const page = await fetchApprovedListingsPage(PAGE_SIZE, append ? catalogCursor : null);
       const products = await Promise.all(page.items.map(toProduct));
-      catalogCursor = page.cursor; catalogHasMore = page.hasMore;
+      catalogCursor = page.cursor; catalogHasMore = page.hasMore; catalogLoaded = true;
       if (append) window.appendProducts(products); else window.setProducts(products);
       if (moreButton) { moreButton.hidden = !catalogHasMore; moreButton.disabled = false; moreButton.textContent = 'Ver más publicaciones'; }
       if (loadStatus) loadStatus.textContent = page.items.length ? '' : 'Aún no hay publicaciones disponibles.';
@@ -1115,7 +1115,7 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
       if (moreButton) { moreButton.hidden = false; moreButton.disabled = false; moreButton.textContent = 'Reintentar'; }
     } finally { catalogLoading = false; }
   }
-  moreButton?.addEventListener('click', () => loadCatalogPage(true));
+  moreButton?.addEventListener('click', () => loadCatalogPage(catalogLoaded));
   loadCatalogPage();
 
   let currentUid = null;
