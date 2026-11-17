@@ -601,9 +601,13 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
           ]);
           clearTimeout(timeoutId);
           if (result === 'timeout') {
-            imageWarning = 'Los cambios ya quedaron guardados y enviados a revisión. La carga de las nuevas fotos está tardando; si no aparecen, podrás agregarlas editando el anuncio.';
+            imageWarning = myProfile.role === 'admin'
+              ? 'Los cambios ya están publicados. La carga de las nuevas fotos está tardando; si no aparecen, podrás agregarlas editando el anuncio.'
+              : 'Los cambios ya quedaron guardados y enviados a revisión. La carga de las nuevas fotos está tardando; si no aparecen, podrás agregarlas editando el anuncio.';
           } else if (result !== true) {
-            imageWarning = 'Los cambios ya quedaron guardados y enviados a revisión, pero no se pudieron adjuntar las nuevas fotos (' + friendlyError(result) + '). Se conservaron las fotos anteriores.';
+            imageWarning = myProfile.role === 'admin'
+              ? 'Los cambios ya están publicados, pero no se pudieron adjuntar las nuevas fotos (' + friendlyError(result) + '). Se conservaron las fotos anteriores.'
+              : 'Los cambios ya quedaron guardados y enviados a revisión, pero no se pudieron adjuntar las nuevas fotos (' + friendlyError(result) + '). Se conservaron las fotos anteriores.';
           }
         }
       } else {
@@ -630,9 +634,13 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
           clearTimeout(timeoutId);
 
           if (result === 'timeout') {
-            imageWarning = 'Tu publicación ya quedó guardada y enviada a revisión. La carga de fotos está tardando más de lo esperado; si no aparecen, podrás agregarlas editando el anuncio.';
+            imageWarning = myProfile.role === 'admin'
+              ? 'Tu publicación ya está activa. La carga de fotos está tardando más de lo esperado; si no aparecen, podrás agregarlas editando el anuncio.'
+              : 'Tu publicación ya quedó guardada y enviada a revisión. La carga de fotos está tardando más de lo esperado; si no aparecen, podrás agregarlas editando el anuncio.';
           } else if (result !== true) {
-            imageWarning = 'Tu publicación ya quedó guardada y enviada a revisión, pero no se pudieron adjuntar las fotos (' + friendlyError(result) + '). Podrás agregarlas editando el anuncio.';
+            imageWarning = myProfile.role === 'admin'
+              ? 'Tu publicación ya está activa, pero no se pudieron adjuntar las fotos (' + friendlyError(result) + '). Podrás agregarlas editando el anuncio.'
+              : 'Tu publicación ya quedó guardada y enviada a revisión, pero no se pudieron adjuntar las fotos (' + friendlyError(result) + '). Podrás agregarlas editando el anuncio.';
           }
         }
       }
