@@ -488,7 +488,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
     clearPreviewUrls();
     const row = $('photoRow');
     const oldItems = existingImages.map((u, i) =>
-      '<div class="photo-thumb"><img src="' + esc(safeUrl(u)) + '" alt="Fotografía actual"><button type="button" class="thumb-x" data-existing-i="' + i + '" aria-label="Quitar fotografía">×</button></div>');
+      '<div class="photo-thumb"><img src="' + esc(safeUrl(u)) + '" alt="Fotografía actual" loading="lazy" decoding="async" onerror="this.style.opacity=.35"><button type="button" class="thumb-x" data-existing-i="' + i + '" aria-label="Quitar fotografía">×</button></div>');
     const newItems = files.map((f, i) => {
       const url = URL.createObjectURL(f); previewUrls.push(url);
       return '<div class="photo-thumb"><img src="' + url + '" alt="Vista previa de fotografía"><button type="button" class="thumb-x" data-i="' + i + '" aria-label="Quitar fotografía">×</button></div>';
