@@ -369,7 +369,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
   </button>
   <a href="../index.html" class="logo">
-    <span class="logo-mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>
+    <span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="17.5" cy="6.5" r="3.2" fill="#F5AD27"/><path d="M2.5 20L9 8L13 15L16 10L21.5 20H2.5Z" fill="#1B1A17"/></svg></span>
     Mercado Norte Sur — Admin
   </a>
 </div>
@@ -381,13 +381,14 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
     <a href="../index.html" class="logo">
-      <span class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>
+      <span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="17.5" cy="6.5" r="3.2" fill="#F5AD27"/><path d="M2.5 20L9 8L13 15L16 10L21.5 20H2.5Z" fill="#1B1A17"/></svg></span>
       Mercado Norte Sur
     </a>
     <span class="admin-tag">Panel admin</span>
     <nav class="admin-nav">
       <button class="active" data-panel="publicaciones">📦 Publicaciones pendientes <span class="count" id="countPub">0</span></button>
-      <button data-panel="cuentas">👤 Cuentas nuevas <span class="count" id="countUsers">0</span></button>
+      <button data-panel="cuentas">👤 Cuentas registradas <span class="count" id="countUsers">0</span></button>
+      <a href="../cuenta/publicar.html">＋ Crear publicación</a>
       <button data-panel="activas">✅ Publicaciones activas</button>
       <button data-panel="reportes">📊 Reportes</button>
       <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:14px 4px;">
@@ -559,12 +560,12 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   const pendingUsers = () => users.filter(u => u.status === 'pending' && u.role !== 'admin').sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
 
   function updateLabel() {
-    const n = { publicaciones: pendingListings().length, cuentas: pendingUsers().length };
+    const n = { publicaciones: pendingListings().length, cuentas: users.filter(u => u.role !== 'admin').length };
     $('countPub').textContent = n.publicaciones;
     $('countUsers').textContent = n.cuentas;
     const labels = {
       publicaciones: n.publicaciones + ' en cola',
-      cuentas: n.cuentas + ' en cola',
+      cuentas: n.cuentas + ' cuentas',
       activas: listings.filter(l => l.status === 'approved' || l.status === 'paused').length + ' publicaciones',
       reportes: ''
     };
