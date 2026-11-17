@@ -612,7 +612,9 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
       // Así nunca se crea una publicación nueva con images vacío por una subida fallida.
       if (files.length) {
         btn.textContent = 'Subiendo y verificando fotografías…';
-        uploadedUrls = await uploadListingImages(me.uid, files);
+        uploadedUrls = await uploadListingImages(me.uid, files, (done, total) => {
+          btn.textContent = 'Subiendo fotografías ' + done + ' de ' + total + '…';
+        });
       }
 
       if (editId) {
