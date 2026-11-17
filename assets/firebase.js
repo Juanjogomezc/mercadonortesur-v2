@@ -68,23 +68,29 @@ export async function resolveListingImages(listing, maxImages = 4) {
   for (const field of ["imageUrl", "image", "photo", "thumbnail"]) {
     if (listing[field]) candidates.push(listing[field]);
   }
-  const resolved = await Promise.all(candidates.slice(0, Math.max(1, Number(maxImages) || 4)).map(async item => {
+  const resolved = [];
+  const max = Math.max(1, Number(maxImages) || 4);
+  // Resuelve en orden y se detiene al reunir las fotos necesarias; así el home
+  // no solicita URLs de las cuatro imágenes cuando solo necesita una miniatura.
+  for (const item of candidates) {
     const value = typeof item === "string" ? item : (
       item && typeof item === "object"
         ? (item.url || item.downloadURL || item.downloadUrl || item.src || item.imageUrl || item.fullPath || item.path || "")
         : ""
     );
-    if (typeof value !== "string" || !value.trim()) return "";
+    if (typeof value !== "string" || !value.trim()) continue;
     const raw = value.trim();
-    if (/^https:\/\//i.test(raw)) return raw;
-    if (/^(gs:\/\/|listings\/)/i.test(raw)) {
-      try { return await getDownloadURL(ref(storage, raw)); } catch (error) {
+    let url = "";
+    if (/^https:\/\//i.test(raw)) url = raw;
+    else if (/^(gs:\/\/|listings\/)/i.test(raw)) {
+      try { url = await getDownloadURL(ref(storage, raw)); } catch (error) {
         console.warn("No se pudo resolver una fotografía de Storage:", raw, error);
       }
     }
-    return "";
-  }));
-  return [...new Set(resolved.filter(Boolean))];
+    if (url && !resolved.includes(url)) resolved.push(url);
+    if (resolved.length >= max) break;
+  }
+  return resolved;
 }
 
 export function ms(ts) {
@@ -219,8 +225,11 @@ export async function fetchApprovedListingsPage(pageSize = 24, cursor = null) {
   const constraints = [where("status", "==", "approved"), orderBy("createdAt", "desc")];
   if (cursor) constraints.push(startAfter(cursor));
   constraints.push(limit(Math.min(48, Math.max(1, Number(pageSize) || 24))));
+  const size = Math.min(48, Math.max(1, Number(pageSize) || 24));
+  constraints.push(limit(size + 1));
   const snap = await getDocs(query(collection(db, "listings"), ...constraints));
-  return { items: mapDocs(snap), cursor: snap.docs.at(-1) || cursor, hasMore: snap.size === Math.min(48, Math.max(1, Number(pageSize) || 24)) };
+  const pageDocs = snap.docs.slice(0, size);
+  return { items: pageDocs.map(d => ({ id: d.id, ...d.data() })), cursor: pageDocs[pageDocs.length - 1] || cursor, hasMore: snap.docs.length > size };
 }
 
 export async function fetchMyListings(uid) {
