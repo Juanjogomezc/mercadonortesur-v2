@@ -503,7 +503,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
     const allowed = Array.from(list || []).filter(file => {
       const type = String(file.type || '').toLowerCase();
       const name = String(file.name || '').toLowerCase();
-      return ['image/jpeg','image/png'].includes(type) || /\\.(jpe?g|png)$/.test(name);
+      return ['image/jpeg','image/png'].includes(type) || /\.(jpe?g|png)$/.test(name);
     });
     const rejected = Array.from(list || []).length - allowed.length;
     const available = Math.max(0, MAX_PHOTOS - existingImages.length - files.length);
