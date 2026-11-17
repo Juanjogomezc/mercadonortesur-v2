@@ -890,10 +890,10 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
     const badgeLabel = isService ? 'SERVICIO' : (cond === 'nuevo' ? 'NUEVO' : 'USADO');
     return `
       <div class="p-card" data-product-id="${esc(p.id)}" role="link" tabindex="0" aria-label="Ver ${esc(p.name)}">
-        <div class="p-media">
+        <div class="p-media ${p.img ? "" : "no-image"}">
           <span class="p-badge ${cond}">${badgeLabel}</span>
           <button class="p-fav" type="button" data-favorite="${esc(p.id)}" aria-label="Guardar ${esc(p.name)}" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg></button>
-          ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy">` : ''}
+          ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy" onerror="this.remove();this.parentElement.classList.add('no-image')">` : ''}
         </div>
         <div class="p-body">
           <div class="p-cat">${esc(CAT_LABELS[p.cat] || p.cat)}</div>
