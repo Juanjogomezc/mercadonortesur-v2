@@ -521,7 +521,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 <script type="module">
   import {
     watchUser, logout, fetchAllListings, fetchAllUsers, setListingStatus, setUserStatus,
-    removeListing, setAdminContactPhone, esc, safeUrl, ms, friendlyError
+    removeListing, setAdminContactPhone, esc, resolveListingImages, ms, friendlyError
   } from "../assets/firebase.js";
   import { CAT_LABELS, computeReport, toCSV, reportRows } from "../assets/reports.js";
 
@@ -551,7 +551,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   }
   const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
   const thumb = (l) => {
-    const u = safeUrl(l.images && l.images[0]);
+    const u = l._resolvedImage || '';
     return u ? '<img class="queue-thumb" src="' + esc(u) + '" alt="">' : '<div class="queue-thumb"></div>';
   };
 
@@ -837,6 +837,8 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   /* ---------- Carga de datos y acceso ---------- */
   async function loadData() {
     [listings, users] = await Promise.all([fetchAllListings(), fetchAllUsers()]);
+    const resolved = await Promise.all(listings.map(resolveListingImages));
+    listings = listings.map((listing, index) => ({ ...listing, _resolvedImage: resolved[index][0] || '' }));
     renderQueues();
     if (activePanel === 'activas') renderActivas();
     if (activePanel === 'reportes') renderReports();
