@@ -521,7 +521,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 <script type="module">
   import {
     watchUser, logout, fetchAllListings, fetchAllUsers, setListingStatus, setUserStatus,
-    removeListing, setAdminContactPhone, esc, resolveListingImages, ms, friendlyError
+    removeListing, setAdminContactPhone, esc, safeUrl, resolveListingImages, ms, friendlyError
   } from "../assets/firebase.js";
   import { CAT_LABELS, computeReport, toCSV, reportRows } from "../assets/reports.js";
 
@@ -691,7 +691,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
       const state = l.status || 'approved';
       const stateLabel = ({approved:'PUBLICADO',paused:'PAUSADO',pending:'PENDIENTE',rejected:'RECHAZADO'})[state] || state.toUpperCase();
       const stateClass = state === 'approved' ? 'aprobado' : state === 'pending' ? 'revision' : state === 'rejected' ? 'rechazado' : 'revision';
-      const image = safeUrl(l.images && l.images[0]);
+      const image = l._resolvedImage || safeUrl(l.images && l.images[0]);
       const product = '<div class="row-prod">' + (image ? '<img class="row-thumb" src="' + esc(image) + '" alt="">' : '<div class="row-thumb"></div>') +
         '<div><strong>' + esc(l.title || 'Sin título') + '</strong><div class="card-sub">ID: ' + esc(l.id) + '</div></div></div>';
       const isAdmin = l.sellerType === 'admin' || l.adminCatalog;
