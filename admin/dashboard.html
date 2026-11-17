@@ -359,7 +359,6 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 .admin-topbar .menu-btn{color:var(--ink)}
 .admin-sidebar .menu-btn{color:var(--ink)!important}
 .admin-sidebar .logo-mark svg path,.admin-topbar .logo-mark svg path{fill:var(--ink)}
-.admin-catalog-import{border-color:var(--line)!important}
 </style>
 
 </head>
@@ -411,14 +410,6 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     <div id="gateMsg" class="empty-state">Verificando acceso…</div>
 
     <div id="adminApp" style="display:none;">
-      <div class="admin-catalog-import" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px;margin:0 0 18px;background:#fff;border:1px solid #d9e1e8;border-radius:12px;">
-        <div>
-          <strong style="display:block;margin-bottom:4px;">Catálogo institucional</strong>
-          <span style="color:#64748b;font-size:14px;">Carga inicial de los 23 productos y servicios de Mercado Norte Sur.</span>
-        </div>
-        <button class="btn-primary" id="importCatalogBtn" type="button">＋ Cargar 23 publicaciones</button>
-      </div>
-
       <!-- ===== Publicaciones pendientes ===== -->
       <div class="panel active" id="panel-publicaciones">
         <div id="pubQueue"></div>
@@ -529,10 +520,9 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 <script type="module">
   import {
     watchUser, logout, fetchAllListings, fetchAllUsers, setListingStatus, setUserStatus,
-    removeListing, importAdminCatalog, setAdminContactPhone, esc, safeUrl, ms, friendlyError
+    removeListing, setAdminContactPhone, esc, safeUrl, ms, friendlyError
   } from "../assets/firebase.js";
   import { CAT_LABELS, computeReport, toCSV, reportRows } from "../assets/reports.js";
-  import { ADMIN_CATALOG } from "../assets/catalogo-admin.js";
 
   const $ = (id) => document.getElementById(id);
   const money = (n) => '$' + Number(n || 0).toLocaleString('es-CL');
@@ -863,21 +853,6 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     } catch (err) { showToast(friendlyError(err)); }
   });
 
-  $('importCatalogBtn').addEventListener('click', async (e) => {
-    if (!confirm('Se cargarán los 23 artículos y servicios del catálogo institucional como publicaciones de Mercado Norte Sur. Los registros existentes no se modificarán. ¿Continuar?')) return;
-    const b = e.currentTarget; b.disabled = true;
-    try {
-      const result = await importAdminCatalog(ADMIN_CATALOG, adminUser, adminProfile);
-      await loadData();
-      showToast('Catálogo cargado: ' + result.created + ' nuevos, ' + result.skipped + ' ya existentes.');
-      activePanel = 'activas';
-      document.querySelectorAll('.admin-nav button').forEach(x => x.classList.toggle('active', x.dataset.panel === 'activas'));
-      document.querySelectorAll('.panel').forEach(x => x.classList.toggle('active', x.id === 'panel-activas'));
-      $('mainTitle').textContent = 'Publicaciones activas'; renderActivas();
-    } catch (err) { showToast(friendlyError(err)); }
-    b.disabled = false;
-  });
-
   $('refreshBtn').addEventListener('click', async (e) => {
     const b = e.currentTarget; b.disabled = true;
     try { await loadData(); showToast('Datos actualizados'); }
@@ -909,7 +884,6 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     gate.style.display = 'none';
     $('adminApp').style.display = 'block';
     $('refreshBtn').style.display = 'inline-block';
-    $('importCatalogBtn').style.display = 'inline-block';
     $('adminPhoneBtn').style.display = 'inline-block';
   });
 </script>
