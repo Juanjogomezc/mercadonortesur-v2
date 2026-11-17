@@ -552,7 +552,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
   const thumb = (l) => {
     const u = l._resolvedImage || '';
-    return u ? '<img class="queue-thumb" src="' + esc(u) + '" alt="">' : '<div class="queue-thumb"></div>';
+    return u ? '<img class="queue-thumb" src="' + esc(u) + '" alt="" loading="lazy" decoding="async">' : '<div class="queue-thumb"></div>';
   };
 
   /* ---------- Colas de aprobación ---------- */
