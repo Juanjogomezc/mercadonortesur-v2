@@ -3,8 +3,7 @@
    Tokens, tipografía y componentes reutilizados en todas las páginas.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
-
+/* Tipografía del sistema: evita bloquear el primer render con una fuente externa. */
 :root{
   --bg: #FFFFFF;
   --bg-subtle: #F6F4EF;
