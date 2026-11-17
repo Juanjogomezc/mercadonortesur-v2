@@ -24,21 +24,21 @@ jobs:
               if '.git' in path.parts:
                   continue
               source = path.read_text(encoding='utf-8')
-              for number, match in enumerate(re.finditer(r'<script\\b([^>]*)>(.*?)</script\\s*>', source, re.I | re.S), 1):
+              for number, match in enumerate(re.finditer(r"<script\b([^>]*)>(.*?)</script\s*>", source, re.I | re.S), 1):
                   attrs, code = match.group(1), match.group(2)
-                  if re.search(r'\\bsrc\\s*=', attrs, re.I) or not code.strip():
+                  if re.search(r"\bsrc\s*=", attrs, re.I) or not code.strip():
                       continue
-                  module = bool(re.search(r'\\btype\\s*=\\s*["\\']module["\\']', attrs, re.I))
+                  module = bool(re.search(r'type\s*=\s*["]module["]', attrs, re.I))
                   command = ['node', '--input-type=module', '--check'] if module else ['node', '--check']
                   result = subprocess.run(command, input=code, text=True, capture_output=True)
                   if result.returncode:
-                      failures.append(f'{path} inline script {number}:\\n{result.stderr}')
+                      failures.append(f'{path} inline script {number}:\n{result.stderr}')
           module = pathlib.Path('assets/firebase.js')
           result = subprocess.run(['node', '--input-type=module', '--check'], input=module.read_text(encoding='utf-8'), text=True, capture_output=True)
           if result.returncode:
-              failures.append(f'{module}:\\n{result.stderr}')
+              failures.append(f'{module}:\n{result.stderr}')
           if failures:
-              print('\\n'.join(failures))
+              print('\n'.join(failures))
               sys.exit(1)
           print('JavaScript syntax OK')
           PY
