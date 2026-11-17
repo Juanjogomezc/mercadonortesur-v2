@@ -97,14 +97,23 @@ export function friendlyError(err) {
 export async function ensureUserDoc(user, extra = {}) {
   const refDoc = doc(db, "users", user.uid);
   const snap = await getDoc(refDoc);
-  if (snap.exists()) return snap.data();
+  if (snap.exists()) {
+    const profile = snap.data();
+    // Activar automáticamente cuentas antiguas que quedaron pendientes.
+    // No altera cuentas suspendidas/rechazadas ni perfiles administradores.
+    if (profile.role === "user" && profile.status === "pending") {
+      await updateDoc(refDoc, { status: "approved", reviewedAt: serverTimestamp() });
+      return { ...profile, status: "approved" };
+    }
+    return profile;
+  }
   const data = {
     name: extra.name || user.displayName || (user.email || "").split("@")[0] || "Usuario",
     email: user.email || "",
     photoURL: user.photoURL || "",
     provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || "password",
     role: "user",
-    status: "pending",
+    status: "approved",
     createdAt: serverTimestamp()
   };
   await setDoc(refDoc, data);
@@ -259,26 +268,26 @@ function listingPayload(f) {
 }
 
 export async function createListing(form, images, user, profile, listingId = null) {
-  if (!user || !profile || profile.status !== "approved") {
-    throw new Error("Tu cuenta debe estar aprobada para enviar publicaciones a revisión.");
+  const isAdmin = !!(user && profile && profile.role === "admin");
+  if (!user || !profile || (!isAdmin && profile.status !== "approved")) {
+    throw new Error("Tu cuenta debe estar habilitada para publicar.");
   }
   const listingRef = listingId
     ? doc(db, "listings", listingId)
     : doc(collection(db, "listings"));
 
-  // No consultar getDoc() antes de crear: las reglas de lectura pueden denegar
-  // la lectura de un documento inexistente. setDoc escribe directamente y permite
-  // reintentar con el mismo ID si se perdió la respuesta de red.
-
+  // Las publicaciones de usuarios entran a revisión. Las del administrador
+  // quedan publicadas inmediatamente y se identifican como institucionales.
   const data = {
     ...listingPayload(form),
     images: images || [],
     sellerId: user.uid,
-    sellerName: profile.name || user.displayName || (user.email || "").split("@")[0] || "Usuario",
-    status: "pending",
+    sellerName: isAdmin ? "Mercado Norte Sur" : (profile.name || user.displayName || (user.email || "").split("@")[0] || "Usuario"),
+    ...(isAdmin ? { sellerType: "admin", adminCatalog: true } : {}),
+    status: isAdmin ? "approved" : "pending",
     rejectionReason: null,
     createdAt: serverTimestamp(),
-    reviewedAt: null
+    reviewedAt: isAdmin ? serverTimestamp() : null
   };
   await setDoc(listingRef, data);
   return listingRef.id;
@@ -290,10 +299,16 @@ export async function updateListingImages(id, images) {
   await updateDoc(doc(db, "listings", id), { images: images || [] });
 }
 
-// Editar y reenviar: vuelve a "pending" para que el admin la revise de nuevo
-export async function resubmitListing(id, form, images) {
-  const data = { ...listingPayload(form), status: "pending", rejectionReason: null, reviewedAt: null };
-  if (images && images.length) data.images = images;
+// Las ediciones de usuarios vuelven a revisión; las del administrador siguen publicadas.
+export async function resubmitListing(id, form, images, user = null, profile = null) {
+  const isAdmin = !!(user && profile && profile.role === "admin");
+  const data = {
+    ...listingPayload(form),
+    status: isAdmin ? "approved" : "pending",
+    rejectionReason: null,
+    reviewedAt: isAdmin ? serverTimestamp() : null
+  };
+  if (Array.isArray(images)) data.images = images;
   await updateDoc(doc(db, "listings", id), data);
 }
 
