@@ -223,34 +223,48 @@ async function resizeImage(file, maxSide = 1200) {
 export async function uploadListingImages(uid, files) {
   if (!uid) throw new Error("Inicia sesión para subir fotografías.");
   if (!Array.isArray(files) || !files.length) return [];
-  const urls = [];
-  for (let i = 0; i < files.length; i++) {
-    if (!files[i] || !String(files[i].type || "").startsWith("image/")) {
+
+  // El formulario admite hasta 4 fotos: procesarlas y subirlas en paralelo
+  // reduce la espera frente a la subida secuencial.
+  const tasks = files.map(async (file, index) => {
+    if (!file || !String(file.type || "").startsWith("image/")) {
       throw new Error("Uno de los archivos no es una imagen válida.");
     }
-    const blob = await resizeImage(files[i]);
-    if (blob.size >= 3 * 1024 * 1024) throw new Error("Una fotografía supera el límite permitido. Prueba con otra imagen.");
-    const unique = (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
-    const r = ref(storage, "listings/" + uid + "/" + unique + "-" + i + ".jpg");
+    const blob = await resizeImage(file);
+    if (blob.size >= 3 * 1024 * 1024) {
+      throw new Error("Una fotografía supera el límite permitido. Prueba con otra imagen.");
+    }
+    const unique = (globalThis.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+    const storageRef = ref(storage, "listings/" + uid + "/" + unique + "-" + index + ".jpg");
+
     let lastError;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        await uploadBytes(r, blob, { contentType: "image/jpeg", cacheControl: "public,max-age=31536000" });
-        const url = await getDownloadURL(r);
-        if (!/^https:\/\//i.test(url)) throw new Error("Firebase no devolvió una dirección válida para la fotografía.");
-        urls.push(url);
-        lastError = null;
-        break;
+        await uploadBytes(storageRef, blob, {
+          contentType: "image/jpeg",
+          cacheControl: "public,max-age=31536000"
+        });
+        const url = await getDownloadURL(storageRef);
+        if (!/^https:\/\//i.test(url)) {
+          throw new Error("Firebase no devolvió una dirección válida para la fotografía.");
+        }
+        return url;
       } catch (err) {
         lastError = err;
         if (attempt < 2 && ["storage/retry-limit-exceeded","storage/unknown","unavailable","deadline-exceeded"].includes(err?.code)) {
-          await new Promise(resolve => setTimeout(resolve, 700 * (attempt + 1)));
-        } else break;
+          await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+        } else {
+          break;
+        }
       }
     }
-    if (lastError) throw lastError;
-  }
-  return urls;
+    throw lastError || new Error("No se pudo subir una fotografía.");
+  });
+
+  // Promise.all mantiene el orden original de las fotos.
+  return Promise.all(tasks);
 }
 
 function listingPayload(f) {
