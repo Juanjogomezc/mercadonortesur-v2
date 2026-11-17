@@ -16,7 +16,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection,
-  query, where, getDocs, serverTimestamp
+  query, where, getDocs, serverTimestamp, orderBy, limit, startAfter
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {
   getStorage, ref, uploadBytes, getDownloadURL, deleteObject
@@ -210,8 +210,17 @@ function mapDocs(snap) {
 }
 
 export async function fetchApprovedListings() {
-  const snap = await getDocs(query(collection(db, "listings"), where("status", "==", "approved")));
-  return mapDocs(snap).sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
+  const snap = await getDocs(query(collection(db, "listings"), where("status", "==", "approved"), orderBy("createdAt", "desc")));
+  return mapDocs(snap);
+}
+
+// Paginación del catálogo: evita descargar el inventario completo al abrir el home.
+export async function fetchApprovedListingsPage(pageSize = 24, cursor = null) {
+  const constraints = [where("status", "==", "approved"), orderBy("createdAt", "desc")];
+  if (cursor) constraints.push(startAfter(cursor));
+  constraints.push(limit(Math.min(48, Math.max(1, Number(pageSize) || 24))));
+  const snap = await getDocs(query(collection(db, "listings"), ...constraints));
+  return { items: mapDocs(snap), cursor: snap.docs.at(-1) || cursor, hasMore: snap.size === Math.min(48, Math.max(1, Number(pageSize) || 24)) };
 }
 
 export async function fetchMyListings(uid) {
