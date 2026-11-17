@@ -224,7 +224,6 @@ export async function fetchApprovedListings() {
 export async function fetchApprovedListingsPage(pageSize = 24, cursor = null) {
   const constraints = [where("status", "==", "approved"), orderBy("createdAt", "desc")];
   if (cursor) constraints.push(startAfter(cursor));
-  constraints.push(limit(Math.min(48, Math.max(1, Number(pageSize) || 24))));
   const size = Math.min(48, Math.max(1, Number(pageSize) || 24));
   constraints.push(limit(size + 1));
   const snap = await getDocs(query(collection(db, "listings"), ...constraints));
