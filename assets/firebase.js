@@ -12,7 +12,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, updateProfile
+  signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, updateProfile, deleteUser
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection,
@@ -152,9 +152,17 @@ export async function ensureUserDoc(user, extra = {}) {
 
 export async function registerWithEmail(name, email, password) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
-  await updateProfile(cred.user, { displayName: name });
-  const profile = await ensureUserDoc(cred.user, { name });
-  return { user: cred.user, profile };
+  try {
+    await updateProfile(cred.user, { displayName: name });
+    const profile = await ensureUserDoc(cred.user, { name });
+    return { user: cred.user, profile };
+  } catch (error) {
+    // Si falla la creación del perfil, no dejamos una cuenta Auth huérfana.
+    try { await deleteUser(cred.user); } catch (cleanupError) {
+      console.error("No se pudo revertir la cuenta Auth incompleta:", cleanupError);
+    }
+    throw error;
+  }
 }
 
 export async function loginWithEmail(email, password) {
