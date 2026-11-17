@@ -3,16 +3,18 @@
 <header class="site"><div class="header-top"><a class="logo" href="../index.html"><span class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>Mercado Norte Sur</a><div style="flex:1"></div><nav class="header-actions"><a href="../index.html">Comprar</a><a href="favoritos.html">Favoritos</a><a href="carrito.html" class="icon-btn">Carrito <span class="cart-dot">0</span></a><a href="dashboard.html">Mi cuenta</a></nav></div></header>
 <main class="wrap fav-wrap"><div class="section-head"><div><div class="eyebrow">Tu selección</div><h1>Mis favoritos</h1><p style="color:var(--ink-soft);margin-top:8px">Guarda aquí el equipamiento que te interesa y vuelve cuando quieras.</p></div></div><div id="favState" class="empty-state">Cargando tus favoritos…</div><div id="favGrid" class="fav-grid"></div></main>
 <script type="module">
-import {watchUser,fetchFavoriteIds,fetchListing,toggleFavorite,safeUrl,esc} from "../assets/firebase.js";
+import {watchUser,fetchFavoriteIds,fetchListing,toggleFavorite,resolveListingImages,esc} from "../assets/firebase.js";
 const state=document.getElementById("favState"),grid=document.getElementById("favGrid"),money=n=>"$"+Number(n||0).toLocaleString("es-CL");
 watchUser(async user=>{
  if(!user){state.innerHTML='Para ver tus favoritos, <a href="../auth/login.html?next='+encodeURIComponent(location.pathname+location.search)+'" style="color:var(--rust);font-weight:700">inicia sesión</a>.';return}
  try{
   const ids=await fetchFavoriteIds(user.uid);
   const items=(await Promise.all(ids.map(id=>fetchListing(id).catch(()=>null)))).filter(p=>p&&p.status==="approved");
+  const resolved=await Promise.all(items.map(resolveListingImages));
+  items.forEach((item,index)=>{item._resolvedImage=resolved[index][0]||""});
   if(!items.length){state.textContent="Todavía no tienes favoritos. Explora el catálogo y guarda los productos que te interesen.";return}
   state.style.display="none";
-  grid.innerHTML=items.map(p=>'<article class="fav-card"><img src="'+esc(safeUrl(p.images?.[0]))+'" alt="'+esc(p.title)+'" loading="lazy"><div class="fav-body"><div class="fav-title">'+esc(p.title)+'</div><div class="fav-price">'+money(p.price)+'</div><div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px">'+esc(p.sellerName||"Vendedor")+' · '+esc(p.location||"")+'</div><div class="fav-actions"><a href="../producto.html?id='+encodeURIComponent(p.id)+'">Ver producto</a><button class="remove" data-remove="'+esc(p.id)+'">Quitar</button></div></div></article>').join("");
+  grid.innerHTML=items.map(p=>'<article class="fav-card"><img src="'+esc(p._resolvedImage)+'" alt="'+esc(p.title)+'" loading="lazy"><div class="fav-body"><div class="fav-title">'+esc(p.title)+'</div><div class="fav-price">'+money(p.price)+'</div><div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px">'+esc(p.sellerName||"Vendedor")+' · '+esc(p.location||"")+'</div><div class="fav-actions"><a href="../producto.html?id='+encodeURIComponent(p.id)+'">Ver producto</a><button class="remove" data-remove="'+esc(p.id)+'">Quitar</button></div></div></article>').join("");
   grid.addEventListener("click",async e=>{const b=e.target.closest("[data-remove]");if(!b)return;b.disabled=true;try{await toggleFavorite(user.uid,b.dataset.remove);b.closest(".fav-card").remove();if(!grid.children.length){grid.innerHTML="";state.style.display="block";state.textContent="Todavía no tienes favoritos."}}catch(err){b.disabled=false;alert("No pudimos quitar el favorito.")}});
  }catch(e){state.textContent="No pudimos cargar tus favoritos. Revisa tu conexión e inténtalo nuevamente."}
 });

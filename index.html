@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mercado Norte Sur — Mockup arquitectura visual</title>
+<title>Mercado Norte Sur | Marketplace de equipamiento outdoor en Chile</title>
+<meta name="description" content="Compra, vende y encuentra equipamiento outdoor en Chile. Publica productos de camping, trekking, ciclismo, escalada, surf y más.">
+<meta name="theme-color" content="#27D3F5">
 <link rel="icon" href="assets/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
-
+  /* Tipografía del sistema: evita bloquear el primer render con una fuente externa. */
   :root{
     --bg: #FFFFFF;
     --bg-subtle: #FFFFFF;
@@ -536,6 +537,9 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
 .p-media img{min-width:100%;min-height:100%}.photo-card-placeholder{display:grid;place-items:center;height:100%;font-size:13px;color:var(--ink-soft)}
 
 </style>
+<style>
+.catalog-more{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 12px 8px;text-align:center;color:var(--ink-soft);font-size:13px}.catalog-more button{min-width:210px;min-height:44px}.catalog-more button[hidden]{display:none}
+</style>
 </head>
 <body>
 
@@ -747,6 +751,7 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
     </button>
   </div>
   <div class="product-grid" id="productGrid"></div>
+  <div class="catalog-more"><button type="button" id="loadMoreProducts" class="btn-ghost" hidden>Ver más publicaciones</button><span id="catalogLoadStatus" role="status" aria-live="polite"></span></div>
 </section>
 
 </div>
@@ -893,7 +898,7 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
         <div class="p-media ${p.img ? "" : "no-image"}">
           <span class="p-badge ${cond}">${badgeLabel}</span>
           <button class="p-fav" type="button" data-favorite="${esc(p.id)}" aria-label="Guardar ${esc(p.name)}" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg></button>
-          ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy" onerror="this.remove();this.parentElement.classList.add('no-image')">` : ''}
+          ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy" decoding="async" onerror="this.remove();this.parentElement.classList.add('no-image')">` : ''}
         </div>
         <div class="p-body">
           <div class="p-cat">${esc(CAT_LABELS[p.cat] || p.cat)}</div>
@@ -924,6 +929,8 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
     renderGrid();
     if (window.mnsRefreshFavorites) window.mnsRefreshFavorites();
   }
+
+  window.appendProducts = function(list){ setProducts(PRODUCTS.concat(list)); };
 
   function renderGrid(){
     let items = PRODUCTS.filter(p => currentCat === 'all' || p.cat === currentCat);
@@ -1067,11 +1074,12 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
 
 
 <script type="module">
-  import { watchUser, fetchApprovedListings, safeUrl, fetchFavoriteIds, toggleFavorite } from "./assets/firebase.js";
+  import { watchUser, fetchApprovedListingsPage, resolveListingImages, fetchFavoriteIds, toggleFavorite } from "./assets/firebase.js";
 
   // El catálogo público se alimenta exclusivamente desde publicaciones aprobadas en Firestore.
 
-  function toProduct(l) {
+  async function toProduct(l) {
+    const images = await resolveListingImages(l, 1);
     return {
       id: l.id,
       cat: l.category,
@@ -1082,19 +1090,35 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
       unit: l.unit ? '/' + l.unit : '',
       seller: l.sellerName,
       loc: l.location,
-      img: safeUrl(l.images && l.images[0])
+      img: images[0] || ''
     };
   }
 
-  (async () => {
+  const PAGE_SIZE = 24;
+  let catalogCursor = null, catalogHasMore = false, catalogLoading = false, catalogLoaded = false;
+  const moreButton = document.getElementById('loadMoreProducts');
+  const loadStatus = document.getElementById('catalogLoadStatus');
+  async function loadCatalogPage(append = false) {
+    if (catalogLoading || (append && !catalogHasMore)) return;
+    catalogLoading = true;
+    if (moreButton) { moreButton.disabled = true; moreButton.textContent = 'Cargando…'; }
+    if (loadStatus) loadStatus.textContent = append ? 'Cargando más publicaciones…' : 'Cargando publicaciones…';
     try {
-      const list = await fetchApprovedListings();
-      window.setProducts(list.map(toProduct));
+      const page = await fetchApprovedListingsPage(PAGE_SIZE, append ? catalogCursor : null);
+      const products = await Promise.all(page.items.map(toProduct));
+      catalogCursor = page.cursor; catalogHasMore = page.hasMore; catalogLoaded = true;
+      if (append) window.appendProducts(products); else window.setProducts(products);
+      if (moreButton) { moreButton.hidden = !catalogHasMore; moreButton.disabled = false; moreButton.textContent = 'Ver más publicaciones'; }
+      if (loadStatus) loadStatus.textContent = page.items.length ? '' : 'Aún no hay publicaciones disponibles.';
     } catch (err) {
       console.error('No se pudieron cargar las publicaciones:', err);
-      window.setProducts([]);
-    }
-  })();
+      if (!append) window.setProducts([]);
+      if (loadStatus) loadStatus.textContent = 'No pudimos cargar el catálogo. Revisa tu conexión e inténtalo nuevamente.';
+      if (moreButton) { moreButton.hidden = false; moreButton.disabled = false; moreButton.textContent = 'Reintentar'; }
+    } finally { catalogLoading = false; }
+  }
+  moreButton?.addEventListener('click', () => loadCatalogPage(catalogLoaded));
+  loadCatalogPage();
 
   let currentUid = null;
   window.mnsRefreshFavorites = async () => {

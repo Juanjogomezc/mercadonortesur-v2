@@ -13,8 +13,7 @@
    Tokens, tipografía y componentes reutilizados en todas las páginas.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
-
+/* Tipografía del sistema: evita una descarga externa que bloquee el render. */
 :root{
   --bg: #FFFFFF;
   --bg-subtle: #F6F4EF;
@@ -387,7 +386,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 </footer>
 
 <script type="module">
-  import { watchUser, logout, fetchMyListings, removeListing, esc, safeUrl, friendlyError } from "../assets/firebase.js";
+  import { watchUser, logout, fetchMyListings, removeListing, esc, resolveListingImages, friendlyError } from "../assets/firebase.js";
   import { CAT_LABELS } from "../assets/reports.js";
 
   const money = (n) => '$' + Number(n || 0).toLocaleString('es-CL');
@@ -432,8 +431,8 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     wrap.innerHTML = '<table class="data-table"><thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Estado</th><th></th></tr></thead><tbody>' +
       listings.map(l => {
         const [label, cls] = STATUS[l.status] || ['—', 'usado'];
-        const img = safeUrl(l.images && l.images[0]);
-        const thumb = img ? '<img class="row-thumb" src="' + esc(img) + '" alt="">' : '<div class="row-thumb-empty"></div>';
+        const img = l._resolvedImage || '';
+        const thumb = img ? '<img class="row-thumb" src="' + esc(img) + '" alt="" loading="lazy" decoding="async">' : '<div class="row-thumb-empty"></div>';
         const reason = l.status === 'rejected' && l.rejectionReason ? '<div class="reason">Motivo: ' + esc(l.rejectionReason) + '</div>' : '';
         return '<tr><td><div class="row-prod">' + thumb + '<div><div>' + esc(l.title) + '</div>' + reason + '</div></div></td>' +
           '<td>' + esc(CAT_LABELS[l.category] || l.category) + '</td>' +
@@ -475,6 +474,8 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 
     try {
       listings = await fetchMyListings(user.uid);
+      const resolved = await Promise.all(listings.map(listing => resolveListingImages(listing, 1)));
+      listings = listings.map((listing, index) => ({ ...listing, _resolvedImage: resolved[index][0] || '' }));
     } catch (err) {
       loading.textContent = 'No pudimos cargar tus publicaciones. ' + friendlyError(err);
       return;
