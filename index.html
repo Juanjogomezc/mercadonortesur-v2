@@ -8,8 +8,7 @@
 <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
-
+  /* Tipografía del sistema: evita bloquear el primer render con una fuente externa. */
   :root{
     --bg: #FFFFFF;
     --bg-subtle: #FFFFFF;
@@ -747,6 +746,7 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
     </button>
   </div>
   <div class="product-grid" id="productGrid"></div>
+  <div class="catalog-more"><button type="button" id="loadMoreProducts" class="btn-ghost" hidden>Ver más publicaciones</button><span id="catalogLoadStatus" role="status" aria-live="polite"></span></div>
 </section>
 
 </div>
@@ -925,6 +925,8 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
     if (window.mnsRefreshFavorites) window.mnsRefreshFavorites();
   }
 
+  window.appendProducts = function(list){ setProducts(PRODUCTS.concat(list)); };
+
   function renderGrid(){
     let items = PRODUCTS.filter(p => currentCat === 'all' || p.cat === currentCat);
     if(currentFilter === 'nuevo') items = items.filter(p => p.cond === 'nuevo');
@@ -1067,7 +1069,7 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
 
 
 <script type="module">
-  import { watchUser, fetchApprovedListings, resolveListingImages, fetchFavoriteIds, toggleFavorite } from "./assets/firebase.js";
+  import { watchUser, fetchApprovedListingsPage, resolveListingImages, fetchFavoriteIds, toggleFavorite } from "./assets/firebase.js";
 
   // El catálogo público se alimenta exclusivamente desde publicaciones aprobadas en Firestore.
 
@@ -1087,15 +1089,31 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
     };
   }
 
-  (async () => {
+  const PAGE_SIZE = 24;
+  let catalogCursor = null, catalogHasMore = false, catalogLoading = false;
+  const moreButton = document.getElementById('loadMoreProducts');
+  const loadStatus = document.getElementById('catalogLoadStatus');
+  async function loadCatalogPage(append = false) {
+    if (catalogLoading || (append && !catalogHasMore)) return;
+    catalogLoading = true;
+    if (moreButton) { moreButton.disabled = true; moreButton.textContent = 'Cargando…'; }
+    if (loadStatus) loadStatus.textContent = append ? 'Cargando más publicaciones…' : 'Cargando publicaciones…';
     try {
-      const list = await fetchApprovedListings();
-      window.setProducts(await Promise.all(list.map(toProduct)));
+      const page = await fetchApprovedListingsPage(PAGE_SIZE, append ? catalogCursor : null);
+      const products = await Promise.all(page.items.map(toProduct));
+      catalogCursor = page.cursor; catalogHasMore = page.hasMore;
+      if (append) window.appendProducts(products); else window.setProducts(products);
+      if (moreButton) { moreButton.hidden = !catalogHasMore; moreButton.disabled = false; moreButton.textContent = 'Ver más publicaciones'; }
+      if (loadStatus) loadStatus.textContent = page.items.length ? '' : 'Aún no hay publicaciones disponibles.';
     } catch (err) {
       console.error('No se pudieron cargar las publicaciones:', err);
-      window.setProducts([]);
-    }
-  })();
+      if (!append) window.setProducts([]);
+      if (loadStatus) loadStatus.textContent = 'No pudimos cargar el catálogo. Revisa tu conexión e inténtalo nuevamente.';
+      if (moreButton) { moreButton.hidden = false; moreButton.disabled = false; moreButton.textContent = 'Reintentar'; }
+    } finally { catalogLoading = false; }
+  }
+  moreButton?.addEventListener('click', () => loadCatalogPage(true));
+  loadCatalogPage();
 
   let currentUid = null;
   window.mnsRefreshFavorites = async () => {
