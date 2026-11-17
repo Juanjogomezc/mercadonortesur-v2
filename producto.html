@@ -48,7 +48,8 @@ function contactState(){
 }
 function render(p){
  listing=p;
- const images=(Array.isArray(p.images)?p.images:[]).map(safeUrl).filter(Boolean);
+ const imageList=Array.isArray(p.images)?p.images:(p.imageUrl||p.image?[p.imageUrl||p.image]:[]);
+ const images=imageList.map(safeUrl).filter(Boolean);
  const image=images[0]||"";
  const attrs=p.attributes&&typeof p.attributes==="object"?p.attributes:{};
  const seller=p.sellerName||"Vendedor";
@@ -60,6 +61,7 @@ function render(p){
  <div class="product-meta"><span class="product-tag">${condition}</span><span class="product-tag">${esc(p.location||"Ubicación no indicada")}</span>${isAdmin?'<span class="product-tag">Publicado por Mercado Norte Sur</span>':""}</div>
  <div class="seller-card"><div class="seller-row"><div class="seller-avatar">${esc(seller.slice(0,1).toUpperCase())}</div><div><strong>${esc(seller)}</strong><div class="seller-label">${isAdmin?"Cuenta administradora de Mercado Norte Sur":"Vendedor en Mercado Norte Sur"}</div></div></div></div>
  <div class="product-actions"><button id="contactBtn" class="contact-btn" type="button">Verificando tu cuenta…</button><div id="contactNote" class="notice" style="display:none"></div><button id="addCartBtn" class="add-cart-btn" type="button">＋ Agregar al carrito</button><button id="favoriteBtn" class="favorite-btn" type="button">♡ Guardar en favoritos</button><button id="shareBtn" class="share-btn" type="button" aria-expanded="false">↗ Compartir publicación</button><div id="sharePanel" class="share-panel" hidden><a id="shareWhatsApp" target="_blank" rel="noopener">WhatsApp</a><a id="shareFacebook" target="_blank" rel="noopener">Facebook</a><a id="shareX" target="_blank" rel="noopener">X</a><button id="copyShareLink" type="button">Copiar enlace</button><button id="nativeShare" type="button" style="grid-column:1/-1">Más opciones para compartir</button></div></div></div></div>`;
+ if(p.status!=="approved"){root.insertAdjacentHTML("afterbegin",'<div class="notice" style="margin-bottom:18px">Vista previa del vendedor: esta publicación todavía está pendiente de aprobación y no es visible para otros visitantes.</div>');}
  contactState();
  const thumbs=document.getElementById("productThumbs");
  thumbs.innerHTML=images.map((src,index) => "<button type=\"button\" data-gallery-src=\"" + esc(src) + "\" aria-label=\"Ver fotografía " + (index+1) + "\" class=\"" + (index===0?"active":"") + "\"><img src=\"" + esc(src) + "\" alt=\"Fotografía " + (index+1) + "\" loading=\"lazy\"></button>").join("");
@@ -94,14 +96,24 @@ function render(p){
  sync();
  fav.addEventListener("click",async()=>{if(!currentUser){location.href="auth/login.html?next="+encodeURIComponent(location.pathname+location.search);return}fav.disabled=true;try{saved=await toggleFavorite(currentUser.uid,id);sync()}catch(e){alert("No pudimos actualizar tus favoritos.")}finally{fav.disabled=false}});
 }
-watchUser(async(user,profile)=>{
- currentUser=user||null;currentProfile=profile||null;authReady=true;
- if(user&&id){try{saved=(await fetchFavoriteIds(user.uid)).includes(id);const b=document.getElementById("favoriteBtn");if(b){b.classList.toggle("is-favorite",saved);b.textContent=saved?"♥ Guardado en favoritos":"♡ Guardar en favoritos"}}catch(e){}}
- contactState();
-});
-(async()=>{
- if(!id){root.innerHTML="<h1>Producto no encontrado</h1>";return}
- try{const p=await fetchListing(id);if(!p||p.status!=="approved"){root.innerHTML='<div class="empty-state"><h1>Esta publicación no está disponible</h1><p>Puede haber sido pausada o eliminada.</p><a class="btn-primary" href="index.html">Volver al catálogo</a></div>';return}render(p)}
- catch(e){root.innerHTML='<div class="empty-state"><h1>No pudimos cargar el producto</h1><p>Revisa tu conexión e inténtalo nuevamente.</p><a class="btn-primary" href="index.html">Volver al catálogo</a></div>'}
-})();
+if(!id){root.innerHTML="<h1>Producto no encontrado</h1>";}
+else {
+ watchUser(async(user,profile)=>{
+  currentUser=user||null;currentProfile=profile||null;authReady=true;
+  try{
+   const p=await fetchListing(id);
+   const isOwner=!!(user&&p&&p.sellerId===user.uid);
+   const isAdmin=!!(profile&&profile.role==="admin");
+   if(!p||(p.status!=="approved"&&!isOwner&&!isAdmin)){
+    root.innerHTML='<div class="empty-state"><h1>Esta publicación no está disponible</h1><p>Puede haber sido pausada o eliminada.</p><a class="btn-primary" href="index.html">Volver al catálogo</a></div>';
+    return;
+   }
+   if(user){try{saved=(await fetchFavoriteIds(user.uid)).includes(id)}catch(e){}}
+   render(p);
+  }catch(e){
+   console.error("Error al cargar la publicación:",e);
+   root.innerHTML='<div class="empty-state"><h1>No pudimos cargar el producto</h1><p>Revisa tu conexión e inténtalo nuevamente.</p><a class="btn-primary" href="index.html">Volver al catálogo</a></div>';
+  }
+ });
+}
 </script></body></html>
