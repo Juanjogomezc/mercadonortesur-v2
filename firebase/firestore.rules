@@ -23,17 +23,19 @@ service cloud.firestore {
       // Cada usuario lee su propio perfil; el admin lee todos
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
 
-      // Al registrarse: solo su propio perfil, siempre como "user" y "pending"
+      // Las cuentas nuevas nacen habilitadas; el rol siempre es user.
       allow create: if signedIn() && request.auth.uid == uid
                     && request.resource.data.role == 'user'
-                    && request.resource.data.status == 'pending';
+                    && request.resource.data.status == 'approved';
 
-      // El usuario puede editar sus datos pero NO su rol ni su estado.
-      // Solo el admin cambia el estado (aprobar / suspender).
+      // El usuario no puede cambiar rol ni reactivar cuentas suspendidas/rechazadas.
+      // Solo se permite la transición heredada pending -> approved para cuentas antiguas.
       allow update: if isAdmin()
                     || (signedIn() && request.auth.uid == uid
                         && request.resource.data.role == resource.data.role
-                        && request.resource.data.status == resource.data.status);
+                        && (request.resource.data.status == resource.data.status
+                            || (resource.data.status == 'pending'
+                                && request.resource.data.status == 'approved')));
 
       allow delete: if isAdmin();
     }
@@ -51,22 +53,23 @@ service cloud.firestore {
                   || (signedIn() && resource.data.sellerId == request.auth.uid)
                   || isAdmin();
 
-      // Solo cuentas aprobadas publican, y siempre entra "en revisión"
-      // Los usuarios aprobados pueden publicar en revisión. El administrador también
-      // puede crear registros institucionales en revisión y aprobarlos desde el panel.
-      allow create: if (isApprovedUser() || isAdmin())
+      // Usuarios habilitados crean publicaciones pendientes; el administrador
+      // puede crear publicaciones institucionales ya aprobadas.
+      allow create: if (
+                      (isApprovedUser() && request.resource.data.status == 'pending')
+                      || (isAdmin() && request.resource.data.status == 'approved')
+                    )
                     && request.resource.data.sellerId == request.auth.uid
-                    && request.resource.data.status == 'pending'
                     && request.resource.data.title is string
                     && request.resource.data.title.size() > 2
                     && request.resource.data.title.size() <= 120
                     && request.resource.data.price is number
                     && request.resource.data.price >= 0;
 
-      // El dueño puede editar y reenviar (vuelve a "pending"), nunca auto-aprobarse.
-      // Solo el admin cambia estados (approved / rejected / paused).
+      // El dueño puede editar y reenviar a revisión. El admin puede editar sin
+      // devolver sus publicaciones a una cola de aprobación.
       allow update: if isAdmin()
-                    || (signedIn() && resource.data.sellerId == request.auth.uid
+                    || (isApprovedUser() && resource.data.sellerId == request.auth.uid
                         && request.resource.data.sellerId == resource.data.sellerId
                         && request.resource.data.status == 'pending');
 
