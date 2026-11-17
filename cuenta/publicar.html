@@ -427,9 +427,9 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
     <div class="check-circle">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v5l3 3M12 22a10 10 0 100-20 10 10 0 000 20z"/></svg>
     </div>
-    <h2>Tu publicación fue enviada a revisión</h2>
+    <h2 id="sentTitle">Publicación guardada</h2>
     <div class="sub" id="sentMessage">Un administrador la revisará. Verás el resultado en tu panel, en "Mis publicaciones".</div>
-    <a href="dashboard.html" class="btn-primary">Volver a mi cuenta</a>
+    <a href="dashboard.html" class="btn-primary" id="sentBack">Volver a mi cuenta</a>
   </div>
 
 </div>
@@ -466,7 +466,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
       d.classList.toggle('done', n < step);
     });
     $('btnBack').style.visibility = step === 1 ? 'hidden' : 'visible';
-    $('btnNext').textContent = step === 4 ? (editId ? 'Reenviar a revisión' : 'Enviar a revisión') : 'Continuar →';
+    $('btnNext').textContent = step === 4 ? (editId ? 'Guardar cambios' : (myProfile && myProfile.role === 'admin' ? 'Publicar ahora' : 'Enviar a revisión')) : 'Continuar →';
     document.querySelectorAll('.fase').forEach(f => f.classList.remove('active'));
     $('fase-' + step).classList.add('active');
     showError('');
@@ -479,24 +479,32 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
   function renderPhotos() {
     clearPreviewUrls();
     const row = $('photoRow');
-    const items = files.length
-      ? files.map((f, i) => { const url=URL.createObjectURL(f); previewUrls.push(url); return '<div class="photo-thumb"><img src="' + url + '" alt="Vista previa de fotografía"><button type="button" class="thumb-x" data-i="' + i + '" aria-label="Quitar">×</button></div>'; })
-      : existingImages.map(u => '<div class="photo-thumb"><img src="' + esc(safeUrl(u)) + '" alt=""></div>');
-    row.innerHTML = items.join('');
-    $('photoHint').textContent = files.length
-      ? files.length + ' foto(s) nueva(s) seleccionada(s).'
-      : (existingImages.length ? 'Estas son tus fotos actuales. Si subes nuevas, las reemplazan.' : '');
+    const oldItems = existingImages.map((u, i) =>
+      '<div class="photo-thumb"><img src="' + esc(safeUrl(u)) + '" alt="Fotografía actual"><button type="button" class="thumb-x" data-existing-i="' + i + '" aria-label="Quitar fotografía">×</button></div>');
+    const newItems = files.map((f, i) => {
+      const url = URL.createObjectURL(f); previewUrls.push(url);
+      return '<div class="photo-thumb"><img src="' + url + '" alt="Vista previa de fotografía"><button type="button" class="thumb-x" data-i="' + i + '" aria-label="Quitar fotografía">×</button></div>';
+    });
+    row.innerHTML = oldItems.concat(newItems).join('');
+    const total = existingImages.length + files.length;
+    $('photoHint').textContent = total
+      ? total + ' de ' + MAX_PHOTOS + ' foto(s). Puedes agregar, reemplazar o quitar fotografías.'
+      : 'Puedes subir hasta ' + MAX_PHOTOS + ' fotografías.';
   }
   function addFiles(list) {
-    const imgs = Array.from(list).filter(f => f.type.startsWith('image/'));
-    files = files.concat(imgs).slice(0, MAX_PHOTOS);
+    const imgs = Array.from(list).filter(f => f.type && f.type.startsWith('image/'));
+    const available = Math.max(0, MAX_PHOTOS - existingImages.length - files.length);
+    files = files.concat(imgs.slice(0, available));
     renderPhotos();
   }
   $('photoInput').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
   window.addEventListener('beforeunload', clearPreviewUrls);
   $('photoRow').addEventListener('click', (e) => {
     const b = e.target.closest('.thumb-x');
-    if (b) { files.splice(Number(b.dataset.i), 1); renderPhotos(); }
+    if (!b) return;
+    if (b.dataset.existingI !== undefined) existingImages.splice(Number(b.dataset.existingI), 1);
+    else if (b.dataset.i !== undefined) files.splice(Number(b.dataset.i), 1);
+    renderPhotos();
   });
   const dz = $('dropZone');
   ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('drag'); }));
@@ -579,11 +587,11 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
 
       if (editId) {
         // Guardar primero los cambios y conservar fotos actuales: Storage no debe bloquear la edición.
-        await resubmitListing(editId, form, existingImages);
+        await resubmitListing(editId, form, existingImages, me, myProfile);
         if (files.length) {
           btn.textContent = 'Cambios guardados · adjuntando fotos…';
           const uploadTask = uploadListingImages(me.uid, files)
-            .then(urls => updateListingImages(editId, urls))
+            .then(urls => updateListingImages(editId, existingImages.concat(urls)))
             .then(() => true)
             .catch(err => { console.error('La edición se guardó, pero falló la carga de fotos:', err); return err; });
           let timeoutId;
@@ -631,7 +639,15 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
 
       $('wizard').style.display = 'none';
       $('sentState').style.display = 'block';
-      $('sentMessage').textContent = imageWarning || 'Un administrador la revisará. Verás el resultado en tu panel, en "Mis publicaciones".';
+      const adminMode = myProfile && myProfile.role === 'admin';
+      $('sentTitle').textContent = adminMode
+        ? (editId ? 'Cambios guardados y publicados' : 'Publicación publicada')
+        : (editId ? 'Cambios enviados a revisión' : 'Publicación enviada a revisión');
+      $('sentMessage').textContent = imageWarning || (adminMode
+        ? 'La publicación ya está visible en Mercado Norte Sur. No necesita aprobación.'
+        : 'Un administrador revisará tu publicación. Verás el resultado en tu panel, en "Mis publicaciones".');
+      $('sentBack').href = adminMode ? '../admin/dashboard.html' : 'dashboard.html';
+      $('sentBack').textContent = adminMode ? 'Volver al panel administrador' : 'Volver a mi cuenta';
     } catch (err) {
       console.error('Error al guardar la publicación:', err);
       showError(friendlyError(err) + ' Tus datos siguen en pantalla. Puedes corregir el problema e intentarlo nuevamente.');
@@ -656,11 +672,11 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
     if (!profile) { gate('No pudimos cargar tu perfil', friendlyError(error), 'dashboard.html', 'Volver a mi cuenta'); return; }
     me = user; myProfile = profile;
 
-    if (profile.status === 'suspended') {
+    if (profile.role !== 'admin' && profile.status === 'suspended') {
       gate('Tu cuenta está suspendida', 'No puedes publicar por ahora. Escríbenos si crees que es un error.', 'dashboard.html', 'Volver a mi cuenta');
       return;
     }
-    if (profile.status !== 'approved') {
+    if (profile.role !== 'admin' && profile.status !== 'approved') {
       const extra = profile.role === 'admin' ? ' Como administrador, puedes aprobarla desde el panel de administración.' : '';
       gate('Tu cuenta está en revisión', 'Un administrador debe aprobarla antes de que puedas publicar.' + extra,
            profile.role === 'admin' ? '../admin/dashboard.html' : 'dashboard.html', profile.role === 'admin' ? 'Ir al panel admin' : 'Volver a mi cuenta');
