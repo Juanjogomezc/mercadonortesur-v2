@@ -48,6 +48,9 @@ function contactState(){
 }
 async function render(p){
  listing=p;
+ document.title=(p.title||'Publicación')+' | Mercado Norte Sur';
+ const descriptionMeta=document.querySelector('meta[name="description"]');
+ if(descriptionMeta) descriptionMeta.content=String(p.description||'Encuentra equipamiento outdoor en Mercado Norte Sur.').slice(0,160);
  const images=await resolveListingImages(p, 4);
  const image=images[0]||"";
  const attrs=p.attributes&&typeof p.attributes==="object"?p.attributes:{};
