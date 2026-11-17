@@ -445,7 +445,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
 
 <script type="module">
   import {
-    watchUser, createListing, resubmitListing, fetchListing, uploadListingImages, deleteListingImageUrls, friendlyError, safeUrl, esc
+    watchUser, createListing, resubmitListing, fetchListing, uploadListingImages, deleteListingImageUrls, resolveListingImages, friendlyError, safeUrl, esc
   } from "../assets/firebase.js";
   import { CAT_LABELS } from "../assets/reports.js";
 
@@ -457,6 +457,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
   let me = null, myProfile = null;
   let files = [];            // fotos nuevas (File)
   let existingImages = [];   // fotos ya guardadas (al editar)
+  let originalImages = [];   // respaldo para limpiar las fotos quitadas al guardar
 
   /* ---------- Pantalla de bloqueo / carga ---------- */
   function gate(title, msg, linkHref, linkText) {
@@ -618,6 +619,8 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
         btn.textContent = 'Guardando cambios…';
         try {
           await resubmitListing(editId, form, existingImages.concat(uploadedUrls), me, myProfile);
+          const removedImages = originalImages.filter(url => !existingImages.includes(url));
+          if (removedImages.length) await deleteListingImageUrls(removedImages);
         } catch (err) {
           if (uploadedUrls.length) await deleteListingImageUrls(uploadedUrls);
           throw err;
@@ -692,7 +695,8 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
         if (l.unit) $('f-unit').value = l.unit;
         $('f-ubicacion').value = l.location || '';
         $('f-contacto').value = l.contactPhone || '';
-        existingImages = Array.isArray(l.images) ? l.images : [];
+        existingImages = await resolveListingImages(l);
+        originalImages = existingImages.slice();
         $('editNote').style.display = 'block';
       } catch (err) {
         gate('No pudimos cargar la publicación', friendlyError(err), 'dashboard.html', 'Volver a mi cuenta');
