@@ -259,7 +259,7 @@ export async function uploadListingImages(uid, files) {
   const tasks = files.map(async (file, index) => {
     const mime = String(file?.type || "").toLowerCase();
     const filename = String(file?.name || "").toLowerCase();
-    if (!file || (!["image/jpeg", "image/png"].includes(mime) && !/\\.(jpe?g|png)$/.test(filename))) {
+    if (!file || (!["image/jpeg", "image/png"].includes(mime) && !/\.(jpe?g|png)$/.test(filename))) {
       throw new Error("Solo puedes subir fotografías JPG, JPEG o PNG.");
     }
     const blob = await resizeImage(file);
