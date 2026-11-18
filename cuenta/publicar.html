@@ -13,7 +13,8 @@
    Tokens, tipografía y componentes reutilizados en todas las páginas.
    ============================================================ */
 
-/* Tipografía del sistema: evita una descarga externa que bloquee el render. */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+
 :root{
   --bg: #FFFFFF;
   --bg-subtle: #F6F4EF;
@@ -327,11 +328,6 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
 .upload-zone{font-size:14.5px;line-height:1.5}.photo-thumb{width:84px;height:84px}
 @media(max-width:640px){main{padding:18px 0 36px}.steps-wrap{width:100%}.stepper{margin-bottom:22px}.step-label{font-size:11px;white-space:nowrap}.step-dot{width:28px;height:28px;font-size:13px}.form-card{padding:20px 15px;border-radius:12px}.form-card h2{font-size:20px}.form-card .sub{font-size:14px}.field{margin-bottom:18px}.field label{font-size:14px}.field input,.field select,.field textarea{font-size:16px;min-height:48px;padding:12px}.row-2{grid-template-columns:1fr;gap:0}.upload-zone{padding:24px 14px;font-size:14px}.photo-thumb{width:72px;height:72px}.form-actions button{min-height:48px;font-size:15px}.review-row{font-size:14px;gap:12px}}
 </style>
-
-<style>
-.photo-order{display:flex;justify-content:center;gap:5px;padding:4px}.photo-order button{min-width:28px;min-height:28px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);cursor:pointer}.photo-order button:disabled{opacity:.35;cursor:not-allowed}.photo-order .thumb-x{color:var(--red);border-color:var(--red-soft)}
-@media(max-width:520px){.photo-order button{min-width:34px;min-height:34px}}
-</style>
 </head>
 <body>
 
@@ -449,7 +445,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
 
 <script type="module">
   import {
-    watchUser, createListing, resubmitListing, fetchListing, uploadListingImages, deleteListingImageUrls, resolveListingImages, friendlyError, safeUrl, esc
+    watchUser, createListing, resubmitListing, fetchListing, uploadListingImages, deleteListingImageUrls, friendlyError, safeUrl, esc
   } from "../assets/firebase.js";
   import { CAT_LABELS } from "../assets/reports.js";
 
@@ -461,7 +457,6 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
   let me = null, myProfile = null;
   let files = [];            // fotos nuevas (File)
   let existingImages = [];   // fotos ya guardadas (al editar)
-  let originalImages = [];   // respaldo para limpiar las fotos quitadas al guardar
 
   /* ---------- Pantalla de bloqueo / carga ---------- */
   function gate(title, msg, linkHref, linkText) {
@@ -493,10 +488,10 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
     clearPreviewUrls();
     const row = $('photoRow');
     const oldItems = existingImages.map((u, i) =>
-      '<div class="photo-thumb"><img src="' + esc(safeUrl(u)) + '" alt="Fotografía actual" loading="lazy" decoding="async" onerror="this.style.opacity=.35"><div class="photo-order"><button type="button" data-move-existing="' + i + ':-1" aria-label="Mover fotografía anterior" ' + (i === 0 ? 'disabled' : '') + '>↑</button><button type="button" data-move-existing="' + i + ':1" aria-label="Mover fotografía siguiente" ' + (i === existingImages.length - 1 ? 'disabled' : '') + '>↓</button><button type="button" class="thumb-x" data-existing-i="' + i + '" aria-label="Quitar fotografía">×</button></div></div>');
+      '<div class="photo-thumb"><img src="' + esc(safeUrl(u)) + '" alt="Fotografía actual"><button type="button" class="thumb-x" data-existing-i="' + i + '" aria-label="Quitar fotografía">×</button></div>');
     const newItems = files.map((f, i) => {
       const url = URL.createObjectURL(f); previewUrls.push(url);
-      return '<div class="photo-thumb"><img src="' + url + '" alt="Vista previa de fotografía"><div class="photo-order"><button type="button" data-move-new="' + i + ':-1" aria-label="Mover fotografía anterior" ' + (i === 0 ? 'disabled' : '') + '>↑</button><button type="button" data-move-new="' + i + ':1" aria-label="Mover fotografía siguiente" ' + (i === files.length - 1 ? 'disabled' : '') + '>↓</button><button type="button" class="thumb-x" data-i="' + i + '" aria-label="Quitar fotografía">×</button></div></div>';
+      return '<div class="photo-thumb"><img src="' + url + '" alt="Vista previa de fotografía"><button type="button" class="thumb-x" data-i="' + i + '" aria-label="Quitar fotografía">×</button></div>';
     });
     row.innerHTML = oldItems.concat(newItems).join('');
     const total = existingImages.length + files.length;
@@ -527,16 +522,6 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
   }));
   window.addEventListener('beforeunload', clearPreviewUrls);
   $('photoRow').addEventListener('click', (e) => {
-    const moveExisting = e.target.closest('[data-move-existing]');
-    const moveNew = e.target.closest('[data-move-new]');
-    if (moveExisting || moveNew) {
-      const [index, direction] = (moveExisting || moveNew).dataset[moveExisting ? 'moveExisting' : 'moveNew'].split(':').map(Number);
-      const list = moveExisting ? existingImages : files;
-      const next = index + direction;
-      if (next >= 0 && next < list.length) [list[index], list[next]] = [list[next], list[index]];
-      renderPhotos();
-      return;
-    }
     const b = e.target.closest('.thumb-x');
     if (!b) return;
     if (b.dataset.existingI !== undefined) existingImages.splice(Number(b.dataset.existingI), 1);
@@ -598,33 +583,6 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
     $('rev-fotos').textContent = files.length ? files.length + ' nueva(s)' : (existingImages.length ? existingImages.length + ' actual(es)' : 'Sin fotos');
   }
 
-  const DRAFT_FIELDS = ['f-titulo','f-categoria','f-condicion','f-desc','f-precio','f-precioold','f-unit','f-ubicacion','f-contacto'];
-  function draftKey() { return 'mns-listing-draft-' + me.uid; }
-  function saveDraft() {
-    if (!me || editId) return;
-    const fields = {};
-    DRAFT_FIELDS.forEach(id => { const el = $(id); if (el) fields[id] = el.value; });
-    try { sessionStorage.setItem(draftKey(), JSON.stringify({ fields, savedAt: Date.now() })); } catch (_) {}
-  }
-  function restoreDraft() {
-    if (!me || editId) return;
-    try {
-      const raw = sessionStorage.getItem(draftKey());
-      if (!raw) return;
-      const draft = JSON.parse(raw);
-      DRAFT_FIELDS.forEach(id => { const el = $(id); if (el && draft.fields && draft.fields[id] != null) el.value = draft.fields[id]; });
-      $('photoHint').textContent = 'Recuperamos los datos del borrador. Vuelve a seleccionar las fotografías si las habías agregado.';
-    } catch (_) {}
-  }
-  function clearDraft() {
-    if (!me || editId) return;
-    try { sessionStorage.removeItem(draftKey()); } catch (_) {}
-  }
-  DRAFT_FIELDS.forEach(id => {
-    const el = $(id);
-    if (el) { el.addEventListener('input', saveDraft); el.addEventListener('change', saveDraft); }
-  });
-
   function pendingCreateKey() { return 'mns-pending-listing-' + me.uid; }
   function getPendingCreateId() {
     const key = pendingCreateKey();
@@ -653,17 +611,13 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
       // Así nunca se crea una publicación nueva con images vacío por una subida fallida.
       if (files.length) {
         btn.textContent = 'Subiendo y verificando fotografías…';
-        uploadedUrls = await uploadListingImages(me.uid, files, (done, total) => {
-          btn.textContent = 'Subiendo fotografías ' + done + ' de ' + total + '…';
-        });
+        uploadedUrls = await uploadListingImages(me.uid, files);
       }
 
       if (editId) {
         btn.textContent = 'Guardando cambios…';
         try {
           await resubmitListing(editId, form, existingImages.concat(uploadedUrls), me, myProfile);
-          const removedImages = originalImages.filter(url => !existingImages.includes(url));
-          if (removedImages.length) await deleteListingImageUrls(removedImages);
         } catch (err) {
           if (uploadedUrls.length) await deleteListingImageUrls(uploadedUrls);
           throw err;
@@ -679,7 +633,6 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
         }
       }
 
-      clearDraft();
       $('wizard').style.display = 'none';
       $('sentState').style.display = 'block';
       const adminMode = myProfile && myProfile.role === 'admin';
@@ -739,8 +692,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
         if (l.unit) $('f-unit').value = l.unit;
         $('f-ubicacion').value = l.location || '';
         $('f-contacto').value = l.contactPhone || '';
-        existingImages = await resolveListingImages(l);
-        originalImages = existingImages.slice();
+        existingImages = Array.isArray(l.images) ? l.images : [];
         $('editNote').style.display = 'block';
       } catch (err) {
         gate('No pudimos cargar la publicación', friendlyError(err), 'dashboard.html', 'Volver a mi cuenta');
@@ -748,7 +700,6 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
       }
     }
 
-    if (!editId) restoreDraft();
     syncCategoryUI();
     renderPhotos();
     $('gate').style.display = 'none';
