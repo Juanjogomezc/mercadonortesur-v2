@@ -3,6 +3,10 @@ import { watchUser, logout } from "./firebase.js";
 export function setupAuthNavigation(nav, root = "") {
   if (!nav || nav.dataset.authReady === "true") return;
   nav.dataset.authReady = "true";
+  nav.style.flexWrap = "wrap";
+  nav.style.flexShrink = "1";
+  nav.style.maxWidth = "100%";
+  nav.style.rowGap = "8px";
   const account = nav.querySelector("[data-auth-account]") || nav.querySelector('a[href*="dashboard.html"]');
   if (!account) return;
   const extras = () => nav.querySelectorAll("[data-auth-extra]").forEach(node => node.remove());
