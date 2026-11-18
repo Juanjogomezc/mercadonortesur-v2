@@ -316,6 +316,12 @@ footer.site a{color:#1B1A17;}
     display:none; background:#FBE2E0; color:#B3261E; border-radius:8px; padding:10px 12px;
     font-size:12.5px; font-weight:500; line-height:1.4; margin-top:16px;
   }
+  .submit-progress{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:9px;background:#F8FBFC}
+  .submit-progress-label{font-size:14px;font-weight:700;color:var(--ink)}
+  .submit-progress-track{height:8px;border-radius:99px;background:#E7ECEE;overflow:hidden;margin-top:10px}
+  .submit-progress-bar{height:100%;width:0;background:var(--rust);border-radius:99px;transition:width .2s ease}
+  .submit-progress-detail{font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.4}
+
   .edit-note{background:var(--amber-soft); color:var(--amber); border-radius:8px; padding:10px 12px; font-size:12.5px; margin-bottom:16px; display:none;}
   .hint-sm{font-size:11.5px; color:var(--ink-faint); margin-top:8px;}
   #gate{text-align:center; padding:44px 24px;}
@@ -423,6 +429,11 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
       </div>
 
       <div class="form-error" id="formError" role="alert"></div>
+      <div id="submitProgress" class="submit-progress" role="status" aria-live="polite" hidden>
+        <div class="submit-progress-label" id="submitProgressLabel">Preparando publicación…</div>
+        <div class="submit-progress-track"><div id="submitProgressBar" class="submit-progress-bar"></div></div>
+        <div class="submit-progress-detail" id="submitProgressDetail">No cierres esta ventana mientras guardamos tus datos.</div>
+      </div>
 
       <div class="form-actions">
         <button class="btn-ghost" id="btnBack" type="button" style="visibility:hidden;">← Atrás</button>
@@ -600,19 +611,42 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
     try { sessionStorage.removeItem(pendingCreateKey()); } catch (_) {}
   }
 
+  function setSubmitProgress(label, detail, percent) {
+    const panel = $('submitProgress');
+    panel.hidden = false;
+    $('submitProgressLabel').textContent = label;
+    $('submitProgressDetail').textContent = detail;
+    $('submitProgressBar').style.width = Math.max(0, Math.min(100, percent || 0)) + '%';
+  }
+
   async function submit() {
     const btn = $('btnNext');
-    btn.disabled = true; btn.textContent = 'Guardando publicación…'; showError('');
+    btn.disabled = true; btn.textContent = 'Preparando…'; showError('');
+    $('submitProgress').hidden = false;
+    $('submitProgressBar').style.width = '0%';
     let uploadedUrls = [];
     try {
       const form = readForm();
 
-      // Las fotos se suben y verifican antes de escribir Firestore.
-      // Así nunca se crea una publicación nueva con images vacío por una subida fallida.
+      // Subir primero y comunicar el progreso para evitar la sensación de bloqueo.
       if (files.length) {
-        btn.textContent = 'Subiendo y verificando fotografías…';
-        uploadedUrls = await uploadListingImages(me.uid, files);
+        btn.textContent = 'Procesando fotos…';
+        uploadedUrls = await uploadListingImages(me.uid, files, state => {
+          const label = state.stage === 'processing'
+            ? 'Optimizando fotografía ' + (state.index + 1) + ' de ' + state.total
+            : state.stage === 'uploaded'
+              ? 'Fotografía ' + (state.index + 1) + ' lista'
+              : 'Subiendo fotografías…';
+          const detail = state.stage === 'processing'
+            ? 'Reduciendo el peso para que la publicación cargue rápido en celulares.'
+            : 'Carga completada: ' + state.percent + '%. Puedes mantener esta ventana abierta.';
+          setSubmitProgress(label, detail, state.percent);
+          btn.textContent = state.stage === 'processing' ? 'Optimizando fotos…' : 'Subiendo fotos…';
+        });
       }
+
+      setSubmitProgress('Guardando publicación…', 'Guardando los datos y vinculando las fotografías.', 94);
+      btn.textContent = 'Guardando publicación…';
 
       if (editId) {
         btn.textContent = 'Guardando cambios…';
@@ -633,6 +667,9 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
         }
       }
 
+      $('submitProgressBar').style.width = '100%';
+      $('submitProgressLabel').textContent = 'Publicación guardada';
+      $('submitProgressDetail').textContent = 'Tus datos y fotografías quedaron vinculados correctamente.';
       $('wizard').style.display = 'none';
       $('sentState').style.display = 'block';
       const adminMode = myProfile && myProfile.role === 'admin';
@@ -646,8 +683,10 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
       $('sentBack').textContent = adminMode ? 'Volver al panel administrador' : 'Volver a mi cuenta';
     } catch (err) {
       console.error('Error al guardar la publicación o sus fotografías:', err);
+      $('submitProgress').hidden = true;
       showError(friendlyError(err) + ' No se creó ni se actualizó la publicación. Tus datos y fotografías seleccionadas siguen en pantalla; puedes reintentar.');
       btn.disabled = false;
+      btn.textContent = 'Reintentar publicación';
       updateStepper();
     }
   }
