@@ -11,8 +11,9 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
-  getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, updateProfile
+  getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup,
+  GoogleAuthProvider, sendPasswordResetEmail, signOut, updateProfile
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection,
@@ -37,6 +38,11 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+// Persistencia local explícita: mantiene la sesión al recargar o navegar entre páginas.
+export const authPersistenceReady = setPersistence(auth, browserLocalPersistence).catch(error => {
+  console.warn("No se pudo configurar la persistencia local de Firebase Auth; se conserva el comportamiento predeterminado.", error);
+  return false;
+});
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 auth.languageCode = "es";
@@ -45,7 +51,7 @@ auth.languageCode = "es";
 isSupported().then(ok => { if (ok) getAnalytics(app); }).catch(() => {});
 
 const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({ prompt: "select_account" });
+// No forzar el selector de cuenta en cada acceso: Google puede reutilizar la sesión disponible.
 
 /* ---------- Utilidades ---------- */
 
@@ -131,17 +137,59 @@ export function friendlyError(err) {
 
 /* ---------- Autenticación ---------- */
 
-export async function ensureUserDoc(user, extra = {}) {
+// Caché breve por pestaña para que volver atrás o cambiar de sección no espere
+// una lectura de Firestore en cada página. Las reglas de Firebase siguen siendo
+// la autoridad real para permitir o rechazar cualquier operación protegida.
+const PROFILE_CACHE_PREFIX = "mns.profile.v1.";
+const PROFILE_CACHE_TTL = 30 * 1000;
+
+function readCachedProfile(uid) {
+  try {
+    const raw = sessionStorage.getItem(PROFILE_CACHE_PREFIX + uid);
+    if (!raw) return null;
+    const entry = JSON.parse(raw);
+    if (!entry || Date.now() - entry.savedAt > PROFILE_CACHE_TTL) {
+      sessionStorage.removeItem(PROFILE_CACHE_PREFIX + uid);
+      return null;
+    }
+    return entry.profile || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function writeCachedProfile(uid, profile) {
+  try {
+    const safeProfile = {};
+    for (const key of ["name", "email", "photoURL", "provider", "role", "status", "contactPhone", "whatsapp", "phone"]) {
+      if (profile && profile[key] != null) safeProfile[key] = profile[key];
+    }
+    sessionStorage.setItem(PROFILE_CACHE_PREFIX + uid, JSON.stringify({ savedAt: Date.now(), profile: safeProfile }));
+  } catch (_) {}
+}
+
+function clearCachedProfiles() {
+  try {
+    for (let i = sessionStorage.length - 1; i >= 0; i--) {
+      const key = sessionStorage.key(i);
+      if (key && key.startsWith(PROFILE_CACHE_PREFIX)) sessionStorage.removeItem(key);
+    }
+  } catch (_) {}
+}
+
+export async function ensureUserDoc(user, extra = {}, options = {}) {
+  await authPersistenceReady;
   const refDoc = doc(db, "users", user.uid);
   const snap = await getDoc(refDoc);
   if (snap.exists()) {
-    const profile = snap.data();
+    let profile = snap.data();
     // Activar automáticamente cuentas antiguas que quedaron pendientes.
     // No altera cuentas suspendidas/rechazadas ni perfiles administradores.
     if (profile.role === "user" && profile.status === "pending") {
       await updateDoc(refDoc, { status: "approved", reviewedAt: serverTimestamp() });
-      return { ...profile, status: "approved" };
+      profile = { ...profile, status: "approved" };
     }
+    writeCachedProfile(user.uid, profile);
     return profile;
   }
   const data = {
@@ -154,25 +202,30 @@ export async function ensureUserDoc(user, extra = {}) {
     createdAt: serverTimestamp()
   };
   await setDoc(refDoc, data);
-  return { ...data, createdAt: null };
+  const profile = { ...data, createdAt: null };
+  writeCachedProfile(user.uid, profile);
+  return profile;
 }
 
 export async function registerWithEmail(name, email, password) {
+  await authPersistenceReady;
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName: name });
-  const profile = await ensureUserDoc(cred.user, { name });
+  const profile = await ensureUserDoc(cred.user, { name }, { forceRefresh: true });
   return { user: cred.user, profile };
 }
 
 export async function loginWithEmail(email, password) {
+  await authPersistenceReady;
   const cred = await signInWithEmailAndPassword(auth, email, password);
-  const profile = await ensureUserDoc(cred.user);
+  const profile = await ensureUserDoc(cred.user, {}, { forceRefresh: true });
   return { user: cred.user, profile };
 }
 
 export async function loginWithGoogle() {
+  await authPersistenceReady;
   const cred = await signInWithPopup(auth, googleProvider);
-  const profile = await ensureUserDoc(cred.user);
+  const profile = await ensureUserDoc(cred.user, {}, { forceRefresh: true });
   return { user: cred.user, profile };
 }
 
@@ -180,16 +233,24 @@ export function resetPassword(email) {
   return sendPasswordResetEmail(auth, email);
 }
 
-export function logout() {
+export async function logout() {
+  await authPersistenceReady;
+  clearCachedProfiles();
   return signOut(auth);
 }
 
 // cb(user, profile, error). Si no hay sesión: cb(null, null).
 export function watchUser(cb) {
   return onAuthStateChanged(auth, async user => {
-    if (!user) return cb(null, null);
+    await authPersistenceReady;
+    if (!user) {
+      clearCachedProfiles();
+      return cb(null, null);
+    }
+    const cached = readCachedProfile(user.uid);
+    if (cached) return cb(user, cached);
     try {
-      const profile = await ensureUserDoc(user);
+      const profile = await ensureUserDoc(user, {}, { forceRefresh: true });
       cb(user, profile);
     } catch (e) {
       console.error(e);
