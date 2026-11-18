@@ -313,14 +313,20 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   </div>
 </div>
 <script type="module">
-  import { loginWithEmail, loginWithGoogle, friendlyError, homeFor, watchUser } from "../assets/firebase.js";
+  import { loginWithEmail, loginWithGoogle, friendlyError, homeFor, ensureUserDoc, watchAuthSession } from "../assets/firebase.js";
 
   const nextParam = new URLSearchParams(location.search).get('next');
   const safeNext = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : null;
   let authFlowInProgress = false;
   // Si la sesión ya existía antes de abrir esta página, no pedir credenciales otra vez.
-  watchUser((user, profile) => {
-    if (!authFlowInProgress && user && profile) location.replace(safeNext || homeFor(profile));
+  watchAuthSession(async user => {
+    if (authFlowInProgress || !user) return;
+    try {
+      const profile = await ensureUserDoc(user);
+      location.replace(safeNext || homeFor(profile));
+    } catch (error) {
+      console.warn("No pudimos recuperar la sesión existente:", error);
+    }
   });
   if (nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')) document.getElementById('registerLink').href = 'register.html?next=' + encodeURIComponent(nextParam);
   const errBox = document.getElementById('formError');
