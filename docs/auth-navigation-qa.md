@@ -32,3 +32,21 @@
 
 ## Alcance de las pruebas
 Esta lista define las pruebas de aceptación. La ejecución real en teléfonos físicos requiere probar en Safari de iPhone y Chrome de Android; una validación estática del repositorio no sustituye esas pruebas.
+
+## Navegación por perfil (ampliación PR #26)
+
+| Perfil | Inicio y páginas públicas | Opciones esperadas |
+|---|---|---|
+| Visitante | Inicio, ficha de producto, carrito, favoritos, compras y pagos | Comprar, Favoritos, Carrito e Iniciar sesión; el acceso a login conserva la URL de retorno |
+| Usuario | Las mismas páginas, también al volver desde Mi cuenta | Nombre del usuario / Mi cuenta, Publicar anuncio y Cerrar sesión |
+| Administrador | Las mismas páginas | Panel de administración, Mi cuenta, Publicar anuncio y Cerrar sesión |
+| Todos | Móvil y escritorio | Los enlaces se mantienen dentro del menú existente; no cambia la paleta, tipografía ni estructura visual |
+
+### Pruebas funcionales adicionales
+- Iniciar sesión y volver al inicio: el encabezado debe mostrar el perfil activo.
+- Abrir una ficha de producto y volver al catálogo: no debe pedir credenciales otra vez.
+- Abrir carrito, favoritos, compras o pagos: el encabezado debe reflejar el mismo perfil.
+- Cerrar sesión desde el menú móvil o desde una página pública: debe volver al catálogo como visitante.
+- Verificar que un usuario normal nunca recibe un enlace al panel de administración.
+- Verificar que un administrador sí recibe el enlace al panel y también puede entrar a Mi cuenta.
+- Probar con pantalla estrecha (320–390 px) y escritorio (≥ 1024 px), comprobando que los enlaces no desbordan el encabezado.
