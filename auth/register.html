@@ -325,8 +325,9 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 
   const nextParam = new URLSearchParams(location.search).get('next');
   const safeNext = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : null;
+  let authFlowInProgress = false;
   watchUser((user, profile) => {
-    if (user && profile) location.replace(safeNext || homeFor(profile));
+    if (!authFlowInProgress && user && profile) location.replace(safeNext || homeFor(profile));
   });
   if (nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')) document.getElementById('loginLink').href = 'login.html?next=' + encodeURIComponent(nextParam);
   const errBox = document.getElementById('formError');
@@ -346,10 +347,12 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     if (password.length < 8) { showError('La contraseña debe tener al menos 8 caracteres.'); return; }
     if (!document.getElementById('regTerms').checked) { showError('Debes aceptar los términos y condiciones.'); return; }
     setBusy(true);
+    authFlowInProgress = true;
     try {
       const { profile } = await registerWithEmail(name, email, password);
       location.replace(safeNext || homeFor(profile));
     } catch (err) {
+      authFlowInProgress = false;
       showError(friendlyError(err));
       setBusy(false);
     }
@@ -358,10 +361,12 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   googleBtn.addEventListener('click', async () => {
     showError('');
     setBusy(true);
+    authFlowInProgress = true;
     try {
       const { profile } = await loginWithGoogle();
       location.replace(safeNext || homeFor(profile));
     } catch (err) {
+      authFlowInProgress = false;
       showError(friendlyError(err));
       setBusy(false);
     }
