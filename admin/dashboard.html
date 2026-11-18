@@ -869,7 +869,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 
   watchUser(async (user, profile, error) => {
     const gate = $('gateMsg');
-    if (!user) { location.href = '../auth/login.html'; return; }
+    if (!user) { location.replace('../auth/login.html?next=' + encodeURIComponent(location.pathname + location.search)); return; }
     if (!profile) { gate.textContent = 'No pudimos cargar tu perfil. ' + friendlyError(error); return; }
     if (profile.role !== 'admin') {
       gate.innerHTML = 'Esta sección es solo para administradores. <a href="../cuenta/dashboard.html" class="link-rust">Ir a mi cuenta</a>';
