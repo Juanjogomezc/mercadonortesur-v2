@@ -177,7 +177,7 @@ function clearCachedProfiles() {
   } catch (_) {}
 }
 
-export async function ensureUserDoc(user, extra = {}, options = {}) {
+export async function ensureUserDoc(user, extra = {}) {
   await authPersistenceReady;
   const refDoc = doc(db, "users", user.uid);
   const snap = await getDoc(refDoc);
@@ -211,21 +211,21 @@ export async function registerWithEmail(name, email, password) {
   await authPersistenceReady;
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName: name });
-  const profile = await ensureUserDoc(cred.user, { name }, { forceRefresh: true });
+  const profile = await ensureUserDoc(cred.user, { name });
   return { user: cred.user, profile };
 }
 
 export async function loginWithEmail(email, password) {
   await authPersistenceReady;
   const cred = await signInWithEmailAndPassword(auth, email, password);
-  const profile = await ensureUserDoc(cred.user, {}, { forceRefresh: true });
+  const profile = await ensureUserDoc(cred.user, {});
   return { user: cred.user, profile };
 }
 
 export async function loginWithGoogle() {
   await authPersistenceReady;
   const cred = await signInWithPopup(auth, googleProvider);
-  const profile = await ensureUserDoc(cred.user, {}, { forceRefresh: true });
+  const profile = await ensureUserDoc(cred.user, {});
   return { user: cred.user, profile };
 }
 
