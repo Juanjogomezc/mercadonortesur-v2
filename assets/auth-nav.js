@@ -12,7 +12,7 @@ export function setupAuthNavigation(nav, root = "") {
     link.textContent = label;
     link.dataset.authExtra = "true";
     if (attr) link.setAttribute("aria-label", attr);
-    nav.insertBefore(link, account.nextSibling);
+    nav.appendChild(link);
     return link;
   };
   watchUser((user, profile) => {
@@ -44,6 +44,6 @@ export function setupAuthNavigation(nav, root = "") {
         exit.removeAttribute("aria-disabled");
       }
     });
-    nav.insertBefore(exit, account.nextSibling);
+    nav.appendChild(exit);
   });
 }
