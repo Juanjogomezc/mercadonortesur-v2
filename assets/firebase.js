@@ -239,6 +239,16 @@ export async function logout() {
   return signOut(auth);
 }
 
+// Observa solo el estado de autenticación, sin consultar el perfil.
+// Útil en login/registro para detectar sesiones previas sin duplicar lecturas
+// cuando el propio formulario acaba de iniciar una sesión.
+export function watchAuthSession(cb) {
+  return onAuthStateChanged(auth, async user => {
+    await authPersistenceReady;
+    cb(user || null);
+  });
+}
+
 // cb(user, profile, error). Si no hay sesión: cb(null, null).
 export function watchUser(cb) {
   return onAuthStateChanged(auth, async user => {
@@ -250,7 +260,7 @@ export function watchUser(cb) {
     const cached = readCachedProfile(user.uid);
     if (cached) return cb(user, cached);
     try {
-      const profile = await ensureUserDoc(user, {}, { forceRefresh: true });
+      const profile = await ensureUserDoc(user);
       cb(user, profile);
     } catch (e) {
       console.error(e);
