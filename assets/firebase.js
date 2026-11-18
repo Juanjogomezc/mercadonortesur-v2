@@ -12,11 +12,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, updateProfile, deleteUser
+  signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, updateProfile
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection,
-  query, where, getDocs, serverTimestamp, orderBy, limit, startAfter
+  query, where, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {
   getStorage, ref, uploadBytes, getDownloadURL, deleteObject
@@ -59,7 +59,7 @@ export function safeUrl(u) {
 
 // Normaliza formatos históricos de imágenes y resuelve rutas de Firebase Storage.
 // Admite arrays de URL, objetos {url/src/downloadURL/path} y campos heredados.
-export async function resolveListingImages(listing, maxImages = 4) {
+export async function resolveListingImages(listing) {
   if (!listing || typeof listing !== "object") return [];
   const candidates = [];
   for (const field of ["images", "photos", "imageUrls", "pictures"]) {
@@ -68,29 +68,23 @@ export async function resolveListingImages(listing, maxImages = 4) {
   for (const field of ["imageUrl", "image", "photo", "thumbnail"]) {
     if (listing[field]) candidates.push(listing[field]);
   }
-  const resolved = [];
-  const max = Math.max(1, Number(maxImages) || 4);
-  // Resuelve en orden y se detiene al reunir las fotos necesarias; así el home
-  // no solicita URLs de las cuatro imágenes cuando solo necesita una miniatura.
-  for (const item of candidates) {
+  const resolved = await Promise.all(candidates.map(async item => {
     const value = typeof item === "string" ? item : (
       item && typeof item === "object"
         ? (item.url || item.downloadURL || item.downloadUrl || item.src || item.imageUrl || item.fullPath || item.path || "")
         : ""
     );
-    if (typeof value !== "string" || !value.trim()) continue;
+    if (typeof value !== "string" || !value.trim()) return "";
     const raw = value.trim();
-    let url = "";
-    if (/^https:\/\//i.test(raw)) url = raw;
-    else if (/^(gs:\/\/|listings\/)/i.test(raw)) {
-      try { url = await getDownloadURL(ref(storage, raw)); } catch (error) {
+    if (/^https:\/\//i.test(raw)) return raw;
+    if (/^(gs:\/\/|listings\/)/i.test(raw)) {
+      try { return await getDownloadURL(ref(storage, raw)); } catch (error) {
         console.warn("No se pudo resolver una fotografía de Storage:", raw, error);
       }
     }
-    if (url && !resolved.includes(url)) resolved.push(url);
-    if (resolved.length >= max) break;
-  }
-  return resolved;
+    return "";
+  }));
+  return [...new Set(resolved.filter(Boolean))];
 }
 
 export function ms(ts) {
@@ -122,10 +116,6 @@ export function friendlyError(err) {
     "unavailable": "No pudimos conectar con el servidor. Inténtalo de nuevo.",
     "storage/unauthorized": "No se pudieron subir las fotos (permisos de Storage).",
     "storage/unknown": "No se pudieron subir las fotos (¿Storage está activado en Firebase?).",
-    "storage/bucket-not-found": "No encontramos el almacenamiento de fotografías. Revisa el bucket configurado en Firebase.",
-    "storage/unauthenticated": "Tu sesión venció. Inicia sesión nuevamente para subir fotografías.",
-    "storage/quota-exceeded": "Se alcanzó el límite de almacenamiento de Firebase.",
-    "storage/object-not-found": "No encontramos una de las fotografías solicitadas.",
     "storage/retry-limit-exceeded": "La subida de fotos tardó demasiado. Inténtalo de nuevo."
   };
   if (err && err.code in map) return map[err.code];
@@ -162,39 +152,21 @@ export async function ensureUserDoc(user, extra = {}) {
 
 export async function registerWithEmail(name, email, password) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
-  try {
-    await updateProfile(cred.user, { displayName: name });
-    const profile = await ensureUserDoc(cred.user, { name });
-    return { user: cred.user, profile };
-  } catch (error) {
-    // Si falla la creación del perfil, no dejamos una cuenta Auth huérfana.
-    try { await deleteUser(cred.user); } catch (cleanupError) {
-      console.error("No se pudo revertir la cuenta Auth incompleta:", cleanupError);
-    }
-    throw error;
-  }
+  await updateProfile(cred.user, { displayName: name });
+  const profile = await ensureUserDoc(cred.user, { name });
+  return { user: cred.user, profile };
 }
 
 export async function loginWithEmail(email, password) {
   const cred = await signInWithEmailAndPassword(auth, email, password);
-  try {
-    const profile = await ensureUserDoc(cred.user);
-    return { user: cred.user, profile };
-  } catch (error) {
-    await signOut(auth).catch(() => {});
-    throw error;
-  }
+  const profile = await ensureUserDoc(cred.user);
+  return { user: cred.user, profile };
 }
 
 export async function loginWithGoogle() {
   const cred = await signInWithPopup(auth, googleProvider);
-  try {
-    const profile = await ensureUserDoc(cred.user);
-    return { user: cred.user, profile };
-  } catch (error) {
-    await signOut(auth).catch(() => {});
-    throw error;
-  }
+  const profile = await ensureUserDoc(cred.user);
+  return { user: cred.user, profile };
 }
 
 export function resetPassword(email) {
@@ -230,19 +202,8 @@ function mapDocs(snap) {
 }
 
 export async function fetchApprovedListings() {
-  const snap = await getDocs(query(collection(db, "listings"), where("status", "==", "approved"), orderBy("createdAt", "desc")));
-  return mapDocs(snap);
-}
-
-// Paginación del catálogo: evita descargar el inventario completo al abrir el home.
-export async function fetchApprovedListingsPage(pageSize = 24, cursor = null) {
-  const constraints = [where("status", "==", "approved"), orderBy("createdAt", "desc")];
-  if (cursor) constraints.push(startAfter(cursor));
-  const size = Math.min(48, Math.max(1, Number(pageSize) || 24));
-  constraints.push(limit(size + 1));
-  const snap = await getDocs(query(collection(db, "listings"), ...constraints));
-  const pageDocs = snap.docs.slice(0, size);
-  return { items: pageDocs.map(d => ({ id: d.id, ...d.data() })), cursor: pageDocs[pageDocs.length - 1] || cursor, hasMore: snap.docs.length > size };
+  const snap = await getDocs(query(collection(db, "listings"), where("status", "==", "approved")));
+  return mapDocs(snap).sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
 }
 
 export async function fetchMyListings(uid) {
@@ -279,8 +240,7 @@ async function resizeImage(file, maxSide = 1200) {
       ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
       for (const quality of [0.82, 0.72, 0.62, 0.52, 0.42]) {
-        // WebP reduce el peso; los navegadores sin soporte entregan PNG/JPEG como fallback.
-        const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error("No se pudo procesar la imagen")), "image/webp", quality));
+        const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error("No se pudo procesar la imagen")), "image/jpeg", quality));
         if (blob.size <= 2.5 * 1024 * 1024) return blob;
       }
       side = Math.round(side * 0.78);
@@ -290,7 +250,7 @@ async function resizeImage(file, maxSide = 1200) {
 }
 
 // Subida tolerante a fallos: valida cada archivo, limita peso y reintenta errores transitorios.
-export async function uploadListingImages(uid, files, onProgress = null) {
+export async function uploadListingImages(uid, files) {
   if (!uid) throw new Error("Inicia sesión para subir fotografías.");
   if (!Array.isArray(files) || !files.length) return [];
 
@@ -310,14 +270,13 @@ export async function uploadListingImages(uid, files, onProgress = null) {
     const unique = (globalThis.crypto && crypto.randomUUID)
       ? crypto.randomUUID()
       : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
-    const extension = blob.type === "image/webp" ? "webp" : (blob.type === "image/png" ? "png" : "jpg");
-    const storageRef = ref(storage, "listings/" + uid + "/" + unique + "-" + index + "." + extension);
+    const storageRef = ref(storage, "listings/" + uid + "/" + unique + "-" + index + ".jpg");
 
     let lastError;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         await uploadBytes(storageRef, blob, {
-          contentType: blob.type || "image/jpeg",
+          contentType: "image/jpeg",
           cacheControl: "public,max-age=31536000"
         });
         uploadedRefs.push(storageRef);
@@ -339,12 +298,7 @@ export async function uploadListingImages(uid, files, onProgress = null) {
   });
 
   // Espera todas las subidas y limpia los archivos parciales si alguna foto falla.
-  let completed = 0;
-  const trackedTasks = tasks.map(task => task.finally(() => {
-    completed++;
-    if (typeof onProgress === "function") onProgress(completed, files.length);
-  }));
-  const results = await Promise.allSettled(trackedTasks);
+  const results = await Promise.allSettled(tasks);
   const failed = results.find(result => result.status === "rejected");
   if (failed) {
     await Promise.allSettled(uploadedRefs.map(fileRef => deleteObject(fileRef)));
@@ -419,14 +373,8 @@ export async function resubmitListing(id, form, images, user = null, profile = n
   await updateDoc(doc(db, "listings", id), data);
 }
 
-export async function removeListing(id) {
-  const listingRef = doc(db, "listings", id);
-  const snap = await getDoc(listingRef);
-  if (!snap.exists()) return;
-  const images = await resolveListingImages(snap.data()).catch(() => []);
-  await deleteDoc(listingRef);
-  // La publicación se elimina aunque Storage tenga algún archivo inaccesible.
-  if (images.length) await deleteListingImageUrls(images);
+export function removeListing(id) {
+  return deleteDoc(doc(db, "listings", id));
 }
 
 /* ---------- Administración (requiere role = "admin") ---------- */

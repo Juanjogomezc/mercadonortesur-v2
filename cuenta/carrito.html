@@ -20,14 +20,14 @@ main.wrap{padding-top:30px;padding-bottom:70px}.cart-layout{display:grid;grid-te
 <div id="cartApp" style="margin-top:22px"><div class="empty-state">Cargando tu carrito…</div></div></main>
 <script src="../assets/app.js"></script>
 <script type="module">
-import {fetchListing,resolveListingImages,esc} from "../assets/firebase.js";
+import {fetchListing,safeUrl,esc} from "../assets/firebase.js";
 const root=document.getElementById("cartApp"),money=n=>"$"+Number(n||0).toLocaleString("es-CL");
 let products=new Map(),loading=false;
 async function resolveItems(){
  const items=MNS.getCart();
  await Promise.all(items.map(async item=>{
    if(products.has(item.id))return;
-   try{const p=await fetchListing(item.id);if(p&&p.status==="approved"){const images=await resolveListingImages(p, 1);products.set(item.id,{id:item.id,name:p.title,price:p.price,image:images[0]||"",seller:p.sellerName||"Vendedor",location:p.location||""})}}
+   try{const p=await fetchListing(item.id);if(p&&p.status==="approved")products.set(item.id,{id:item.id,name:p.title,price:p.price,image:safeUrl(p.images?.[0]),seller:p.sellerName||"Vendedor",location:p.location||""})}
    catch(e){console.warn("No se pudo actualizar el producto del carrito",e)}
    if(!products.has(item.id)&&item.snapshot)products.set(item.id,{id:item.id,...item.snapshot,unavailable:true});
  }));
@@ -42,7 +42,7 @@ function draw(){
    const amount=rows.reduce((s,{item,p})=>s+(Number(p.price)||0)*item.qty,0);subtotal+=amount;
    return '<section class="seller-group"><div class="seller-heading">Vendedor: '+esc(seller)+'</div>'+rows.map(({item,p})=>{
      const price=Number(p.price)||0;units+=item.qty;
-     return '<article class="cart-item"><img src="'+esc(p.image||"")+'" alt="'+esc(p.name||"Producto")+'" loading="lazy" decoding="async" onerror="this.style.display=\'none\'"><div><a class="item-name" href="../producto.html?id='+encodeURIComponent(item.id)+'">'+esc(p.name||"Producto")+'</a><div class="item-meta">'+esc(p.location||"")+(p.unavailable?' · Publicación no disponible actualmente':'')+'</div><div class="item-price">'+money(price)+'</div><div style="margin-top:7px"><a href="../producto.html?id='+encodeURIComponent(item.id)+'" style="font-size:12px;color:var(--rust);font-weight:700">Consultar al vendedor →</a></div><div class="item-actions"><div class="qty"><button type="button" data-minus="'+esc(item.id)+'" aria-label="Disminuir cantidad">−</button><span>'+item.qty+'</span><button type="button" data-plus="'+esc(item.id)+'" aria-label="Aumentar cantidad">+</button></div><button class="remove" type="button" data-remove="'+esc(item.id)+'">Eliminar</button></div></div><div class="line-total">'+money(price*item.qty)+'</div></article>';
+     return '<article class="cart-item"><img src="'+esc(p.image||"")+'" alt="'+esc(p.name||"Producto")+'" onerror="this.style.visibility=\'hidden\'"><div><a class="item-name" href="../producto.html?id='+encodeURIComponent(item.id)+'">'+esc(p.name||"Producto")+'</a><div class="item-meta">'+esc(p.location||"")+(p.unavailable?' · Publicación no disponible actualmente':'')+'</div><div class="item-price">'+money(price)+'</div><div style="margin-top:7px"><a href="../producto.html?id='+encodeURIComponent(item.id)+'" style="font-size:12px;color:var(--rust);font-weight:700">Consultar al vendedor →</a></div><div class="item-actions"><div class="qty"><button type="button" data-minus="'+esc(item.id)+'" aria-label="Disminuir cantidad">−</button><span>'+item.qty+'</span><button type="button" data-plus="'+esc(item.id)+'" aria-label="Aumentar cantidad">+</button></div><button class="remove" type="button" data-remove="'+esc(item.id)+'">Eliminar</button></div></div><div class="line-total">'+money(price*item.qty)+'</div></article>';
    }).join("")+'</section>';
  }).join("");
  root.innerHTML='<div class="cart-layout"><div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong>'+units+' producto(s)</strong><button class="clear" id="clearCart">Vaciar carrito</button></div>'+groupsHtml+'</div><aside class="summary"><h2>Resumen de compra</h2><div class="sum-row"><span>Productos ('+units+')</span><strong>'+money(subtotal)+'</strong></div><div class="sum-row"><span>Despacho</span><span>Por coordinar</span></div><div class="sum-row sum-total"><span>Subtotal</span><strong>'+money(subtotal)+'</strong></div><div class="note">Los productos de distintos vendedores se gestionan por separado. El pago y la coordinación de despacho se habilitarán cuando esté implementado el proceso de compra.</div><a class="continue" href="../index.html">Seguir explorando</a></aside></div>';

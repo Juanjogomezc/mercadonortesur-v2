@@ -13,7 +13,8 @@
    Tokens, tipografía y componentes reutilizados en todas las páginas.
    ============================================================ */
 
-/* Tipografía del sistema: evita una descarga externa que bloquee el render. */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+
 :root{
   --bg: #FFFFFF;
   --bg-subtle: #F6F4EF;
@@ -516,11 +517,11 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 
 <div class="toast" id="toast"></div>
 
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script type="module">
   import {
     watchUser, logout, fetchAllListings, fetchAllUsers, setListingStatus, setUserStatus,
-    removeListing, setAdminContactPhone, esc, safeUrl, resolveListingImages, ms, friendlyError
+    removeListing, setAdminContactPhone, esc, safeUrl, ms, friendlyError
   } from "../assets/firebase.js";
   import { CAT_LABELS, computeReport, toCSV, reportRows } from "../assets/reports.js";
 
@@ -550,8 +551,8 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   }
   const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
   const thumb = (l) => {
-    const u = l._resolvedImage || '';
-    return u ? '<img class="queue-thumb" src="' + esc(u) + '" alt="" loading="lazy" decoding="async">' : '<div class="queue-thumb"></div>';
+    const u = safeUrl(l.images && l.images[0]);
+    return u ? '<img class="queue-thumb" src="' + esc(u) + '" alt="">' : '<div class="queue-thumb"></div>';
   };
 
   /* ---------- Colas de aprobación ---------- */
@@ -690,7 +691,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
       const state = l.status || 'approved';
       const stateLabel = ({approved:'PUBLICADO',paused:'PAUSADO',pending:'PENDIENTE',rejected:'RECHAZADO'})[state] || state.toUpperCase();
       const stateClass = state === 'approved' ? 'aprobado' : state === 'pending' ? 'revision' : state === 'rejected' ? 'rechazado' : 'revision';
-      const image = l._resolvedImage || safeUrl(l.images && l.images[0]);
+      const image = safeUrl(l.images && l.images[0]);
       const product = '<div class="row-prod">' + (image ? '<img class="row-thumb" src="' + esc(image) + '" alt="">' : '<div class="row-thumb"></div>') +
         '<div><strong>' + esc(l.title || 'Sin título') + '</strong><div class="card-sub">ID: ' + esc(l.id) + '</div></div></div>';
       const isAdmin = l.sellerType === 'admin' || l.adminCatalog;
@@ -836,8 +837,6 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   /* ---------- Carga de datos y acceso ---------- */
   async function loadData() {
     [listings, users] = await Promise.all([fetchAllListings(), fetchAllUsers()]);
-    const resolved = await Promise.all(listings.map(listing => resolveListingImages(listing, 1)));
-    listings = listings.map((listing, index) => ({ ...listing, _resolvedImage: resolved[index][0] || '' }));
     renderQueues();
     if (activePanel === 'activas') renderActivas();
     if (activePanel === 'reportes') renderReports();
