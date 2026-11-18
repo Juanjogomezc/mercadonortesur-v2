@@ -48,14 +48,14 @@ function contactState(){
 }
 async function render(p){
  listing=p;
- const images=await resolveListingImages(p);
+ const images=await resolveListingImages(p, 4);
  const image=images[0]||"";
  const attrs=p.attributes&&typeof p.attributes==="object"?p.attributes:{};
  const seller=p.sellerName||"Vendedor";
  const isAdmin=p.sellerType==="admin"||p.adminCatalog;
  const condition=p.condition==="nuevo"?"Nuevo":p.condition==="servicio"?"Servicio":"Usado";
  const attributeRows=Object.entries({...attrs,Condición:condition,Ubicación:p.location||"No informada",Categoría:categoryLabels[p.category]||p.category||"Outdoor"}).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td>'+esc(String(v??"No informado"))+'</td></tr>').join("");
- root.innerHTML=`<div class="product-layout"><div class="product-gallery"><div class="product-photo-wrap"><img id="mainProductImage" class="product-photo" src="${esc(image)}" alt="${esc(p.title)}" ${image ? "" : "style=\"display:none\""}><div id="photoPlaceholder" class="photo-placeholder" style="${image ? "" : "display:grid"}">No pudimos cargar esta fotografía o aún no se han agregado fotos.</div></div><div id="productThumbs" class="product-thumbs"></div><section class="detail-section"><h2>Descripción</h2><p class="description">${esc(p.description||"El vendedor no agregó una descripción.")}</p></section><section class="detail-section"><h2>Características y atributos</h2><table class="attribute-table"><tbody>${attributeRows}</tbody></table></section></div>
+ root.innerHTML=`<div class="product-layout"><div class="product-gallery"><div class="product-photo-wrap"><img id="mainProductImage" class="product-photo" src="${esc(image)}" alt="${esc(p.title)}" ${image ? "" : "style=\"display:none\""}><div id="photoPlaceholder" class="photo-placeholder" style="${image ? "" : "display:grid"}">${image ? "La foto está registrada, pero no se pudo descargar desde Firebase Storage." : "Esta publicación no tiene una URL de fotografía guardada. Si eres el vendedor, edita la publicación y vuelve a cargar las fotos."}</div></div><div id="productThumbs" class="product-thumbs"></div><section class="detail-section"><h2>Descripción</h2><p class="description">${esc(p.description||"El vendedor no agregó una descripción.")}</p></section><section class="detail-section"><h2>Características y atributos</h2><table class="attribute-table"><tbody>${attributeRows}</tbody></table></section></div>
  <div class="product-info"><div class="eyebrow">${esc(categoryLabels[p.category]||p.category||"Outdoor")} · ${esc(p.location||"Chile")}</div><h1 class="product-title">${esc(p.title)}</h1><div class="product-price price">${money(p.price)}${p.unit ? " / " + esc(p.unit) : ""}${p.oldPrice?'<span class="product-old">'+money(p.oldPrice)+'</span>':""}</div>
  <div class="product-meta"><span class="product-tag">${condition}</span><span class="product-tag">${esc(p.location||"Ubicación no indicada")}</span>${isAdmin?'<span class="product-tag">Publicado por Mercado Norte Sur</span>':""}</div>
  <div class="seller-card"><div class="seller-row"><div class="seller-avatar">${esc(seller.slice(0,1).toUpperCase())}</div><div><strong>${esc(seller)}</strong><div class="seller-label">${isAdmin?"Cuenta administradora de Mercado Norte Sur":"Vendedor en Mercado Norte Sur"}</div></div></div></div>
@@ -65,7 +65,7 @@ async function render(p){
  const thumbs=document.getElementById("productThumbs");
  thumbs.innerHTML=images.map((src,index) => "<button type=\"button\" data-gallery-src=\"" + esc(src) + "\" aria-label=\"Ver fotografía " + (index+1) + "\" class=\"" + (index===0?"active":"") + "\"><img src=\"" + esc(src) + "\" alt=\"Fotografía " + (index+1) + "\" loading=\"lazy\"></button>").join("");
  const mainImage=document.getElementById("mainProductImage"),placeholder=document.getElementById("photoPlaceholder");
- mainImage.addEventListener("error",()=>{mainImage.style.display="none";placeholder.style.display="grid"});
+ mainImage.addEventListener("error",()=>{mainImage.style.display="none";placeholder.textContent="La foto está registrada, pero no se pudo descargar desde Firebase Storage. Revisa el archivo y los permisos de Storage.";placeholder.style.display="grid";console.error("No se pudo cargar la imagen principal de la publicación",p.id,image)});
  mainImage.addEventListener("load",()=>{mainImage.style.display="block";placeholder.style.display="none"});
  thumbs.addEventListener("click",event=>{const button=event.target.closest("[data-gallery-src]");if(!button)return;mainImage.style.display="block";placeholder.style.display="none";mainImage.src=button.dataset.gallerySrc;thumbs.querySelectorAll("button").forEach(item=>item.classList.toggle("active",item===button))});
  const shareUrl=location.href,shareTitle=listing.title+" | Mercado Norte Sur";
