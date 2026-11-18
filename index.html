@@ -1067,7 +1067,7 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
 
 
 <script type="module">
-  import { watchUser, fetchApprovedListings, safeUrl, fetchFavoriteIds, toggleFavorite } from "./assets/firebase.js";
+  import { watchUser, logout, fetchApprovedListings, safeUrl, fetchFavoriteIds, toggleFavorite } from "./assets/firebase.js";
 
   // El catálogo público se alimenta exclusivamente desde publicaciones aprobadas en Firestore.
 
@@ -1123,16 +1123,35 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
         });
       } catch (e) { console.warn("No se pudieron cargar favoritos", e); }
     }
-    if (!user || !profile) return;
-    const first = (profile.name || '').split(' ')[0] || 'Mi cuenta';
     const acc = document.getElementById('hdrAccount');
-    acc.href = 'cuenta/dashboard.html';
-    document.getElementById('hdrAccountLbl').textContent = first;
-    document.getElementById('hdrSell').href = 'cuenta/publicar.html';
-    document.getElementById('drawerSell').href = 'cuenta/publicar.html';
-    document.getElementById('drawerAccountRow').innerHTML =
-      '<a href="cuenta/dashboard.html" class="btn-ghost" style="flex:1; justify-content:center;">Mi cuenta</a>' +
-      '<a href="cuenta/publicar.html" class="btn-primary" style="flex:1; justify-content:center;">Publicar</a>';
+    const sell = document.getElementById('hdrSell');
+    const drawerSell = document.getElementById('drawerSell');
+    const drawerRow = document.getElementById('drawerAccountRow');
+    if (!user || !profile) {
+      acc.href = 'auth/login.html';
+      document.getElementById('hdrAccountLbl').textContent = 'Iniciar sesión';
+      sell.href = 'auth/login.html';
+      drawerSell.href = 'auth/login.html';
+      drawerRow.innerHTML =
+        '<a href="auth/login.html" class="btn-ghost" style="flex:1; justify-content:center;">Iniciar sesión</a>' +
+        '<a href="auth/register.html" class="btn-primary" style="flex:1; justify-content:center;">Crear cuenta</a>';
+      return;
+    }
+    const first = (profile.name || '').split(' ')[0] || 'Mi cuenta';
+    const isAdmin = profile.role === 'admin';
+    acc.href = isAdmin ? 'admin/dashboard.html' : 'cuenta/dashboard.html';
+    document.getElementById('hdrAccountLbl').textContent = isAdmin ? 'Administración' : first;
+    sell.href = 'cuenta/publicar.html';
+    drawerSell.href = 'cuenta/publicar.html';
+    drawerRow.innerHTML =
+      (isAdmin ? '<a href="admin/dashboard.html" class="btn-ghost" style="flex:1; justify-content:center;">Panel admin</a>' : '<a href="cuenta/dashboard.html" class="btn-ghost" style="flex:1; justify-content:center;">Mi cuenta</a>') +
+      '<a href="cuenta/publicar.html" class="btn-primary" style="flex:1; justify-content:center;">Publicar</a>' +
+      (isAdmin ? '<a href="cuenta/dashboard.html" class="btn-ghost" style="flex:1; justify-content:center;">Mi cuenta</a>' : '') +
+      '<button id="drawerLogout" class="btn-ghost" style="flex:1; justify-content:center;">Cerrar sesión</button>';
+    document.getElementById('drawerLogout')?.addEventListener('click', async () => {
+      try { await logout(); location.reload(); }
+      catch (error) { console.error('No se pudo cerrar la sesión', error); }
+    });
   });
 </script>
 <script src="assets/app.js"></script>
