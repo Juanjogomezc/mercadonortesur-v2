@@ -183,7 +183,7 @@ table.data-table{width:100%; border-collapse:collapse; font-size:13.5px;}
 .data-table td{padding:14px 12px; border-bottom:1px solid var(--line); vertical-align:middle;}
 .data-table tr:last-child td{border-bottom:none;}
 .row-prod{display:flex; align-items:center; gap:10px;}
-.row-thumb{width:42px; height:42px; border-radius:7px; object-fit:cover; background:var(--bg-subtle); flex-shrink:0;}
+.row-thumb{width:42px; height:42px; border-radius:7px; object-fit:contain; background:#F1F3F3; flex-shrink:0;}
 
 .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
 .stat-box{border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
