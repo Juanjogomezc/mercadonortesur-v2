@@ -193,7 +193,7 @@ table.data-table{width:100%; border-collapse:collapse; font-size:13.5px;}
 .data-table td{padding:14px 12px; border-bottom:1px solid var(--line); vertical-align:middle;}
 .data-table tr:last-child td{border-bottom:none;}
 .row-prod{display:flex; align-items:center; gap:10px;}
-.row-thumb{width:42px; height:42px; border-radius:7px; object-fit:cover; background:var(--bg-subtle); flex-shrink:0;}
+.row-thumb{width:42px; height:42px; border-radius:7px; object-fit:contain; padding:2px; background:#F2F4F5; flex-shrink:0;}
 
 .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
 .stat-box{border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
@@ -300,7 +300,7 @@ footer.site a{color:#1B1A17;}
     background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:12px;
     display:flex; gap:14px; align-items:center;
   }
-  .queue-thumb{width:56px; height:56px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--bg-subtle);}
+  .queue-thumb{width:56px; height:56px; border-radius:8px; object-fit:contain; padding:3px; flex-shrink:0; background:#F2F4F5;}
   .queue-info{flex:1;}
   .queue-info .t{font-size:14px; font-weight:700; margin-bottom:2px;}
   .queue-info .m{font-size:12px; color:var(--ink-soft);}
