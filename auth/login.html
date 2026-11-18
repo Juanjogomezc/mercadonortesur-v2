@@ -313,9 +313,21 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   </div>
 </div>
 <script type="module">
-  import { loginWithEmail, loginWithGoogle, friendlyError, homeFor } from "../assets/firebase.js";
+  import { loginWithEmail, loginWithGoogle, friendlyError, homeFor, ensureUserDoc, watchAuthSession } from "../assets/firebase.js";
 
   const nextParam = new URLSearchParams(location.search).get('next');
+  const safeNext = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : null;
+  let authFlowInProgress = false;
+  // Si la sesión ya existía antes de abrir esta página, no pedir credenciales otra vez.
+  watchAuthSession(async user => {
+    if (authFlowInProgress || !user) return;
+    try {
+      const profile = await ensureUserDoc(user);
+      location.replace(safeNext || homeFor(profile));
+    } catch (error) {
+      console.warn("No pudimos recuperar la sesión existente:", error);
+    }
+  });
   if (nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')) document.getElementById('registerLink').href = 'register.html?next=' + encodeURIComponent(nextParam);
   const errBox = document.getElementById('formError');
   const submitBtn = document.getElementById('submitBtn');
@@ -330,11 +342,12 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     const password = document.getElementById('loginPassword').value;
     if (!email || !password) { showError('Ingresa tu correo y tu contraseña.'); return; }
     setBusy(true);
+    authFlowInProgress = true;
     try {
       const { profile } = await loginWithEmail(email, password);
-      const next = new URLSearchParams(location.search).get("next");
-      location.href = next && next.startsWith("/") && !next.startsWith("//") ? next : homeFor(profile);
+      location.replace(safeNext || homeFor(profile));
     } catch (err) {
+      authFlowInProgress = false;
       showError(friendlyError(err));
       setBusy(false);
     }
@@ -343,11 +356,12 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   googleBtn.addEventListener('click', async () => {
     showError('');
     setBusy(true);
+    authFlowInProgress = true;
     try {
       const { profile } = await loginWithGoogle();
-      const next = new URLSearchParams(location.search).get("next");
-      location.href = next && next.startsWith("/") && !next.startsWith("//") ? next : homeFor(profile);
+      location.replace(safeNext || homeFor(profile));
     } catch (err) {
+      authFlowInProgress = false;
       showError(friendlyError(err));
       setBusy(false);
     }

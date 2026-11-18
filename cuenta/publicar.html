@@ -703,7 +703,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
 
   /* ---------- Arranque ---------- */
   watchUser(async (user, profile, error) => {
-    if (!user) { location.href = '../auth/login.html'; return; }
+    if (!user) { location.replace('../auth/login.html?next=' + encodeURIComponent(location.pathname + location.search)); return; }
     if (!profile) { gate('No pudimos cargar tu perfil', friendlyError(error), 'dashboard.html', 'Volver a mi cuenta'); return; }
     me = user; myProfile = profile;
 
