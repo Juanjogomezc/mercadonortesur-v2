@@ -54,4 +54,5 @@ function draw(){
 async function render(){if(loading)return;loading=true;root.innerHTML='<div class="empty-state">Actualizando productos…</div>';await resolveItems();draw();loading=false}
 window.addEventListener("mns:cart-updated",()=>{products.clear();render()});
 render();
-</script><script type="module">import {setupAuthNavigation} from "../assets/auth-nav.js"; setupAuthNavigation(document.querySelector("[data-auth-nav]"), "../");</script>\n</body></html>
+</script><script type="module">import {setupAuthNavigation} from "../assets/auth-nav.js"; setupAuthNavigation(document.querySelector("[data-auth-nav]"), "../");</script>
+</body></html>
