@@ -1,6 +1,5 @@
 import { watchUser, logout } from "./firebase.js";
 
-const ROOT = document.currentScript?.dataset?.root || "";
 export function setupAuthNavigation(nav, root = "") {
   if (!nav || nav.dataset.authReady === "true") return;
   nav.dataset.authReady = "true";
