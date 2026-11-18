@@ -19,7 +19,7 @@ import {
   query, where, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {
-  getStorage, ref, uploadBytes, getDownloadURL, deleteObject
+  getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js";
 
@@ -57,34 +57,41 @@ export function safeUrl(u) {
   return typeof u === "string" && /^https:\/\//i.test(u) ? u : "";
 }
 
-// Normaliza formatos históricos de imágenes y resuelve rutas de Firebase Storage.
-// Admite arrays de URL, objetos {url/src/downloadURL/path} y campos heredados.
-export async function resolveListingImages(listing) {
+// Normaliza formatos actuales y heredados. Resuelve rutas de Storage una a una,
+// para no bloquear la ficha con rutas antiguas o inexistentes.
+export async function resolveListingImages(listing, maxImages = 4) {
   if (!listing || typeof listing !== "object") return [];
   const candidates = [];
-  for (const field of ["images", "photos", "imageUrls", "pictures"]) {
+  for (const field of ["images", "photos", "imageUrls", "pictures", "gallery"]) {
     if (Array.isArray(listing[field])) candidates.push(...listing[field]);
   }
-  for (const field of ["imageUrl", "image", "photo", "thumbnail"]) {
+  for (const field of ["imageUrl", "imageURL", "image", "photo", "photoURL", "thumbnail", "coverImage", "mainImage", "imagePath", "storagePath"]) {
     if (listing[field]) candidates.push(listing[field]);
   }
-  const resolved = await Promise.all(candidates.map(async item => {
+  const resolved = [];
+  const seen = new Set();
+  for (const item of candidates) {
+    if (resolved.length >= maxImages) break;
     const value = typeof item === "string" ? item : (
       item && typeof item === "object"
-        ? (item.url || item.downloadURL || item.downloadUrl || item.src || item.imageUrl || item.fullPath || item.path || "")
+        ? (item.url || item.downloadURL || item.downloadUrl || item.src || item.imageUrl || item.imageURL || item.fullPath || item.path || item.storagePath || "")
         : ""
     );
-    if (typeof value !== "string" || !value.trim()) return "";
+    if (typeof value !== "string" || !value.trim()) continue;
     const raw = value.trim();
-    if (/^https:\/\//i.test(raw)) return raw;
+    if (seen.has(raw)) continue;
+    seen.add(raw);
+    if (/^https:\/\//i.test(raw)) { resolved.push(raw); continue; }
     if (/^(gs:\/\/|listings\/)/i.test(raw)) {
-      try { return await getDownloadURL(ref(storage, raw)); } catch (error) {
-        console.warn("No se pudo resolver una fotografía de Storage:", raw, error);
+      try {
+        const url = await getDownloadURL(ref(storage, raw));
+        if (/^https:\/\//i.test(url)) resolved.push(url);
+      } catch (error) {
+        console.warn("No se pudo resolver una fotografía de Storage:", raw, error?.code || error);
       }
     }
-    return "";
-  }));
-  return [...new Set(resolved.filter(Boolean))];
+  }
+  return [...new Set(resolved)];
 }
 
 export function ms(ts) {
@@ -216,95 +223,102 @@ export async function fetchListing(id) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
-// Procesa las imágenes para respetar el límite de Firebase Storage (3 MB).
-async function resizeImage(file, maxSide = 1200) {
+// Compresión rápida: como máximo dos codificaciones JPEG por foto.
+// Evita los hasta 35 intentos de canvas anteriores, que bloqueaban móviles.
+async function resizeImage(file) {
   let source, bitmap = null;
-  if (typeof createImageBitmap === "function") { try { bitmap = await createImageBitmap(file); source = bitmap; } catch (_) {} }
+  if (typeof createImageBitmap === "function") {
+    try { bitmap = await createImageBitmap(file); source = bitmap; } catch (_) {}
+  }
   if (!source) {
     source = await new Promise((resolve, reject) => {
       const image = new Image(), url = URL.createObjectURL(file);
       image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
-      image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("No pudimos leer una de las imágenes. Usa JPG, PNG o WEBP.")); };
+      image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("No pudimos leer una de las imágenes. Usa JPG o PNG.")); };
       image.src = url;
     });
   }
-  let side = maxSide;
   try {
-    for (let attempt = 0; attempt < 7; attempt++) {
-      const scale = Math.min(1, side / Math.max(source.width, source.height));
+    const encode = async (maxSide, quality) => {
+      const scale = Math.min(1, maxSide / Math.max(source.width, source.height));
       const canvas = document.createElement("canvas");
       canvas.width = Math.max(1, Math.round(source.width * scale));
       canvas.height = Math.max(1, Math.round(source.height * scale));
       const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("No pudimos procesar la imagen en este navegador.");
+      if (!ctx) throw new Error("Este navegador no pudo procesar la fotografía.");
       ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
-      for (const quality of [0.82, 0.72, 0.62, 0.52, 0.42]) {
-        const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error("No se pudo procesar la imagen")), "image/jpeg", quality));
-        if (blob.size <= 2.5 * 1024 * 1024) return blob;
-      }
-      side = Math.round(side * 0.78);
-    }
-    throw new Error("La imagen es demasiado grande para subirla. Prueba con otra foto.");
-  } finally { if (bitmap && typeof bitmap.close === "function") bitmap.close(); }
+      return new Promise((resolve, reject) => canvas.toBlob(
+        blob => blob ? resolve(blob) : reject(new Error("No se pudo comprimir la fotografía.")),
+        "image/jpeg", quality
+      ));
+    };
+    let blob = await encode(1280, 0.78);
+    if (blob.size > 2.5 * 1024 * 1024) blob = await encode(1024, 0.66);
+    if (blob.size > 2.8 * 1024 * 1024) throw new Error("Una fotografía supera el tamaño permitido. Prueba con otra foto.");
+    return blob;
+  } finally {
+    if (bitmap && typeof bitmap.close === "function") bitmap.close();
+  }
 }
 
-// Subida tolerante a fallos: valida cada archivo, limita peso y reintenta errores transitorios.
-export async function uploadListingImages(uid, files) {
+// Sube con progreso real. El tercer argumento informa etapa y porcentaje al formulario.
+export async function uploadListingImages(uid, files, onProgress = null) {
   if (!uid) throw new Error("Inicia sesión para subir fotografías.");
   if (!Array.isArray(files) || !files.length) return [];
-
-  // El formulario admite hasta 4 fotos: procesarlas y subirlas en paralelo
-  // reduce la espera frente a la subida secuencial.
   const uploadedRefs = [];
+  const progress = files.map(() => 0);
+  const report = (stage, index) => {
+    if (typeof onProgress === "function") {
+      onProgress({ stage, index, total: files.length, percent: Math.round(progress.reduce((a,b)=>a+b,0) / files.length) });
+    }
+  };
   const tasks = files.map(async (file, index) => {
     const mime = String(file?.type || "").toLowerCase();
     const filename = String(file?.name || "").toLowerCase();
     if (!file || (!["image/jpeg", "image/png"].includes(mime) && !/\.(jpe?g|png)$/.test(filename))) {
       throw new Error("Solo puedes subir fotografías JPG, JPEG o PNG.");
     }
+    report("processing", index);
     const blob = await resizeImage(file);
-    if (blob.size >= 3 * 1024 * 1024) {
-      throw new Error("Una fotografía supera el límite permitido. Prueba con otra imagen.");
-    }
     const unique = (globalThis.crypto && crypto.randomUUID)
       ? crypto.randomUUID()
       : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
     const storageRef = ref(storage, "listings/" + uid + "/" + unique + "-" + index + ".jpg");
-
     let lastError;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        await uploadBytes(storageRef, blob, {
+        const task = uploadBytesResumable(storageRef, blob, {
           contentType: "image/jpeg",
           cacheControl: "public,max-age=31536000"
         });
+        await new Promise((resolve, reject) => {
+          task.on("state_changed", snapshot => {
+            progress[index] = snapshot.totalBytes ? snapshot.bytesTransferred / snapshot.totalBytes * 100 : 0;
+            report("uploading", index);
+          }, reject, resolve);
+        });
         uploadedRefs.push(storageRef);
         const url = await getDownloadURL(storageRef);
-        if (!/^https:\/\//i.test(url)) {
-          throw new Error("Firebase no devolvió una dirección válida para la fotografía.");
-        }
+        if (!/^https:\/\//i.test(url)) throw new Error("Firebase no devolvió una dirección válida para la fotografía.");
+        progress[index] = 100;
+        report("uploaded", index);
         return url;
       } catch (err) {
         lastError = err;
-        if (attempt < 2 && ["storage/retry-limit-exceeded","storage/unknown","unavailable","deadline-exceeded"].includes(err?.code)) {
-          await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
-        } else {
-          break;
-        }
+        if (attempt === 0 && ["storage/retry-limit-exceeded", "storage/unknown", "unavailable", "deadline-exceeded"].includes(err?.code)) {
+          await new Promise(resolve => setTimeout(resolve, 400));
+        } else break;
       }
     }
     throw lastError || new Error("No se pudo subir una fotografía.");
   });
-
-  // Espera todas las subidas y limpia los archivos parciales si alguna foto falla.
   const results = await Promise.allSettled(tasks);
   const failed = results.find(result => result.status === "rejected");
   if (failed) {
     await Promise.allSettled(uploadedRefs.map(fileRef => deleteObject(fileRef)));
     throw failed.reason;
   }
-  // Promise.allSettled mantiene el orden original de las fotos.
   return results.map(result => result.value);
 }
 
