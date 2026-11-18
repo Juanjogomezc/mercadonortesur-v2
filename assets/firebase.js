@@ -120,7 +120,7 @@ export function friendlyError(err) {
     "auth/weak-password": "La contraseña es muy débil (mínimo 8 caracteres).",
     "auth/too-many-requests": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
     "auth/popup-closed-by-user": "Cerraste la ventana de Google antes de terminar.",
-    "auth/cancelled-popup-request": "",
+    "auth/cancelled-popup-request": "El acceso con Google se canceló. Vuelve a intentarlo.",
     "auth/popup-blocked": "Tu navegador bloqueó la ventana de Google. Permite las ventanas emergentes e inténtalo de nuevo.",
     "auth/network-request-failed": "Sin conexión. Revisa tu internet e inténtalo de nuevo.",
     "auth/operation-not-allowed": "Este método de acceso no está activado en Firebase (Authentication → Sign-in method).",
@@ -223,8 +223,10 @@ export async function loginWithEmail(email, password) {
 }
 
 export async function loginWithGoogle() {
-  await authPersistenceReady;
+  // Abrir el popup inmediatamente dentro del gesto del usuario. No esperar
+  // promesas antes de signInWithPopup: el navegador podría bloquearlo.
   const cred = await signInWithPopup(auth, googleProvider);
+  await authPersistenceReady;
   const profile = await ensureUserDoc(cred.user, {});
   return { user: cred.user, profile };
 }
