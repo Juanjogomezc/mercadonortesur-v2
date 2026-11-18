@@ -321,7 +321,11 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   </div>
 </div>
 <script type="module">
-  import { registerWithEmail, loginWithGoogle, friendlyError, homeFor, ensureUserDoc, watchAuthSession } from "../assets/firebase.js";
+  import { registerWithEmail, loginWithGoogle, friendlyError, homeFor, ensureUserDoc, watchAuthSession, authPersistenceReady } from "../assets/firebase.js";
+
+  // Esperar a que la persistencia esté lista antes de habilitar los botones.
+  // Así el popup de Google podrá abrirse directamente desde el clic del usuario.
+  await authPersistenceReady;
 
   const nextParam = new URLSearchParams(location.search).get('next');
   const safeNext = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : null;
