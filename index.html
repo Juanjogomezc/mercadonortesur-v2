@@ -1127,7 +1127,9 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
     const sell = document.getElementById('hdrSell');
     const drawerSell = document.getElementById('drawerSell');
     const drawerRow = document.getElementById('drawerAccountRow');
+    let desktopLogout = document.getElementById('hdrLogout');
     if (!user || !profile) {
+      desktopLogout?.remove();
       acc.href = 'auth/login.html';
       document.getElementById('hdrAccountLbl').textContent = 'Iniciar sesión';
       sell.href = 'auth/login.html';
@@ -1136,6 +1138,20 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
         '<a href="auth/login.html" class="btn-ghost" style="flex:1; justify-content:center;">Iniciar sesión</a>' +
         '<a href="auth/register.html" class="btn-primary" style="flex:1; justify-content:center;">Crear cuenta</a>';
       return;
+    }
+    if (!desktopLogout) {
+      desktopLogout = document.createElement('a');
+      desktopLogout.id = 'hdrLogout';
+      desktopLogout.className = 'icon-btn desktop-only';
+      desktopLogout.href = '#';
+      desktopLogout.textContent = 'Cerrar sesión';
+      desktopLogout.addEventListener('click', async event => {
+        event.preventDefault();
+        desktopLogout.textContent = 'Cerrando sesión…';
+        try { await logout(); location.reload(); }
+        catch (error) { console.error('No se pudo cerrar la sesión', error); desktopLogout.textContent = 'Cerrar sesión'; }
+      });
+      sell.parentNode.appendChild(desktopLogout);
     }
     const first = (profile.name || '').split(' ')[0] || 'Mi cuenta';
     const isAdmin = profile.role === 'admin';
