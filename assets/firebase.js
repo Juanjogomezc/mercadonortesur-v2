@@ -549,14 +549,17 @@ export async function fetchAdminBlogPosts() {
 }
 export async function fetchPublishedBlogPosts(maxItems = 12) {
   const safeLimit = Math.min(100, Math.max(1, Math.floor(Number(maxItems) || 12)));
+  // No ordenar en Firestore: los artículos heredados pueden no tener publishedAt.
+  // Se usa createdAt/updatedAt como respaldo y se ordena de forma segura en cliente.
   const postsQuery = query(
     collection(db, "blogPosts"),
     where("status", "==", "published"),
-    orderBy("publishedAt", "desc"),
-    limit(safeLimit)
+    limit(100)
   );
   const snap = await getDocs(postsQuery);
-  return mapDocs(snap);
+  return mapDocs(snap)
+    .sort((a, b) => ms(b.publishedAt || b.createdAt || b.updatedAt) - ms(a.publishedAt || a.createdAt || a.updatedAt))
+    .slice(0, safeLimit);
 }
 export async function fetchPublishedBlogPost(slug) {
   const cleanSlug = String(slug || "").trim();
@@ -571,8 +574,23 @@ export async function fetchPublishedBlogPost(slug) {
   return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
 }
 export async function saveBlogPost(data, id = null) {
+  const title = String(data?.title || "").trim();
+  const slug = String(data?.slug || "").trim();
+  const category = String(data?.category || "").trim();
+  const excerpt = String(data?.excerpt || "").trim();
+  const content = String(data?.content || "").trim();
+  if (title.length < 3 || title.length > 140) throw new Error("El título debe tener entre 3 y 140 caracteres.");
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 140) throw new Error("El enlace del artículo no es válido.");
+  if (!["Reseñas", "Guías y cursos", "Consejos", "Novedades", "Mensajes"].includes(category)) throw new Error("Selecciona una categoría válida.");
+  if (!excerpt || excerpt.length > 240 || !content || content.length > 50000) throw new Error("Revisa el resumen y el contenido del artículo.");
+  if (data.coverImage && !safeUrl(data.coverImage)) throw new Error("La portada debe usar una dirección HTTPS válida.");
+
+  const duplicateQuery = query(collection(db, "blogPosts"), where("slug", "==", slug), limit(2));
+  const duplicateSnap = await getDocs(duplicateQuery);
+  if (duplicateSnap.docs.some(item => item.id !== id)) throw new Error("Ya existe un artículo con ese enlace. Cambia el título para generar otro enlace.");
+
   const payload = blogData({
-    ...data,
+    ...data, title, slug, category, excerpt, content,
     updatedAt: serverTimestamp(),
     ...(id ? {} : { createdAt: serverTimestamp() }),
     ...(data.status === "published" && !data.publishedAt ? { publishedAt: serverTimestamp() } : {})
