@@ -585,10 +585,11 @@ export async function uploadBlogCover(uid, file) {
   const blob = await resizeImage(file);
   const unique = (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36);
   const storageRef = ref(storage, "blog-covers/" + uid + "/" + unique + ".jpg");
-  await uploadBytesResumable(storageRef, blob, {
+  const task = uploadBytesResumable(storageRef, blob, {
     contentType: "image/jpeg",
     cacheControl: "public,max-age=31536000"
   });
+  await new Promise((resolve, reject) => task.on("state_changed", null, reject, resolve));
   return await getDownloadURL(storageRef);
 }
 
