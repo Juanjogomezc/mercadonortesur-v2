@@ -11,16 +11,16 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
-  getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged,
+  getAuth, connectAuthEmulator, setPersistence, browserLocalPersistence, onAuthStateChanged,
   createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup,
   GoogleAuthProvider, sendPasswordResetEmail, signOut, updateProfile
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection,
-  query, where, getDocs, serverTimestamp
+  getFirestore, connectFirestoreEmulator, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection,
+  query, where, getDocs, serverTimestamp, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {
-  getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject
+  getStorage, connectStorageEmulator, ref, uploadBytesResumable, getDownloadURL, deleteObject
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js";
 
@@ -37,18 +37,34 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+// En localhost, todos los servicios se aíslan en Firebase Emulator Suite.
+// En cualquier dominio publicado se mantiene la conexión normal de producción.
+const useFirebaseEmulators = typeof window !== "undefined"
+  && ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+
 export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+
+if (useFirebaseEmulators) {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  connectStorageEmulator(storage, "127.0.0.1", 9199);
+  console.info("Mercado Norte Sur: conectado a Firebase Emulator Suite (entorno local).");
+}
+
 // Persistencia local explícita: mantiene la sesión al recargar o navegar entre páginas.
 export const authPersistenceReady = setPersistence(auth, browserLocalPersistence).catch(error => {
   console.warn("No se pudo configurar la persistencia local de Firebase Auth; se conserva el comportamiento predeterminado.", error);
   return false;
 });
-export const db = getFirestore(app);
-export const storage = getStorage(app);
 auth.languageCode = "es";
 
-// Analytics solo si el navegador lo soporta (no rompe nada si falla)
-isSupported().then(ok => { if (ok) getAnalytics(app); }).catch(() => {});
+// Analytics solo en producción y si el navegador lo soporta.
+if (!useFirebaseEmulators) {
+  isSupported().then(ok => { if (ok) getAnalytics(app); }).catch(() => {});
+}
 
 const googleProvider = new GoogleAuthProvider();
 // No forzar el selector de cuenta en cada acceso: Google puede reutilizar la sesión disponible.
@@ -535,6 +551,125 @@ export function setUserStatus(uid, status) {
   return updateDoc(doc(db, "users", uid), { status, reviewedAt: serverTimestamp() });
 }
 
+
+
+/* ---------- Blog editorial ---------- */
+function blogData(data) {
+  const clean = { ...data };
+  delete clean.id;
+  return clean;
+}
+export async function fetchAdminBlogPosts() {
+  const snap = await getDocs(collection(db, "blogPosts"));
+  return mapDocs(snap).sort((a,b) => ms(b.updatedAt || b.createdAt) - ms(a.updatedAt || a.createdAt));
+}
+export async function fetchPublishedBlogPosts(maxItems = 12) {
+  const safeLimit = Math.min(100, Math.max(1, Math.floor(Number(maxItems) || 12)));
+  // No ordenar en Firestore: los artículos heredados pueden no tener publishedAt.
+  // Se usa createdAt/updatedAt como respaldo y se ordena de forma segura en cliente.
+  const postsQuery = query(
+    collection(db, "blogPosts"),
+    where("status", "==", "published"),
+    limit(100)
+  );
+  const snap = await getDocs(postsQuery);
+  return mapDocs(snap)
+    .sort((a, b) => ms(b.publishedAt || b.createdAt || b.updatedAt) - ms(a.publishedAt || a.createdAt || a.updatedAt))
+    .slice(0, safeLimit);
+}
+export async function fetchPublishedBlogPost(slug) {
+  const cleanSlug = String(slug || "").trim();
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(cleanSlug)) return null;
+  const postQuery = query(
+    collection(db, "blogPosts"),
+    where("status", "==", "published"),
+    where("slug", "==", cleanSlug),
+    limit(1)
+  );
+  const snap = await getDocs(postQuery);
+  return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
+}
+export async function saveBlogPost(data, id = null) {
+  const title = String(data?.title || "").trim();
+  const slug = String(data?.slug || "").trim();
+  const category = String(data?.category || "").trim();
+  const excerpt = String(data?.excerpt || "").trim();
+  const content = String(data?.content || "").trim();
+  if (title.length < 3 || title.length > 140) throw new Error("El título debe tener entre 3 y 140 caracteres.");
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 140) throw new Error("El enlace del artículo no es válido.");
+  if (!["Reseñas", "Guías y cursos", "Consejos", "Novedades", "Mensajes"].includes(category)) throw new Error("Selecciona una categoría válida.");
+  if (!excerpt || excerpt.length > 240 || !content || content.length > 50000) throw new Error("Revisa el resumen y el contenido del artículo.");
+  if (data.coverImage && !safeUrl(data.coverImage)) throw new Error("La portada debe usar una dirección HTTPS válida.");
+
+  const duplicateQuery = query(collection(db, "blogPosts"), where("slug", "==", slug), limit(2));
+  const duplicateSnap = await getDocs(duplicateQuery);
+  if (duplicateSnap.docs.some(item => item.id !== id)) throw new Error("Ya existe un artículo con ese enlace. Cambia el título para generar otro enlace.");
+
+  const payload = blogData({
+    ...data, title, slug, category, excerpt, content,
+    updatedAt: serverTimestamp(),
+    ...(id ? {} : { createdAt: serverTimestamp() }),
+    ...(data.status === "published" && !data.publishedAt ? { publishedAt: serverTimestamp() } : {})
+  });
+  if (id) {
+    const postRef = doc(db, "blogPosts", id);
+    const previousSnap = await getDoc(postRef);
+    const previousCover = previousSnap.exists() ? safeUrl(previousSnap.data().coverImage) : "";
+    await updateDoc(postRef, payload);
+    const nextCover = safeUrl(payload.coverImage);
+    if (previousCover && previousCover !== nextCover) await removeBlogCoverFile(previousCover);
+    return id;
+  }
+  const created = await addDoc(collection(db, "blogPosts"), payload);
+  return created.id;
+}
+
+async function removeBlogCoverFile(url) {
+  if (!safeUrl(url)) return;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname !== "firebasestorage.googleapis.com") return;
+    await deleteObject(ref(storage, url));
+  } catch (error) {
+    // El artículo ya se guardó/eliminó; un fallo de limpieza no debe revertirlo.
+    console.warn("No se pudo limpiar una portada antigua del Blog:", error);
+  }
+}
+
+export async function deleteBlogPost(id) {
+  const postRef = doc(db, "blogPosts", id);
+  const snap = await getDoc(postRef);
+  const cover = snap.exists() ? safeUrl(snap.data().coverImage) : "";
+  await deleteDoc(postRef);
+  if (cover) await removeBlogCoverFile(cover);
+}
+
+export async function deleteBlogCover(url) {
+  await removeBlogCoverFile(url);
+}
+
+export async function uploadBlogCover(uid, file) {
+  if (!uid || !file) throw new Error("Selecciona una imagen e inicia sesión.");
+  const mime = String(file.type || "").toLowerCase();
+  if (!["image/jpeg", "image/png", "image/webp"].includes(mime)) {
+    throw new Error("La portada debe ser JPG, PNG o WEBP.");
+  }
+  if (file.size > 8 * 1024 * 1024) throw new Error("La portada no puede superar 8 MB.");
+  const blob = await resizeImage(file);
+  const unique = (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36);
+  const storageRef = ref(storage, "blog-covers/" + uid + "/" + unique + ".jpg");
+  const task = uploadBytesResumable(storageRef, blob, {
+    contentType: "image/jpeg",
+    cacheControl: "public,max-age=31536000"
+  });
+  await new Promise((resolve, reject) => task.on("state_changed", null, reject, resolve));
+  try {
+    return await getDownloadURL(storageRef);
+  } catch (error) {
+    await deleteObject(storageRef).catch(() => {});
+    throw error;
+  }
+}
 
 /* ---------- Favoritos ---------- */
 export async function fetchFavoriteIds(uid) {

@@ -1,6 +1,19 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Portadas del Blog: lectura pública; escritura y eliminación solo por administradores.
+    match /blog-covers/{uid}/{file} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+                            && request.auth.uid == uid
+                            && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin'
+                            && request.resource.size < 8 * 1024 * 1024
+                            && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      allow delete: if request.auth != null
+                    && request.auth.uid == uid
+                    && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     // Fotos de publicaciones: se ven públicamente, solo las sube su dueño
     match /listings/{uid}/{file} {
       allow read: if true;

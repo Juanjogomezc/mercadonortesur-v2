@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#27D3F5">
+  <meta name="description" content="Reseñas, guías, cursos y consejos outdoor. Descubre ideas y novedades para tu próxima aventura con Mercado Norte Sur.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Mercado Norte Sur">
+  <meta property="og:title" content="Blog Mercado Norte Sur | Comunidad y conocimiento outdoor">
+  <meta property="og:description" content="Reseñas, guías, cursos y consejos para disfrutar más del mundo outdoor.">
+  <meta property="og:url" content="https://juanjogomezc.github.io/mercadonortesur-v2/blog.html">
+  <meta name="twitter:card" content="summary">
+  <title>Blog Mercado Norte Sur | Comunidad y conocimiento outdoor</title>
+  <link rel="canonical" href="https://juanjogomezc.github.io/mercadonortesur-v2/blog.html">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#F6F4EF;color:#1B1A17;font:16px/1.6 Roboto,Arial,sans-serif}
+    a{color:inherit;text-decoration:none}
+    .top{background:#fff;border-bottom:1px solid #E7E2D8;padding:16px 24px}
+    .top a{font-weight:800;display:inline-flex;align-items:center}
+    .mark{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#27D3F5;color:#fff;margin-right:8px}
+    .wrap{max-width:1120px;margin:0 auto;padding:42px 24px}
+    .eyebrow{color:#00AFCF;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+    h1{font-size:clamp(32px,5vw,46px);line-height:1.1;margin:8px 0}
+    header p{color:#635E55;margin:0 0 28px;max-width:680px}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+    .card{background:#fff;border:1px solid #E7E2D8;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0;transition:transform .18s ease,box-shadow .18s ease}
+    .card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(27,26,23,.08)}
+    .card:focus-visible,.top a:focus-visible{outline:3px solid #00AFCF;outline-offset:3px}
+    .card img,.card .cover-placeholder{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#E8FAFE}
+    .body{padding:18px;display:flex;flex-direction:column;flex:1}
+    .cat{color:#00AFCF;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+    .body h2{font-size:20px;line-height:1.3;margin:8px 0}
+    .body p{font-size:14px;color:#635E55;margin:0 0 16px}
+    .meta{font-size:12px;color:#96907F;margin-top:auto}
+    .empty{grid-column:1/-1;padding:35px;background:#fff;border:1px dashed #E7E2D8;border-radius:12px;text-align:center;color:#635E55}
+    .blog-tools{display:grid;grid-template-columns:minmax(220px,1fr) minmax(180px,240px);gap:12px;margin:0 0 20px}
+    .blog-tools input,.blog-tools select{width:100%;min-height:44px;padding:10px 12px;border:1px solid #D8D2C7;border-radius:8px;background:#fff;color:#1B1A17;font:inherit}
+    .blog-tools input:focus-visible,.blog-tools select:focus-visible{outline:3px solid #27D3F5;outline-offset:2px}
+    .results-count{font-size:13px;color:#635E55;margin:-8px 0 14px}
+    @media(max-width:540px){.blog-tools{grid-template-columns:1fr}}
+    @media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:34px 20px}}
+    @media(max-width:540px){.grid{grid-template-columns:1fr}.wrap{padding:30px 16px}.top{padding:14px 16px}}
+    @media(prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+  </style>
+</head>
+<body>
+  <div class="top"><a href="index.html"><span class="mark" aria-hidden="true">▲</span>Mercado Norte Sur</a></div>
+  <main class="wrap">
+    <header>
+      <span class="eyebrow">Comunidad y conocimiento</span>
+      <h1>Blog Mercado Norte Sur</h1>
+      <p>Reseñas, guías, cursos, consejos y novedades para tu próxima aventura.</p>
+    </header>
+    <div class="blog-tools" role="search" aria-label="Buscar contenidos del Blog">
+      <input id="blogSearch" type="search" placeholder="Buscar artículos, guías y reseñas…" aria-label="Buscar por título o contenido">
+      <select id="blogCategory" aria-label="Filtrar por categoría"><option value="">Todas las categorías</option></select>
+    </div>
+    <p class="results-count" id="blogCount" aria-live="polite"></p>
+    <div class="grid" id="blogList" aria-live="polite"><div class="empty">Cargando contenidos…</div></div>
+  </main>
+  <script type="module">
+    import {fetchPublishedBlogPosts,safeUrl,esc} from "./assets/firebase.js";
+    const list=document.getElementById("blogList");
+    const search=document.getElementById("blogSearch");
+    const category=document.getElementById("blogCategory");
+    const count=document.getElementById("blogCount");
+    let posts=[];
+    const date=value=>{
+      const d=value?.toDate?value.toDate():value?new Date(value):null;
+      return d&&!Number.isNaN(d.getTime())?d.toLocaleDateString("es-CL"):"";
+    };
+    function render(){
+      const term=search.value.trim().toLocaleLowerCase("es-CL");
+      const selected=category.value;
+      const filtered=posts.filter(post=>{
+        const text=[post.title,post.excerpt,post.category].join(" ").toLocaleLowerCase("es-CL");
+        return (!term||text.includes(term))&&(!selected||post.category===selected);
+      });
+      count.textContent=filtered.length+" de "+posts.length+" contenidos";
+      list.innerHTML=filtered.length?filtered.map(post=>{
+        const image=safeUrl(post.coverImage);
+        return '<a class="card" href="blog-post.html?slug='+encodeURIComponent(post.slug)+'">'+
+          (image?'<img src="'+esc(image)+'" alt="'+esc(post.title)+'" loading="lazy">':'<div class="cover-placeholder" aria-hidden="true"></div>')+
+          '<div class="body"><span class="cat">'+esc(post.category||"Blog")+'</span>'+
+          '<h2>'+esc(post.title)+'</h2><p>'+esc(post.excerpt||"")+'</p>'+
+          '<div class="meta">'+date(post.publishedAt||post.createdAt||post.updatedAt)+' · '+Math.max(1,Number(post.readingTime)||1)+' min de lectura</div></div></a>';
+      }).join(""):'<div class="empty">'+(posts.length?'No encontramos contenidos con esos filtros. Prueba otra búsqueda o categoría.':'Todavía no hay artículos publicados. Vuelve pronto.')+'</div>';
+    }
+    search.addEventListener("input",render);
+    category.addEventListener("change",render);
+    try{
+      posts=await fetchPublishedBlogPosts(100);
+      const categories=[...new Set(posts.map(post=>String(post.category||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es"));
+      category.insertAdjacentHTML("beforeend",categories.map(value=>'<option value="'+esc(value)+'">'+esc(value)+'</option>').join(""));
+      render();
+    }catch(error){
+      count.textContent="";
+      list.innerHTML='<div class="empty">No pudimos cargar el Blog. Inténtalo más tarde.</div>';
+      console.error("No se pudo cargar el Blog:",error);
+    }
+  </script>
+</body>
+</html>
