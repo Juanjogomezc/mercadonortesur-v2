@@ -2,7 +2,9 @@
 <html lang="es-CL">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mi carrito — Mercado Norte Sur</title><link rel="stylesheet" href="../assets/styles.css">
+  <meta name="theme-color" content="#27D3F5">
+<title>Mi carrito — Mercado Norte Sur</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg"><link rel="stylesheet" href="../assets/styles.css">
 <style>
 .bar{border-bottom:1px solid var(--line);padding:14px 0}.bar .wrap{display:flex;align-items:center;gap:16px}.bar nav{margin-left:auto;display:flex;gap:16px;align-items:center;font-size:14px;font-weight:500}
 main.wrap{padding-top:30px;padding-bottom:70px}.cart-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start;margin-top:22px}
@@ -15,7 +17,7 @@ main.wrap{padding-top:30px;padding-bottom:70px}.cart-layout{display:grid;grid-te
 @media(max-width:800px){.cart-layout{grid-template-columns:1fr}.summary{position:static}}@media(max-width:520px){.header-top{padding:12px 16px}.header-actions{gap:10px}.header-actions a{font-size:12px}.cart-item{grid-template-columns:76px minmax(0,1fr);gap:11px}.cart-item img{width:76px;height:76px}.line-total{grid-column:2;text-align:left}.seller-group{padding:12px}}
 </style></head>
 <body>
-<header class="site"><div class="header-top"><a class="logo" href="../index.html"><span class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>Mercado Norte Sur</a><div style="flex:1"></div><nav class="header-actions" data-auth-nav><a href="../index.html">Comprar</a><a href="favoritos.html">Favoritos</a><a href="carrito.html" class="icon-btn">Carrito <span class="cart-dot">0</span></a><a href="dashboard.html" data-auth-account>Mi cuenta</a></nav></div></header>
+<header class="site"><div class="header-top"><a class="logo" href="../index.html"><span class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>Mercado Norte Sur</a><div style="flex:1"></div><nav class="header-actions" data-auth-nav><a href="../index.html">Comprar</a><a href="favoritos.html">Favoritos</a><a href="carrito.html" class="icon-btn">Carrito <span class="cart-dot">0</span></a><a href="dashboard.html" data-auth-account>Mi cuenta</a></nav></div></header>
 <main class="wrap"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div class="eyebrow">Tu selección</div><h1>Mi carrito</h1></div><a href="../index.html" style="font-size:13px;color:var(--rust);font-weight:700">← Seguir comprando</a></div>
 <div id="cartApp" style="margin-top:22px"><div class="empty-state">Cargando tu carrito…</div></div></main>
 <script src="../assets/app.js"></script>
