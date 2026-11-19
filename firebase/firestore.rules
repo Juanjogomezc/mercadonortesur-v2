@@ -59,7 +59,29 @@ service cloud.firestore {
                && request.resource.data.title.size() >= 3
                && request.resource.data.title.size() <= 140
                && request.resource.data.slug is string
-               && request.resource.data.slug.matches('^[a-z0-9]+(-[a-z0-9]+)*
+               && request.resource.data.slug.size() > 0
+               && request.resource.data.slug.size() <= 140
+               && request.resource.data.slug.matches('[a-z0-9-]+')
+               && request.resource.data.category in ['Reseñas', 'Guías y cursos', 'Consejos', 'Novedades', 'Mensajes']
+               && request.resource.data.excerpt is string
+               && request.resource.data.excerpt.size() > 0
+               && request.resource.data.excerpt.size() <= 240
+               && request.resource.data.content is string
+               && request.resource.data.content.size() > 0
+               && request.resource.data.content.size() <= 50000
+               && request.resource.data.authorId == request.auth.uid
+               && request.resource.data.authorName is string
+               && request.resource.data.readingTime is int
+               && request.resource.data.readingTime >= 1
+               && request.resource.data.status in ['draft', 'published']
+               && (!('coverImage' in request.resource.data)
+                   || request.resource.data.coverImage == ''
+                   || request.resource.data.coverImage.matches('https://.*'))
+               && (request.resource.data.status != 'published'
+                   || request.resource.data.publishedAt is timestamp);
+      }
+      allow create: if isAdmin() && validBlogPost();
+      allow update: if isAdmin() && validBlogPost();
       allow delete: if isAdmin();
     }
 
