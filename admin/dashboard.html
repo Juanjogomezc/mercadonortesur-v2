@@ -851,16 +851,16 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 
 
   /* ---------- Blog editorial: CRUD exclusivo del administrador ---------- */
-  let blogPosts = [], editingBlogId = null, editingCoverUrl = "", editingPublishedAt = null;
+  let blogPosts = [], editingBlogId = null, editingSlug = "", editingCoverUrl = "", editingPublishedAt = null;
   const slugify = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,100);
   const blogDate = value => { const date = value?.toDate ? value.toDate() : value ? new Date(value) : null; return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("es-CL") : "Sin fecha"; };
   function resetBlogForm(){
-    editingBlogId=null; editingCoverUrl=""; editingPublishedAt=null; $("blogForm").reset(); $("blogFormTitle").textContent="Crear contenido"; $("blogSaveBtn").textContent="Guardar contenido"; $("blogFormHint").textContent="El contenido publicado aparecerá en el inicio y en el Blog público."; $("blogCoverPreview").style.display="none"; $("blogCoverPreview").src="";
+    editingBlogId=null; editingSlug=""; editingCoverUrl=""; editingPublishedAt=null; $("blogForm").reset(); $("blogFormTitle").textContent="Crear contenido"; $("blogSaveBtn").textContent="Guardar contenido"; $("blogFormHint").textContent="El contenido publicado aparecerá en el inicio y en el Blog público."; $("blogCoverPreview").style.display="none"; $("blogCoverPreview").src="";
   }
   function blogFormData(status){
     const title=$("blogTitle").value.trim(), excerpt=$("blogExcerpt").value.trim(), content=$("blogContent").value.trim();
     if(title.length<3 || !excerpt || !content) throw new Error("Completa el título, resumen y contenido.");
-    const slug=slugify(title);
+    const slug=editingSlug || slugify(title);
     if(!slug) throw new Error("El título debe incluir letras o números.");
     return {title,slug,category:$("blogCategory").value,excerpt,content,coverImage:editingCoverUrl,status,authorId:adminUser.uid,authorName:adminProfile?.name || adminUser.displayName || "Mercado Norte Sur",readingTime:Math.max(1,Math.ceil(content.split(/\s+/).length/200)),...(status==="published"?{publishedAt:editingPublishedAt || serverTimestampFallback()}: {})};
   }
@@ -879,11 +879,11 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     catch(err){$("blogPostsList").innerHTML='<div class="empty-state">No pudimos cargar el Blog: '+esc(friendlyError(err))+'</div>';}
   }
   function fillBlogForm(post){
-    editingBlogId=post.id;editingCoverUrl=post.coverImage||"";editingPublishedAt=post.publishedAt||null;
+    editingBlogId=post.id;editingSlug=post.slug||slugify(post.title);editingCoverUrl=post.coverImage||"";editingPublishedAt=post.publishedAt||null;
     $("blogTitle").value=post.title||"";$("blogCategory").value=post.category||"Reseñas";$("blogStatus").value=post.status||"draft";$("blogExcerpt").value=post.excerpt||"";$("blogContent").value=post.content||"";
     $("blogFormTitle").textContent="Editar contenido";$("blogSaveBtn").textContent="Guardar cambios";
     if(editingCoverUrl){$("blogCoverPreview").src=editingCoverUrl;$("blogCoverPreview").style.display="block";}else{$("blogCoverPreview").style.display="none";}
-    $("blogFormHint").textContent="Editando: "+post.title;
+    $("blogFormHint").textContent="Editando: "+post.title+" · La URL del artículo se mantiene para conservar sus enlaces.";
     $("blogForm").scrollIntoView({behavior:"smooth",block:"start"});
   }
   function previewBlogForm(post=null){
