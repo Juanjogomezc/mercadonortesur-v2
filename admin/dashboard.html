@@ -365,6 +365,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 .blog-admin-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr);gap:18px;align-items:start}
 .blog-editor{min-width:0}.blog-fields-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .blog-form-actions{display:flex;gap:10px;flex-wrap:wrap}.blog-form-actions button{min-height:44px}
+.blog-form-actions #blogSaveBtn{background:#27D3F5!important;color:#1B1A17!important;border:1px solid #00AFCF!important;font-weight:800;min-width:170px;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.10)}.blog-form-actions #blogSaveBtn:hover{background:#00AFCF!important;color:#fff!important}.blog-form-actions #blogSaveBtn:disabled{opacity:.72;cursor:wait}
 .blog-posts-list{display:grid;gap:10px}.blog-admin-item{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff}
 .blog-admin-item img{width:78px;height:78px;object-fit:cover;border-radius:7px;background:var(--bg-subtle);flex-shrink:0}
 .blog-admin-item .meta{font-size:12px;color:var(--ink-soft);margin:4px 0 8px}.blog-admin-item .actions{display:flex;gap:6px;flex-wrap:wrap}
@@ -898,7 +899,16 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     win.document.close();
   }
   $("blogForm").addEventListener("submit",async e=>{
-    e.preventDefault();const btn=$("blogSaveBtn");btn.disabled=true;
+    e.preventDefault();
+    const btn=$("blogSaveBtn"), hint=$("blogFormHint");
+    if(!adminUser || !adminProfile || adminProfile.role!=="admin"){
+      showToast("La sesión de administrador no está disponible. Vuelve a iniciar sesión.");
+      return;
+    }
+    btn.disabled=true;
+    btn.textContent="Guardando…";
+    hint.textContent="Guardando contenido en Firebase. No cierres esta ventana…";
+    hint.style.color="var(--ink-soft)";
     const previousCoverUrl=editingCoverUrl;
     let uploadedCoverUrl="";
     try{
@@ -907,16 +917,27 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
         uploadedCoverUrl=await uploadBlogCover(adminUser.uid,$("blogCover").files[0]);
         editingCoverUrl=uploadedCoverUrl;
       }
-      const status=$("blogStatus").value;const data=blogFormData(status);
+      const status=$("blogStatus").value;
+      const data=blogFormData(status);
       await saveBlogPost(data,editingBlogId);
       uploadedCoverUrl="";
-      showToast(status==="published"?"Contenido publicado":"Borrador guardado");
-      resetBlogForm();await loadBlogPosts();
+      resetBlogForm();
+      await loadBlogPosts();
+      showToast(status==="published"?"Contenido publicado correctamente":"Borrador guardado correctamente");
     }catch(err){
-      if(uploadedCoverUrl){await deleteBlogCover(uploadedCoverUrl);editingCoverUrl=previousCoverUrl;}
-      showToast(friendlyError(err));
+      if(uploadedCoverUrl){
+        await deleteBlogCover(uploadedCoverUrl).catch(()=>{});
+        editingCoverUrl=previousCoverUrl;
+      }
+      const message=friendlyError(err);
+      hint.textContent="No se pudo guardar: "+message+" Tu contenido sigue en el formulario; corrige el problema e inténtalo nuevamente.";
+      hint.style.color="#B3261E";
+      showToast(message);
+      console.error("Error al guardar contenido del Blog:",err);
+    }finally{
+      btn.disabled=false;
+      btn.textContent=editingBlogId?"Guardar cambios":"Guardar contenido";
     }
-    finally{btn.disabled=false;btn.textContent=editingBlogId?"Guardar cambios":"Guardar contenido";}
   });
   $("blogCover").addEventListener("change",()=>{
     const file=$("blogCover").files[0];if(!file)return;
