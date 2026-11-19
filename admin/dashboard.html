@@ -922,7 +922,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     btn.disabled=true;
     try{
       if(btn.dataset.blogAct==="delete"){await deleteBlogPost(post.id);showToast("Contenido eliminado");}
-      else{const next=post.status==="published"?"draft":"published";await saveBlogPost({...post,status:next,publishedAt:next==="published"?(post.publishedAt||new Date()):post.publishedAt},post.id);showToast(next==="published"?"Contenido publicado":"Contenido guardado como borrador");}
+      else{const next=post.status==="published"?"draft":"published";const updatedPost={...post,status:next};if(next==="published"&&!updatedPost.publishedAt)updatedPost.publishedAt=new Date();await saveBlogPost(updatedPost,post.id);showToast(next==="published"?"Contenido publicado":"Contenido guardado como borrador");}
       await loadBlogPosts();
     }catch(err){showToast(friendlyError(err));btn.disabled=false;}
   });
