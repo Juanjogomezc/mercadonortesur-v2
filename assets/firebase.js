@@ -536,6 +536,62 @@ export function setUserStatus(uid, status) {
 }
 
 
+
+/* ---------- Blog editorial ---------- */
+function blogData(data) {
+  const clean = { ...data };
+  delete clean.id;
+  return clean;
+}
+export async function fetchAdminBlogPosts() {
+  const snap = await getDocs(collection(db, "blogPosts"));
+  return mapDocs(snap).sort((a,b) => ms(b.updatedAt || b.createdAt) - ms(a.updatedAt || a.createdAt));
+}
+export async function fetchPublishedBlogPosts(limit = 12) {
+  const snap = await getDocs(query(collection(db, "blogPosts"), where("status", "==", "published")));
+  return mapDocs(snap)
+    .sort((a,b) => ms(b.publishedAt || b.createdAt) - ms(a.publishedAt || a.createdAt))
+    .slice(0, Math.max(1, Number(limit) || 12));
+}
+export async function fetchPublishedBlogPost(slug) {
+  if (!slug) return null;
+  const snap = await getDocs(query(collection(db, "blogPosts"), where("status", "==", "published")));
+  return mapDocs(snap).find(post => post.slug === slug) || null;
+}
+export async function saveBlogPost(data, id = null) {
+  const payload = blogData({
+    ...data,
+    updatedAt: serverTimestamp(),
+    ...(id ? {} : { createdAt: serverTimestamp() }),
+    ...(data.status === "published" && !data.publishedAt ? { publishedAt: serverTimestamp() } : {})
+  });
+  if (id) {
+    await updateDoc(doc(db, "blogPosts", id), payload);
+    return id;
+  }
+  const created = await addDoc(collection(db, "blogPosts"), payload);
+  return created.id;
+}
+export function deleteBlogPost(id) {
+  return deleteDoc(doc(db, "blogPosts", id));
+}
+export async function uploadBlogCover(uid, file) {
+  if (!uid || !file) throw new Error("Selecciona una imagen e inicia sesión.");
+  const mime = String(file.type || "").toLowerCase();
+  if (!["image/jpeg", "image/png", "image/webp"].includes(mime)) {
+    throw new Error("La portada debe ser JPG, PNG o WEBP.");
+  }
+  if (file.size > 8 * 1024 * 1024) throw new Error("La portada no puede superar 8 MB.");
+  const blob = await resizeImage(file);
+  const unique = (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36);
+  const storageRef = ref(storage, "blog-covers/" + uid + "/" + unique + ".jpg");
+  await uploadBytesResumable(storageRef, blob, {
+    contentType: "image/jpeg",
+    cacheControl: "public,max-age=31536000"
+  });
+  return await getDownloadURL(storageRef);
+}
+
 /* ---------- Favoritos ---------- */
 export async function fetchFavoriteIds(uid) {
   if (!uid) return [];
