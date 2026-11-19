@@ -255,11 +255,14 @@ table.data-table{width:100%; border-collapse:collapse; font-size:13.5px;}
 /* ---------- TOAST ---------- */
 .toast{
   position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
-  background:var(--ink); color:#1B1A17; padding:12px 20px; border-radius:8px; font-size:13.5px; font-weight:600;
+  width:max-content; max-width:min(560px,calc(100vw - 32px)); box-sizing:border-box;
+  background:#1B1A17; color:#fff; padding:13px 18px; border:1px solid rgba(255,255,255,.16);
+  border-radius:10px; font-size:13.5px; line-height:1.45; font-weight:600;
   opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:200;
-  display:flex; align-items:center; gap:10px;
+  display:flex; align-items:center; gap:10px; box-shadow:0 8px 28px rgba(0,0,0,.22);
 }
 .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+@media(max-width:600px){.toast{bottom:14px;width:calc(100vw - 28px);}}
 
 /* ---------- FOOTER ---------- */
 footer.site{background:var(--forest); color:#1B1A17; padding:40px 0 24px; margin-top:60px;}
@@ -507,7 +510,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
               <div class="field"><label for="blogTitle">Título</label><input id="blogTitle" maxlength="140" required placeholder="Ej. Cómo elegir tu primera mochila de trekking"></div>
               <div class="blog-fields-row">
                 <div class="field"><label for="blogCategory">Tipo de contenido</label><select id="blogCategory"><option value="Reseñas">Reseñas</option><option value="Guías y cursos">Guías y cursos</option><option value="Consejos">Consejos</option><option value="Novedades">Novedades</option><option value="Mensajes">Mensajes</option></select></div>
-                <div class="field"><label for="blogStatus">Estado</label><select id="blogStatus"><option value="draft">Guardar borrador</option><option value="published">Publicado</option></select></div>
+                <div class="field"><label for="blogStatus">Estado de publicación</label><select id="blogStatus"><option value="published">Publicado — visible en el sitio</option><option value="draft">Borrador — solo visible en administración</option></select><div class="hint" id="blogStatusHint">Se mostrará en el inicio y en el Blog público al guardar.</div></div>
               </div>
               <div class="field"><label for="blogExcerpt">Resumen para el inicio</label><textarea id="blogExcerpt" rows="2" maxlength="240" required placeholder="Una descripción breve para la tarjeta del Blog."></textarea></div>
               <div class="field"><label for="blogContent">Contenido</label><textarea id="blogContent" rows="10" required placeholder="Escribe el artículo, reseña, curso o mensaje. Puedes separar ideas por párrafos."></textarea><div class="hint">Se respetarán los saltos de línea. Puedes incluir enlaces completos (https://...).</div></div>
@@ -574,7 +577,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   </main>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script type="module">
@@ -872,8 +875,15 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   let blogPosts = [], editingBlogId = null, editingSlug = "", editingCoverUrl = "", editingPublishedAt = null;
   const slugify = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,100);
   const blogDate = value => { const date = value?.toDate ? value.toDate() : value ? new Date(value) : null; return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("es-CL") : "Sin fecha"; };
+  function updateBlogStatusHint(){
+    const published=$("blogStatus").value==="published";
+    $("blogStatusHint").textContent=published
+      ?"Se mostrará en el inicio y en el Blog público al guardar."
+      :"Quedará guardado como borrador y no será visible para los visitantes.";
+    $("blogSaveBtn").textContent=editingBlogId?"Guardar cambios":(published?"Publicar contenido":"Guardar borrador");
+  }
   function resetBlogForm(){
-    editingBlogId=null; editingSlug=""; editingCoverUrl=""; editingPublishedAt=null; $("blogForm").reset(); $("blogFormTitle").textContent="Crear contenido"; $("blogSaveBtn").textContent="Guardar contenido"; $("blogFormHint").textContent="El contenido publicado aparecerá en el inicio y en el Blog público."; $("blogCoverPreview").style.display="none"; $("blogCoverPreview").src="";
+    editingBlogId=null; editingSlug=""; editingCoverUrl=""; editingPublishedAt=null; $("blogForm").reset(); $("blogFormTitle").textContent="Crear contenido"; $("blogFormHint").textContent="El contenido publicado aparecerá en el inicio y en el Blog público."; $("blogCoverPreview").style.display="none"; $("blogCoverPreview").src=""; updateBlogStatusHint();
   }
   function blogFormData(status){
     const title=$("blogTitle").value.trim(), excerpt=$("blogExcerpt").value.trim(), content=$("blogContent").value.trim();
@@ -899,7 +909,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   function fillBlogForm(post){
     editingBlogId=post.id;editingSlug=post.slug||slugify(post.title);editingCoverUrl=post.coverImage||"";editingPublishedAt=post.publishedAt||null;
     $("blogTitle").value=post.title||"";$("blogCategory").value=post.category||"Reseñas";$("blogStatus").value=post.status||"draft";$("blogExcerpt").value=post.excerpt||"";$("blogContent").value=post.content||"";
-    $("blogFormTitle").textContent="Editar contenido";$("blogSaveBtn").textContent="Guardar cambios";
+    $("blogFormTitle").textContent="Editar contenido";$("blogSaveBtn").textContent="Guardar cambios";updateBlogStatusHint();$("blogSaveBtn").textContent="Guardar cambios";
     if(editingCoverUrl){$("blogCoverPreview").src=editingCoverUrl;$("blogCoverPreview").style.display="block";}else{$("blogCoverPreview").style.display="none";}
     $("blogFormHint").textContent="Editando: "+post.title+" · La URL del artículo se mantiene para conservar sus enlaces.";
     $("blogForm").scrollIntoView({behavior:"smooth",block:"start"});
@@ -915,6 +925,8 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     win.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vista previa · '+esc(title)+'</title><style>body{margin:0;font:16px/1.7 Roboto,Arial;color:#1B1A17;background:#F6F4EF}.wrap{max-width:800px;margin:35px auto;padding:24px;background:white;border-radius:14px}img{width:100%;max-height:360px;object-fit:cover;border-radius:10px}small{color:#00AFCF;font-weight:bold}h1{font-size:36px;line-height:1.15}p{white-space:pre-wrap}</style><main class="wrap">'+(cover?'<img src="'+esc(cover)+'" alt="">':'')+'<small>'+esc(category)+'</small><h1>'+esc(title)+'</h1><p>'+esc(excerpt)+'</p><hr><p>'+esc(body)+'</p></main></html>');
     win.document.close();
   }
+  $("blogStatus").addEventListener("change",updateBlogStatusHint);
+  updateBlogStatusHint();
   $("blogForm").addEventListener("submit",async e=>{
     e.preventDefault();
     const btn=$("blogSaveBtn"), hint=$("blogFormHint");
@@ -953,7 +965,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
       console.error("Error al guardar contenido del Blog:",err);
     }finally{
       btn.disabled=false;
-      btn.textContent=editingBlogId?"Guardar cambios":"Guardar contenido";
+      updateBlogStatusHint();
     }
   });
   $("blogCover").addEventListener("change",()=>{
