@@ -612,14 +612,36 @@ export async function saveBlogPost(data, id = null) {
     ...(data.status === "published" && !data.publishedAt ? { publishedAt: serverTimestamp() } : {})
   });
   if (id) {
-    await updateDoc(doc(db, "blogPosts", id), payload);
+    const postRef = doc(db, "blogPosts", id);
+    const previousSnap = await getDoc(postRef);
+    const previousCover = previousSnap.exists() ? safeUrl(previousSnap.data().coverImage) : "";
+    await updateDoc(postRef, payload);
+    const nextCover = safeUrl(payload.coverImage);
+    if (previousCover && previousCover !== nextCover) await removeBlogCoverFile(previousCover);
     return id;
   }
   const created = await addDoc(collection(db, "blogPosts"), payload);
   return created.id;
 }
-export function deleteBlogPost(id) {
-  return deleteDoc(doc(db, "blogPosts", id));
+
+async function removeBlogCoverFile(url) {
+  if (!safeUrl(url)) return;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname !== "firebasestorage.googleapis.com") return;
+    await deleteObject(ref(storage, url));
+  } catch (error) {
+    // El artículo ya se guardó/eliminó; un fallo de limpieza no debe revertirlo.
+    console.warn("No se pudo limpiar una portada antigua del Blog:", error);
+  }
+}
+
+export async function deleteBlogPost(id) {
+  const postRef = doc(db, "blogPosts", id);
+  const snap = await getDoc(postRef);
+  const cover = snap.exists() ? safeUrl(snap.data().coverImage) : "";
+  await deleteDoc(postRef);
+  if (cover) await removeBlogCoverFile(cover);
 }
 export async function uploadBlogCover(uid, file) {
   if (!uid || !file) throw new Error("Selecciona una imagen e inicia sesión.");
