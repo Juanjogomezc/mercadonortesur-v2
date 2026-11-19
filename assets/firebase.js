@@ -11,16 +11,16 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
-  getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged,
+  getAuth, connectAuthEmulator, setPersistence, browserLocalPersistence, onAuthStateChanged,
   createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup,
   GoogleAuthProvider, sendPasswordResetEmail, signOut, updateProfile
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection,
+  getFirestore, connectFirestoreEmulator, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection,
   query, where, getDocs, serverTimestamp, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {
-  getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject
+  getStorage, connectStorageEmulator, ref, uploadBytesResumable, getDownloadURL, deleteObject
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js";
 
@@ -37,18 +37,34 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+// En localhost, todos los servicios se aíslan en Firebase Emulator Suite.
+// En cualquier dominio publicado se mantiene la conexión normal de producción.
+const useFirebaseEmulators = typeof window !== "undefined"
+  && ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+
 export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+
+if (useFirebaseEmulators) {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  connectStorageEmulator(storage, "127.0.0.1", 9199);
+  console.info("Mercado Norte Sur: conectado a Firebase Emulator Suite (entorno local).");
+}
+
 // Persistencia local explícita: mantiene la sesión al recargar o navegar entre páginas.
 export const authPersistenceReady = setPersistence(auth, browserLocalPersistence).catch(error => {
   console.warn("No se pudo configurar la persistencia local de Firebase Auth; se conserva el comportamiento predeterminado.", error);
   return false;
 });
-export const db = getFirestore(app);
-export const storage = getStorage(app);
 auth.languageCode = "es";
 
-// Analytics solo si el navegador lo soporta (no rompe nada si falla)
-isSupported().then(ok => { if (ok) getAnalytics(app); }).catch(() => {});
+// Analytics solo en producción y si el navegador lo soporta.
+if (!useFirebaseEmulators) {
+  isSupported().then(ok => { if (ok) getAnalytics(app); }).catch(() => {});
+}
 
 const googleProvider = new GoogleAuthProvider();
 // No forzar el selector de cuenta en cada acceso: Google puede reutilizar la sesión disponible.
