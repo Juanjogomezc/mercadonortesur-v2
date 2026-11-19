@@ -359,6 +359,17 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 .admin-topbar .menu-btn{color:var(--ink)}
 .admin-sidebar .menu-btn{color:var(--ink)!important}
 .admin-sidebar .logo-mark svg path,.admin-topbar .logo-mark svg path{fill:var(--ink)}
+
+.blog-admin-intro{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px;padding:20px;background:var(--rust-soft);border-radius:12px}
+.blog-admin-intro h2{font-size:20px;margin:5px 0}.blog-admin-intro p{font-size:13px;color:var(--ink-soft);margin:0;max-width:650px}
+.blog-admin-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr);gap:18px;align-items:start}
+.blog-editor{min-width:0}.blog-fields-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.blog-form-actions{display:flex;gap:10px;flex-wrap:wrap}.blog-form-actions button{min-height:44px}
+.blog-posts-list{display:grid;gap:10px}.blog-admin-item{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.blog-admin-item img{width:78px;height:78px;object-fit:cover;border-radius:7px;background:var(--bg-subtle);flex-shrink:0}
+.blog-admin-item .meta{font-size:12px;color:var(--ink-soft);margin:4px 0 8px}.blog-admin-item .actions{display:flex;gap:6px;flex-wrap:wrap}
+.blog-admin-item .actions button{padding:6px 9px;font-size:12px}
+@media(max-width:900px){.blog-admin-grid{grid-template-columns:1fr}.blog-admin-intro{align-items:flex-start;flex-direction:column}.blog-fields-row{grid-template-columns:1fr}.blog-admin-item{align-items:flex-start}.blog-admin-item img{width:68px;height:68px}}
 </style>
 
 </head>
@@ -391,6 +402,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
       <a href="../cuenta/publicar.html">＋ Crear publicación</a>
       <button data-panel="activas">✅ Publicaciones activas</button>
       <button data-panel="reportes">📊 Reportes</button>
+      <button data-panel="blog">✍️ Blog y contenidos <span class="count" id="countBlog">0</span></button>
       <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:14px 4px;">
       <a href="../index.html">← Volver al sitio</a>
       <a href="#" id="adminLogout">Cerrar sesión</a>
@@ -463,6 +475,35 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
         <div class="empty-state" id="emptyActivas" style="display:none;">No hay publicaciones activas que coincidan.</div>
       </div>
 
+
+      <!-- ===== Blog editorial ===== -->
+      <div class="panel" id="panel-blog">
+        <div class="blog-admin-intro">
+          <div><div class="eyebrow">Contenido editorial</div><h2>Gestiona lo que verá la comunidad</h2><p>Publica reseñas, cursos, guías, consejos y novedades. Los borradores solo son visibles desde este panel.</p></div>
+          <a class="btn-primary" href="../blog.html" target="_blank" rel="noopener">Ver Blog público ↗</a>
+        </div>
+        <div class="blog-admin-grid">
+          <section class="card blog-editor">
+            <div class="section-head"><h2 id="blogFormTitle">Crear contenido</h2><button class="btn-ghost btn-sm" id="blogNewBtn" type="button">Nuevo</button></div>
+            <form id="blogForm">
+              <div class="field"><label for="blogTitle">Título</label><input id="blogTitle" maxlength="140" required placeholder="Ej. Cómo elegir tu primera mochila de trekking"></div>
+              <div class="blog-fields-row">
+                <div class="field"><label for="blogCategory">Tipo de contenido</label><select id="blogCategory"><option value="Reseñas">Reseñas</option><option value="Guías y cursos">Guías y cursos</option><option value="Consejos">Consejos</option><option value="Novedades">Novedades</option><option value="Mensajes">Mensajes</option></select></div>
+                <div class="field"><label for="blogStatus">Estado</label><select id="blogStatus"><option value="draft">Guardar borrador</option><option value="published">Publicado</option></select></div>
+              </div>
+              <div class="field"><label for="blogExcerpt">Resumen para el inicio</label><textarea id="blogExcerpt" rows="2" maxlength="240" required placeholder="Una descripción breve para la tarjeta del Blog."></textarea></div>
+              <div class="field"><label for="blogContent">Contenido</label><textarea id="blogContent" rows="10" required placeholder="Escribe el artículo, reseña, curso o mensaje. Puedes separar ideas por párrafos."></textarea><div class="hint">Se respetarán los saltos de línea. Puedes incluir enlaces completos (https://...).</div></div>
+              <div class="field"><label for="blogCover">Imagen de portada</label><input id="blogCover" type="file" accept="image/jpeg,image/png,image/webp"><div class="hint">JPG, PNG o WEBP · máximo 8 MB. Se optimiza antes de subir.</div><img id="blogCoverPreview" alt="Vista previa de portada" style="display:none;width:100%;max-height:190px;object-fit:cover;border-radius:9px;margin-top:10px"></div>
+              <div class="blog-form-actions"><button class="btn-ghost" type="button" id="blogPreviewBtn">Vista previa</button><button class="btn-primary" type="submit" id="blogSaveBtn">Guardar contenido</button></div>
+              <p class="hint" id="blogFormHint">El contenido publicado aparecerá en el inicio y en el Blog público.</p>
+            </form>
+          </section>
+          <section class="blog-list-column">
+            <div class="section-head"><h2>Todos los contenidos</h2><button class="btn-ghost btn-sm" type="button" id="blogRefreshBtn">Actualizar</button></div>
+            <div id="blogPostsList" class="blog-posts-list"><div class="empty-state">Cargando contenidos…</div></div>
+          </section>
+        </div>
+      </div>
       <!-- ===== Reportes ===== -->
       <div class="panel" id="panel-reportes">
 
@@ -521,7 +562,8 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 <script type="module">
   import {
     watchUser, logout, fetchAllListings, fetchAllUsers, setListingStatus, setUserStatus,
-    removeListing, setAdminContactPhone, esc, safeUrl, ms, friendlyError
+    removeListing, setAdminContactPhone, esc, safeUrl, ms, friendlyError,
+    fetchAdminBlogPosts, saveBlogPost, deleteBlogPost, uploadBlogCover
   } from "../assets/firebase.js";
   import { CAT_LABELS, computeReport, toCSV, reportRows } from "../assets/reports.js";
 
@@ -807,12 +849,91 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     showToast('Reporte descargado');
   });
 
+
+  /* ---------- Blog editorial: CRUD exclusivo del administrador ---------- */
+  let blogPosts = [], editingBlogId = null, editingCoverUrl = "";
+  const slugify = value => String(value || "").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,100);
+  const blogDate = value => { const date = value?.toDate ? value.toDate() : value ? new Date(value) : null; return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("es-CL") : "Sin fecha"; };
+  function resetBlogForm(){
+    editingBlogId=null; editingCoverUrl=""; $("blogForm").reset(); $("blogFormTitle").textContent="Crear contenido"; $("blogSaveBtn").textContent="Guardar contenido"; $("blogFormHint").textContent="El contenido publicado aparecerá en el inicio y en el Blog público."; $("blogCoverPreview").style.display="none"; $("blogCoverPreview").src="";
+  }
+  function blogFormData(status){
+    const title=$("blogTitle").value.trim(), excerpt=$("blogExcerpt").value.trim(), content=$("blogContent").value.trim();
+    if(title.length<3 || !excerpt || !content) throw new Error("Completa el título, resumen y contenido.");
+    const slug=slugify(title);
+    if(!slug) throw new Error("El título debe incluir letras o números.");
+    return {title,slug,category:$("blogCategory").value,excerpt,content,coverImage:editingCoverUrl,status,authorId:adminUser.uid,authorName:adminProfile?.name || adminUser.displayName || "Mercado Norte Sur",readingTime:Math.max(1,Math.ceil(content.split(/\\s+/).length/200)),...(status==="published"?{publishedAt:serverTimestampFallback()}: {})};
+  }
+  function serverTimestampFallback(){return new Date();}
+  function renderBlogPosts(){
+    $("countBlog").textContent=blogPosts.length;
+    $("blogPostsList").innerHTML=blogPosts.length?blogPosts.map(post=>{
+      const cover=safeUrl(post.coverImage);
+      const status=post.status==="published"?"Publicado":"Borrador";
+      return '<article class="blog-admin-item">'+(cover?'<img src="'+esc(cover)+'" alt="">':'<div class="row-thumb"></div>')+'<div style="min-width:0;flex:1"><strong>'+esc(post.title||"Sin título")+'</strong><div class="meta">'+esc(post.category||"Contenido")+' · '+status+' · '+blogDate(post.updatedAt||post.createdAt)+'</div><div class="actions"><button class="btn-outline-sm" data-blog-act="edit" data-id="'+esc(post.id)+'">Editar</button><button class="btn-outline-sm" data-blog-act="toggle" data-id="'+esc(post.id)+'">'+(post.status==="published"?"Pasar a borrador":"Publicar")+'</button><button class="btn-outline-sm" data-blog-act="preview" data-id="'+esc(post.id)+'">Vista previa</button><button class="btn-outline-sm" data-blog-act="delete" data-id="'+esc(post.id)+'">Eliminar</button></div></div></article>';
+    }).join(""):'<div class="empty-state">Aún no hay contenidos. Crea tu primera reseña, guía o novedad.</div>';
+  }
+  async function loadBlogPosts(){
+    $("blogPostsList").innerHTML='<div class="empty-state">Actualizando…</div>';
+    try{blogPosts=await fetchAdminBlogPosts();renderBlogPosts();}
+    catch(err){$("blogPostsList").innerHTML='<div class="empty-state">No pudimos cargar el Blog: '+esc(friendlyError(err))+'</div>';}
+  }
+  function fillBlogForm(post){
+    editingBlogId=post.id;editingCoverUrl=post.coverImage||"";
+    $("blogTitle").value=post.title||"";$("blogCategory").value=post.category||"Reseñas";$("blogStatus").value=post.status||"draft";$("blogExcerpt").value=post.excerpt||"";$("blogContent").value=post.content||"";
+    $("blogFormTitle").textContent="Editar contenido";$("blogSaveBtn").textContent="Guardar cambios";
+    if(editingCoverUrl){$("blogCoverPreview").src=editingCoverUrl;$("blogCoverPreview").style.display="block";}else{$("blogCoverPreview").style.display="none";}
+    $("blogFormHint").textContent="Editando: "+post.title;
+    $("blogForm").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  function previewBlogForm(){
+    const title=$("blogTitle").value.trim()||"Título de tu artículo";
+    const excerpt=$("blogExcerpt").value.trim()||"Aquí aparecerá el resumen del contenido.";
+    const content=$("blogContent").value.trim()||"Escribe aquí el contenido completo.";
+    const cover=editingCoverUrl||$("blogCoverPreview").src;
+    const win=window.open("","_blank");
+    if(!win){showToast("Permite las ventanas emergentes para ver la vista previa.");return;}
+    win.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vista previa · '+esc(title)+'</title><style>body{margin:0;font:16px/1.7 Roboto,Arial;color:#1B1A17;background:#F6F4EF}.wrap{max-width:800px;margin:35px auto;padding:24px;background:white;border-radius:14px}img{width:100%;max-height:360px;object-fit:cover;border-radius:10px}small{color:#00AFCF;font-weight:bold}h1{font-size:36px;line-height:1.15}p{white-space:pre-wrap}</style><main class="wrap">'+(cover?'<img src="'+esc(cover)+'">':'')+'<small>'+esc($("blogCategory").value)+'</small><h1>'+esc(title)+'</h1><p>'+esc(excerpt)+'</p><hr><p>'+esc(content)+'</p></main></html>');
+    win.document.close();
+  }
+  $("blogForm").addEventListener("submit",async e=>{
+    e.preventDefault();const btn=$("blogSaveBtn");btn.disabled=true;
+    try{
+      if($("blogCover").files[0]){btn.textContent="Subiendo portada…";editingCoverUrl=await uploadBlogCover(adminUser.uid,$("blogCover").files[0]);}
+      const status=$("blogStatus").value;const data=blogFormData(status);
+      await saveBlogPost(data,editingBlogId);showToast(status==="published"?"Contenido publicado":"Borrador guardado");resetBlogForm();await loadBlogPosts();
+    }catch(err){showToast(friendlyError(err));}
+    finally{btn.disabled=false;btn.textContent=editingBlogId?"Guardar cambios":"Guardar contenido";}
+  });
+  $("blogCover").addEventListener("change",()=>{
+    const file=$("blogCover").files[0];if(!file)return;
+    if(!/^image\\/(jpeg|png|webp)$/i.test(file.type)||file.size>8*1024*1024){showToast("Usa JPG, PNG o WEBP de máximo 8 MB.");$("blogCover").value="";return;}
+    const url=URL.createObjectURL(file);$("blogCoverPreview").src=url;$("blogCoverPreview").style.display="block";
+  });
+  $("blogPreviewBtn").addEventListener("click",previewBlogForm);
+  $("blogNewBtn").addEventListener("click",resetBlogForm);
+  $("blogRefreshBtn").addEventListener("click",loadBlogPosts);
+  $("blogPostsList").addEventListener("click",async e=>{
+    const btn=e.target.closest("[data-blog-act]");if(!btn)return;
+    const post=blogPosts.find(item=>item.id===btn.dataset.id);if(!post)return;
+    if(btn.dataset.blogAct==="edit"){fillBlogForm(post);return;}
+    if(btn.dataset.blogAct==="preview"){fillBlogForm(post);previewBlogForm();return;}
+    if(btn.dataset.blogAct==="delete"&&!confirm('¿Eliminar "'+post.title+'"?'))return;
+    btn.disabled=true;
+    try{
+      if(btn.dataset.blogAct==="delete"){await deleteBlogPost(post.id);showToast("Contenido eliminado");}
+      else{const next=post.status==="published"?"draft":"published";await saveBlogPost({...post,status:next,publishedAt:next==="published"?(post.publishedAt||new Date()):post.publishedAt},post.id);showToast(next==="published"?"Contenido publicado":"Contenido guardado como borrador");}
+      await loadBlogPosts();
+    }catch(err){showToast(friendlyError(err));btn.disabled=false;}
+  });
+
   /* ---------- Navegación entre paneles ---------- */
   const TITLES = {
     publicaciones: 'Publicaciones pendientes de aprobación',
     cuentas: 'Cuentas registradas',
     activas: 'Publicaciones activas en el sitio',
-    reportes: 'Reportes para toma de decisiones'
+    reportes: 'Reportes para toma de decisiones',
+    blog: 'Blog y contenidos'
   };
   document.querySelectorAll('.admin-nav button[data-panel]').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -830,6 +951,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
       }
       if (activePanel === 'activas') renderActivas();
       if (activePanel === 'reportes') renderReports();
+      if (activePanel === 'blog') await loadBlogPosts();
       updateLabel();
     });
   });
