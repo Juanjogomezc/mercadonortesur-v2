@@ -50,19 +50,73 @@ service cloud.firestore {
     // Visitantes: solo artículos publicados. El panel completo es exclusivo de administradores.
     match /blogPosts/{postId} {
       allow read: if resource.data.status == 'published' || isAdmin();
-      allow create: if isAdmin()
+      function validBlogPost() {
+        return request.resource.data.keys().hasAll([
+                 'title', 'slug', 'category', 'excerpt', 'content',
+                 'status', 'authorId', 'authorName', 'readingTime'
+               ])
+               && request.resource.data.title is string
+               && request.resource.data.title.size() >= 3
+               && request.resource.data.title.size() <= 140
+               && request.resource.data.slug is string
+               && request.resource.data.slug.matches('^[a-z0-9]+(-[a-z0-9]+)*
+      allow delete: if isAdmin();
+    }
+
+    // ---------- Publicaciones ----------
+    match /listings/{id} {
+      // Público: solo lo aprobado. Dueño: lo suyo. Admin: todo.
+      allow read: if resource.data.status == 'approved'
+                  || (signedIn() && resource.data.sellerId == request.auth.uid)
+                  || isAdmin();
+
+      // Usuarios habilitados crean publicaciones pendientes; el administrador
+      // puede crear publicaciones institucionales ya aprobadas.
+      allow create: if (
+                      (isApprovedUser() && request.resource.data.status == 'pending')
+                      || (isAdmin() && request.resource.data.status == 'approved')
+                    )
+                    && request.resource.data.sellerId == request.auth.uid
                     && request.resource.data.title is string
                     && request.resource.data.title.size() > 2
-                    && request.resource.data.title.size() <= 140
-                    && request.resource.data.slug is string
-                    && request.resource.data.slug.size() > 0
-                    && request.resource.data.status in ['draft', 'published'];
+                    && request.resource.data.title.size() <= 120
+                    && request.resource.data.price is number
+                    && request.resource.data.price >= 0;
+
+      // El dueño puede editar y reenviar a revisión. El admin puede editar sin
+      // devolver sus publicaciones a una cola de aprobación.
       allow update: if isAdmin()
-                    && request.resource.data.title is string
-                    && request.resource.data.title.size() > 2
-                    && request.resource.data.title.size() <= 140
-                    && request.resource.data.slug is string
-                    && request.resource.data.status in ['draft', 'published'];
+                    || (isApprovedUser() && resource.data.sellerId == request.auth.uid
+                        && request.resource.data.sellerId == resource.data.sellerId
+                        && request.resource.data.status == 'pending');
+
+      allow delete: if isAdmin()
+                    || (signedIn() && resource.data.sellerId == request.auth.uid);
+    }
+  }
+}
+)
+               && request.resource.data.slug.size() <= 140
+               && request.resource.data.category in ['Reseñas', 'Guías y cursos', 'Consejos', 'Novedades', 'Mensajes']
+               && request.resource.data.excerpt is string
+               && request.resource.data.excerpt.size() > 0
+               && request.resource.data.excerpt.size() <= 240
+               && request.resource.data.content is string
+               && request.resource.data.content.size() > 0
+               && request.resource.data.content.size() <= 50000
+               && request.resource.data.authorId == request.auth.uid
+               && request.resource.data.authorName is string
+               && request.resource.data.readingTime is int
+               && request.resource.data.readingTime >= 1
+               && request.resource.data.status in ['draft', 'published']
+               && (!('coverImage' in request.resource.data)
+                   || request.resource.data.coverImage == ''
+                   || request.resource.data.coverImage.matches('https://.*'))
+               && (request.resource.data.status != 'published'
+                   || request.resource.data.publishedAt is timestamp);
+      }
+      allow create: if isAdmin() && validBlogPost();
+      allow update: if isAdmin() && validBlogPost();
       allow delete: if isAdmin();
     }
 
