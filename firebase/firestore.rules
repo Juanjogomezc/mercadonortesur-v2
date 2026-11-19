@@ -46,6 +46,26 @@ service cloud.firestore {
                             && request.resource.data.listingId == listingId;
     }
 
+    // ---------- Blog editorial ----------
+    // Visitantes: solo artículos publicados. El panel completo es exclusivo de administradores.
+    match /blogPosts/{postId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create: if isAdmin()
+                    && request.resource.data.title is string
+                    && request.resource.data.title.size() > 2
+                    && request.resource.data.title.size() <= 140
+                    && request.resource.data.slug is string
+                    && request.resource.data.slug.size() > 0
+                    && request.resource.data.status in ['draft', 'published'];
+      allow update: if isAdmin()
+                    && request.resource.data.title is string
+                    && request.resource.data.title.size() > 2
+                    && request.resource.data.title.size() <= 140
+                    && request.resource.data.slug is string
+                    && request.resource.data.status in ['draft', 'published'];
+      allow delete: if isAdmin();
+    }
+
     // ---------- Publicaciones ----------
     match /listings/{id} {
       // Público: solo lo aprobado. Dueño: lo suyo. Admin: todo.
