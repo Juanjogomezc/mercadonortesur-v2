@@ -643,6 +643,11 @@ export async function deleteBlogPost(id) {
   await deleteDoc(postRef);
   if (cover) await removeBlogCoverFile(cover);
 }
+
+export async function deleteBlogCover(url) {
+  await removeBlogCoverFile(url);
+}
+
 export async function uploadBlogCover(uid, file) {
   if (!uid || !file) throw new Error("Selecciona una imagen e inicia sesión.");
   const mime = String(file.type || "").toLowerCase();
