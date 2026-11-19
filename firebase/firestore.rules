@@ -5,175 +5,137 @@ service cloud.firestore {
     function signedIn() {
       return request.auth != null;
     }
+
     function myProfile() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
+
     function hasProfile() {
-      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
+
     function isAdmin() {
       return hasProfile() && myProfile().role == 'admin';
     }
+
     function isApprovedUser() {
       return hasProfile() && myProfile().status == 'approved';
     }
 
     // ---------- Usuarios ----------
     match /users/{uid} {
-      // Cada usuario lee su propio perfil; el admin lee todos
-      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      // Cada usuario lee su propio perfil; el administrador puede leer todos.
+      allow read: if signedIn()
+        && (request.auth.uid == uid || isAdmin());
 
-      // Las cuentas nuevas nacen habilitadas; el rol siempre es user.
-      allow create: if signedIn() && request.auth.uid == uid
-                    && request.resource.data.role == 'user'
-                    && request.resource.data.status == 'approved';
+      // Las cuentas nuevas nacen habilitadas con rol de usuario.
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role == 'user'
+        && request.resource.data.status == 'approved';
 
-      // El usuario no puede cambiar rol ni reactivar cuentas suspendidas/rechazadas.
-      // Solo se permite la transición heredada pending -> approved para cuentas antiguas.
+      // El usuario no puede cambiar su rol ni reactivar cuentas suspendidas.
+      // Se conserva la transición heredada pending -> approved.
       allow update: if isAdmin()
-                    || (signedIn() && request.auth.uid == uid
-                        && request.resource.data.role == resource.data.role
-                        && (request.resource.data.status == resource.data.status
-                            || (resource.data.status == 'pending'
-                                && request.resource.data.status == 'approved')));
+        || (signedIn()
+          && request.auth.uid == uid
+          && request.resource.data.role == resource.data.role
+          && (request.resource.data.status == resource.data.status
+            || (resource.data.status == 'pending'
+              && request.resource.data.status == 'approved')));
 
       allow delete: if isAdmin();
     }
-    // ---------- Favoritos privados de cada usuario ----------
+
+    // ---------- Favoritos privados ----------
     match /users/{uid}/favorites/{listingId} {
       allow read, delete: if signedIn() && request.auth.uid == uid;
-      allow create, update: if signedIn() && request.auth.uid == uid
-                            && request.resource.data.listingId == listingId;
+      allow create, update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.listingId == listingId;
     }
 
     // ---------- Blog editorial ----------
-    // Visitantes: solo artículos publicados. El panel completo es exclusivo de administradores.
+    // Visitantes: solo artículos publicados. Administración: solo admins.
     match /blogPosts/{postId} {
       allow read: if resource.data.status == 'published' || isAdmin();
+
       function validBlogPost() {
         return request.resource.data.keys().hasAll([
-                 'title', 'slug', 'category', 'excerpt', 'content',
-                 'status', 'authorId', 'authorName', 'readingTime'
-               ])
-               && request.resource.data.title is string
-               && request.resource.data.title.size() >= 3
-               && request.resource.data.title.size() <= 140
-               && request.resource.data.slug is string
-               && request.resource.data.slug.size() > 0
-               && request.resource.data.slug.size() <= 140
-               && request.resource.data.slug.matches('[a-z0-9]+(-[a-z0-9]+)*')
-               && request.resource.data.category in ['Reseñas', 'Guías y cursos', 'Consejos', 'Novedades', 'Mensajes']
-               && request.resource.data.excerpt is string
-               && request.resource.data.excerpt.size() > 0
-               && request.resource.data.excerpt.size() <= 240
-               && request.resource.data.content is string
-               && request.resource.data.content.size() > 0
-               && request.resource.data.content.size() <= 50000
-               && request.resource.data.authorName is string
-               && request.resource.data.readingTime is int
-               && request.resource.data.readingTime >= 1
-               && request.resource.data.status in ['draft', 'published']
-               && (!('coverImage' in request.resource.data)
-                   || request.resource.data.coverImage == ''
-                   || request.resource.data.coverImage.matches('https://.*'))
-               && (request.resource.data.status != 'published'
-                   || request.resource.data.publishedAt is timestamp);
+            'title', 'slug', 'category', 'excerpt', 'content',
+            'status', 'authorId', 'authorName', 'readingTime'
+          ])
+          && request.resource.data.title is string
+          && request.resource.data.title.size() >= 3
+          && request.resource.data.title.size() <= 140
+          && request.resource.data.slug is string
+          && request.resource.data.slug.size() > 0
+          && request.resource.data.slug.size() <= 140
+          && request.resource.data.slug.matches('[a-z0-9]+(-[a-z0-9]+)*')
+          && request.resource.data.category in [
+            'Reseñas', 'Guías y cursos', 'Consejos', 'Novedades', 'Mensajes'
+          ]
+          && request.resource.data.excerpt is string
+          && request.resource.data.excerpt.size() > 0
+          && request.resource.data.excerpt.size() <= 240
+          && request.resource.data.content is string
+          && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 50000
+          && request.resource.data.authorId is string
+          && request.resource.data.authorName is string
+          && request.resource.data.readingTime is int
+          && request.resource.data.readingTime >= 1
+          && request.resource.data.status in ['draft', 'published']
+          && (!('coverImage' in request.resource.data)
+            || request.resource.data.coverImage == ''
+            || request.resource.data.coverImage.matches('https://.*'))
+          && (request.resource.data.status != 'published'
+            || request.resource.data.publishedAt is timestamp);
       }
-      allow create: if isAdmin() && validBlogPost()
-                    && request.resource.data.authorId == request.auth.uid;
-      // Al editar, el administrador puede conservar la autoría original o asignarse la edición.
-      allow update: if isAdmin() && validBlogPost()
-                    && (request.resource.data.authorId == request.auth.uid
-                        || request.resource.data.authorId == resource.data.authorId);
+
+      allow create: if isAdmin()
+        && validBlogPost()
+        && request.resource.data.authorId == request.auth.uid;
+
+      // Al editar se conserva la autoría original o se asigna al admin editor.
+      allow update: if isAdmin()
+        && validBlogPost()
+        && (request.resource.data.authorId == request.auth.uid
+          || request.resource.data.authorId == resource.data.authorId);
+
       allow delete: if isAdmin();
     }
 
     // ---------- Publicaciones ----------
     match /listings/{id} {
-      // Público: solo lo aprobado. Dueño: lo suyo. Admin: todo.
+      // Público: solo aprobadas. Dueño: las propias. Admin: todas.
       allow read: if resource.data.status == 'approved'
-                  || (signedIn() && resource.data.sellerId == request.auth.uid)
-                  || isAdmin();
+        || (signedIn() && resource.data.sellerId == request.auth.uid)
+        || isAdmin();
 
-      // Usuarios habilitados crean publicaciones pendientes; el administrador
-      // puede crear publicaciones institucionales ya aprobadas.
+      // Usuarios habilitados crean publicaciones pendientes; el admin puede
+      // crear publicaciones institucionales aprobadas.
       allow create: if (
-                      (isApprovedUser() && request.resource.data.status == 'pending')
-                      || (isAdmin() && request.resource.data.status == 'approved')
-                    )
-                    && request.resource.data.sellerId == request.auth.uid
-                    && request.resource.data.title is string
-                    && request.resource.data.title.size() > 2
-                    && request.resource.data.title.size() <= 120
-                    && request.resource.data.price is number
-                    && request.resource.data.price >= 0;
+          (isApprovedUser() && request.resource.data.status == 'pending')
+          || (isAdmin() && request.resource.data.status == 'approved')
+        )
+        && request.resource.data.sellerId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 2
+        && request.resource.data.title.size() <= 120
+        && request.resource.data.price is number
+        && request.resource.data.price >= 0;
 
-      // El dueño puede editar y reenviar a revisión. El admin puede editar sin
-      // devolver sus publicaciones a una cola de aprobación.
+      // El dueño reenvía sus ediciones a revisión; el admin puede editar.
       allow update: if isAdmin()
-                    || (isApprovedUser() && resource.data.sellerId == request.auth.uid
-                        && request.resource.data.sellerId == resource.data.sellerId
-                        && request.resource.data.status == 'pending');
+        || (isApprovedUser()
+          && resource.data.sellerId == request.auth.uid
+          && request.resource.data.sellerId == resource.data.sellerId
+          && request.resource.data.status == 'pending');
 
       allow delete: if isAdmin()
-                    || (signedIn() && resource.data.sellerId == request.auth.uid);
-    }
-  }
-}
-)
-               && request.resource.data.slug.size() <= 140
-               && request.resource.data.category in ['Reseñas', 'Guías y cursos', 'Consejos', 'Novedades', 'Mensajes']
-               && request.resource.data.excerpt is string
-               && request.resource.data.excerpt.size() > 0
-               && request.resource.data.excerpt.size() <= 240
-               && request.resource.data.content is string
-               && request.resource.data.content.size() > 0
-               && request.resource.data.content.size() <= 50000
-               && request.resource.data.authorId == request.auth.uid
-               && request.resource.data.authorName is string
-               && request.resource.data.readingTime is int
-               && request.resource.data.readingTime >= 1
-               && request.resource.data.status in ['draft', 'published']
-               && (!('coverImage' in request.resource.data)
-                   || request.resource.data.coverImage == ''
-                   || request.resource.data.coverImage.matches('https://.*'))
-               && (request.resource.data.status != 'published'
-                   || request.resource.data.publishedAt is timestamp);
-      }
-      allow create: if isAdmin() && validBlogPost();
-      allow update: if isAdmin() && validBlogPost();
-      allow delete: if isAdmin();
-    }
-
-    // ---------- Publicaciones ----------
-    match /listings/{id} {
-      // Público: solo lo aprobado. Dueño: lo suyo. Admin: todo.
-      allow read: if resource.data.status == 'approved'
-                  || (signedIn() && resource.data.sellerId == request.auth.uid)
-                  || isAdmin();
-
-      // Usuarios habilitados crean publicaciones pendientes; el administrador
-      // puede crear publicaciones institucionales ya aprobadas.
-      allow create: if (
-                      (isApprovedUser() && request.resource.data.status == 'pending')
-                      || (isAdmin() && request.resource.data.status == 'approved')
-                    )
-                    && request.resource.data.sellerId == request.auth.uid
-                    && request.resource.data.title is string
-                    && request.resource.data.title.size() > 2
-                    && request.resource.data.title.size() <= 120
-                    && request.resource.data.price is number
-                    && request.resource.data.price >= 0;
-
-      // El dueño puede editar y reenviar a revisión. El admin puede editar sin
-      // devolver sus publicaciones a una cola de aprobación.
-      allow update: if isAdmin()
-                    || (isApprovedUser() && resource.data.sellerId == request.auth.uid
-                        && request.resource.data.sellerId == resource.data.sellerId
-                        && request.resource.data.status == 'pending');
-
-      allow delete: if isAdmin()
-                    || (signedIn() && resource.data.sellerId == request.auth.uid);
+        || (signedIn() && resource.data.sellerId == request.auth.uid);
     }
   }
 }
