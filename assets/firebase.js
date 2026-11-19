@@ -17,7 +17,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection,
-  query, where, getDocs, serverTimestamp
+  query, where, getDocs, serverTimestamp, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {
   getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject
@@ -547,16 +547,28 @@ export async function fetchAdminBlogPosts() {
   const snap = await getDocs(collection(db, "blogPosts"));
   return mapDocs(snap).sort((a,b) => ms(b.updatedAt || b.createdAt) - ms(a.updatedAt || a.createdAt));
 }
-export async function fetchPublishedBlogPosts(limit = 12) {
-  const snap = await getDocs(query(collection(db, "blogPosts"), where("status", "==", "published")));
-  return mapDocs(snap)
-    .sort((a,b) => ms(b.publishedAt || b.createdAt) - ms(a.publishedAt || a.createdAt))
-    .slice(0, Math.max(1, Number(limit) || 12));
+export async function fetchPublishedBlogPosts(maxItems = 12) {
+  const safeLimit = Math.min(100, Math.max(1, Math.floor(Number(maxItems) || 12)));
+  const postsQuery = query(
+    collection(db, "blogPosts"),
+    where("status", "==", "published"),
+    orderBy("publishedAt", "desc"),
+    limit(safeLimit)
+  );
+  const snap = await getDocs(postsQuery);
+  return mapDocs(snap);
 }
 export async function fetchPublishedBlogPost(slug) {
-  if (!slug) return null;
-  const snap = await getDocs(query(collection(db, "blogPosts"), where("status", "==", "published")));
-  return mapDocs(snap).find(post => post.slug === slug) || null;
+  const cleanSlug = String(slug || "").trim();
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(cleanSlug)) return null;
+  const postQuery = query(
+    collection(db, "blogPosts"),
+    where("status", "==", "published"),
+    where("slug", "==", cleanSlug),
+    limit(1)
+  );
+  const snap = await getDocs(postQuery);
+  return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
 }
 export async function saveBlogPost(data, id = null) {
   const payload = blogData({
