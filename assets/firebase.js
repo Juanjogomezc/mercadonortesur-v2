@@ -663,7 +663,12 @@ export async function uploadBlogCover(uid, file) {
     cacheControl: "public,max-age=31536000"
   });
   await new Promise((resolve, reject) => task.on("state_changed", null, reject, resolve));
-  return await getDownloadURL(storageRef);
+  try {
+    return await getDownloadURL(storageRef);
+  } catch (error) {
+    await deleteObject(storageRef).catch(() => {});
+    throw error;
+  }
 }
 
 /* ---------- Favoritos ---------- */
