@@ -255,11 +255,14 @@ table.data-table{width:100%; border-collapse:collapse; font-size:13.5px;}
 /* ---------- TOAST ---------- */
 .toast{
   position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
-  background:var(--ink); color:#1B1A17; padding:12px 20px; border-radius:8px; font-size:13.5px; font-weight:600;
+  width:max-content; max-width:min(560px,calc(100vw - 32px)); box-sizing:border-box;
+  background:#1B1A17; color:#fff; padding:13px 18px; border:1px solid rgba(255,255,255,.16);
+  border-radius:10px; font-size:13.5px; line-height:1.45; font-weight:600;
   opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:200;
-  display:flex; align-items:center; gap:10px;
+  display:flex; align-items:center; gap:10px; box-shadow:0 8px 28px rgba(0,0,0,.22);
 }
 .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+@media(max-width:600px){.toast{bottom:14px;width:calc(100vw - 28px);}}
 
 /* ---------- FOOTER ---------- */
 footer.site{background:var(--forest); color:#1B1A17; padding:40px 0 24px; margin-top:60px;}
@@ -348,8 +351,26 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 <style>
 /* Paleta Verano aplicada al panel de administración */
 .admin-sidebar{background:#FFFFFF;color:var(--ink);border-right:1px solid var(--line)}
-.admin-sidebar .logo,.admin-topbar .logo{color:var(--ink)}
-.admin-sidebar .admin-tag{color:var(--ink-soft)}
+.admin-sidebar .logo{
+  display:flex;align-items:center;gap:12px;width:100%;min-height:76px;
+  margin:0 0 10px;padding:12px;background:var(--bg-subtle);
+  border:1px solid var(--line);border-radius:12px;color:var(--ink);
+  white-space:normal;line-height:1.2;
+}
+.admin-sidebar .logo-mark{
+  width:42px;height:42px;min-width:42px;border-radius:10px;
+  box-shadow:0 2px 5px rgba(27,26,23,.10);
+}
+.admin-sidebar .logo-mark svg{width:23px;height:23px}
+.admin-brand-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.admin-brand-name{font-size:13px;font-weight:900;line-height:1.2;letter-spacing:-.02em}
+.admin-brand-caption{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.admin-topbar .logo{color:var(--ink);gap:9px}
+.admin-topbar .logo-mark{width:34px;height:34px;border-radius:9px}
+.admin-topbar .admin-brand-name{font-size:13px}
+.admin-topbar .admin-brand-caption{display:none}
+.admin-sidebar .admin-tag{color:var(--ink-soft);margin:0 6px 20px;padding:0;font-size:9px;letter-spacing:.14em}
+.admin-sidebar .logo-mark svg path,.admin-topbar .logo-mark svg path{fill:#fff}
 .admin-nav a,.admin-nav button{color:var(--ink-soft)}
 .admin-nav a:hover,.admin-nav button:hover{background:var(--rust-soft);color:var(--ink)}
 .admin-nav a.active,.admin-nav button.active{background:var(--forest-soft);color:var(--ink)}
@@ -358,13 +379,14 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
 .admin-topbar{background:var(--rust)!important;color:var(--ink)!important}
 .admin-topbar .menu-btn{color:var(--ink)}
 .admin-sidebar .menu-btn{color:var(--ink)!important}
-.admin-sidebar .logo-mark svg path,.admin-topbar .logo-mark svg path{fill:var(--ink)}
+.admin-sidebar .logo-mark svg path,.admin-topbar .logo-mark svg path{fill:#fff}
 
 .blog-admin-intro{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px;padding:20px;background:var(--rust-soft);border-radius:12px}
 .blog-admin-intro h2{font-size:20px;margin:5px 0}.blog-admin-intro p{font-size:13px;color:var(--ink-soft);margin:0;max-width:650px}
 .blog-admin-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr);gap:18px;align-items:start}
 .blog-editor{min-width:0}.blog-fields-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .blog-form-actions{display:flex;gap:10px;flex-wrap:wrap}.blog-form-actions button{min-height:44px}
+.blog-form-actions #blogSaveBtn{background:#27D3F5!important;color:#1B1A17!important;border:1px solid #00AFCF!important;font-weight:800;min-width:170px;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.10)}.blog-form-actions #blogSaveBtn:hover{background:#00AFCF!important;color:#fff!important}.blog-form-actions #blogSaveBtn:disabled{opacity:.72;cursor:wait}
 .blog-posts-list{display:grid;gap:10px}.blog-admin-item{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff}
 .blog-admin-item img{width:78px;height:78px;object-fit:cover;border-radius:7px;background:var(--bg-subtle);flex-shrink:0}
 .blog-admin-item .meta{font-size:12px;color:var(--ink-soft);margin:4px 0 8px}.blog-admin-item .actions{display:flex;gap:6px;flex-wrap:wrap}
@@ -379,9 +401,9 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   <button class="menu-btn" onclick="document.getElementById('adminSidebar').classList.add('open'); document.getElementById('adminOverlay').classList.add('open');">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
   </button>
-  <a href="../index.html" class="logo">
-    <span class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>
-    Mercado Norte Sur — Admin
+  <a href="../index.html" class="logo" aria-label="Mercado Norte Sur, panel de administración">
+    <span class="logo-mark"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>
+    <span class="admin-brand-copy"><span class="admin-brand-name">Mercado Norte Sur</span><span class="admin-brand-caption">Administración</span></span>
   </a>
 </div>
 <div class="admin-overlay" id="adminOverlay" onclick="document.getElementById('adminSidebar').classList.remove('open'); this.classList.remove('open');"></div>
@@ -391,11 +413,10 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     <button class="menu-btn" style="display:none; margin-bottom:10px; color:#B8B4A8;" id="sidebarClose" onclick="document.getElementById('adminSidebar').classList.remove('open'); document.getElementById('adminOverlay').classList.remove('open');">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
-    <a href="../index.html" class="logo">
-      <span class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>
-      Mercado Norte Sur
+    <a href="../index.html" class="logo" aria-label="Ir al sitio Mercado Norte Sur">
+      <span class="logo-mark"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 20L9 8L13 15L16 10L21 20H3Z" fill="white"/></svg></span>
+      <span class="admin-brand-copy"><span class="admin-brand-name">Mercado Norte Sur</span><span class="admin-brand-caption">Panel de administración</span></span>
     </a>
-    <span class="admin-tag">Panel admin</span>
     <nav class="admin-nav">
       <button class="active" data-panel="publicaciones">📦 Publicaciones pendientes <span class="count" id="countPub">0</span></button>
       <button data-panel="cuentas">👤 Cuentas registradas <span class="count" id="countUsers">0</span></button>
@@ -489,7 +510,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
               <div class="field"><label for="blogTitle">Título</label><input id="blogTitle" maxlength="140" required placeholder="Ej. Cómo elegir tu primera mochila de trekking"></div>
               <div class="blog-fields-row">
                 <div class="field"><label for="blogCategory">Tipo de contenido</label><select id="blogCategory"><option value="Reseñas">Reseñas</option><option value="Guías y cursos">Guías y cursos</option><option value="Consejos">Consejos</option><option value="Novedades">Novedades</option><option value="Mensajes">Mensajes</option></select></div>
-                <div class="field"><label for="blogStatus">Estado</label><select id="blogStatus"><option value="draft">Guardar borrador</option><option value="published">Publicado</option></select></div>
+                <div class="field"><label for="blogStatus">Estado de publicación</label><select id="blogStatus"><option value="published">Publicado — visible en el sitio</option><option value="draft">Borrador — solo visible en administración</option></select><div class="hint" id="blogStatusHint">Se mostrará en el inicio y en el Blog público al guardar.</div></div>
               </div>
               <div class="field"><label for="blogExcerpt">Resumen para el inicio</label><textarea id="blogExcerpt" rows="2" maxlength="240" required placeholder="Una descripción breve para la tarjeta del Blog."></textarea></div>
               <div class="field"><label for="blogContent">Contenido</label><textarea id="blogContent" rows="10" required placeholder="Escribe el artículo, reseña, curso o mensaje. Puedes separar ideas por párrafos."></textarea><div class="hint">Se respetarán los saltos de línea. Puedes incluir enlaces completos (https://...).</div></div>
@@ -556,7 +577,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   </main>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script type="module">
@@ -854,8 +875,15 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   let blogPosts = [], editingBlogId = null, editingSlug = "", editingCoverUrl = "", editingPublishedAt = null;
   const slugify = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,100);
   const blogDate = value => { const date = value?.toDate ? value.toDate() : value ? new Date(value) : null; return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("es-CL") : "Sin fecha"; };
+  function updateBlogStatusHint(){
+    const published=$("blogStatus").value==="published";
+    $("blogStatusHint").textContent=published
+      ?"Se mostrará en el inicio y en el Blog público al guardar."
+      :"Quedará guardado como borrador y no será visible para los visitantes.";
+    $("blogSaveBtn").textContent=editingBlogId?"Guardar cambios":(published?"Publicar contenido":"Guardar borrador");
+  }
   function resetBlogForm(){
-    editingBlogId=null; editingSlug=""; editingCoverUrl=""; editingPublishedAt=null; $("blogForm").reset(); $("blogFormTitle").textContent="Crear contenido"; $("blogSaveBtn").textContent="Guardar contenido"; $("blogFormHint").textContent="El contenido publicado aparecerá en el inicio y en el Blog público."; $("blogCoverPreview").style.display="none"; $("blogCoverPreview").src="";
+    editingBlogId=null; editingSlug=""; editingCoverUrl=""; editingPublishedAt=null; $("blogForm").reset(); $("blogFormTitle").textContent="Crear contenido"; $("blogFormHint").textContent="El contenido publicado aparecerá en el inicio y en el Blog público."; $("blogCoverPreview").style.display="none"; $("blogCoverPreview").src=""; updateBlogStatusHint();
   }
   function blogFormData(status){
     const title=$("blogTitle").value.trim(), excerpt=$("blogExcerpt").value.trim(), content=$("blogContent").value.trim();
@@ -881,7 +909,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   function fillBlogForm(post){
     editingBlogId=post.id;editingSlug=post.slug||slugify(post.title);editingCoverUrl=post.coverImage||"";editingPublishedAt=post.publishedAt||null;
     $("blogTitle").value=post.title||"";$("blogCategory").value=post.category||"Reseñas";$("blogStatus").value=post.status||"draft";$("blogExcerpt").value=post.excerpt||"";$("blogContent").value=post.content||"";
-    $("blogFormTitle").textContent="Editar contenido";$("blogSaveBtn").textContent="Guardar cambios";
+    $("blogFormTitle").textContent="Editar contenido";$("blogSaveBtn").textContent="Guardar cambios";updateBlogStatusHint();$("blogSaveBtn").textContent="Guardar cambios";
     if(editingCoverUrl){$("blogCoverPreview").src=editingCoverUrl;$("blogCoverPreview").style.display="block";}else{$("blogCoverPreview").style.display="none";}
     $("blogFormHint").textContent="Editando: "+post.title+" · La URL del artículo se mantiene para conservar sus enlaces.";
     $("blogForm").scrollIntoView({behavior:"smooth",block:"start"});
@@ -897,8 +925,19 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     win.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vista previa · '+esc(title)+'</title><style>body{margin:0;font:16px/1.7 Roboto,Arial;color:#1B1A17;background:#F6F4EF}.wrap{max-width:800px;margin:35px auto;padding:24px;background:white;border-radius:14px}img{width:100%;max-height:360px;object-fit:cover;border-radius:10px}small{color:#00AFCF;font-weight:bold}h1{font-size:36px;line-height:1.15}p{white-space:pre-wrap}</style><main class="wrap">'+(cover?'<img src="'+esc(cover)+'" alt="">':'')+'<small>'+esc(category)+'</small><h1>'+esc(title)+'</h1><p>'+esc(excerpt)+'</p><hr><p>'+esc(body)+'</p></main></html>');
     win.document.close();
   }
+  $("blogStatus").addEventListener("change",updateBlogStatusHint);
+  updateBlogStatusHint();
   $("blogForm").addEventListener("submit",async e=>{
-    e.preventDefault();const btn=$("blogSaveBtn");btn.disabled=true;
+    e.preventDefault();
+    const btn=$("blogSaveBtn"), hint=$("blogFormHint");
+    if(!adminUser || !adminProfile || adminProfile.role!=="admin"){
+      showToast("La sesión de administrador no está disponible. Vuelve a iniciar sesión.");
+      return;
+    }
+    btn.disabled=true;
+    btn.textContent="Guardando…";
+    hint.textContent="Guardando contenido en Firebase. No cierres esta ventana…";
+    hint.style.color="var(--ink-soft)";
     const previousCoverUrl=editingCoverUrl;
     let uploadedCoverUrl="";
     try{
@@ -907,16 +946,27 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
         uploadedCoverUrl=await uploadBlogCover(adminUser.uid,$("blogCover").files[0]);
         editingCoverUrl=uploadedCoverUrl;
       }
-      const status=$("blogStatus").value;const data=blogFormData(status);
+      const status=$("blogStatus").value;
+      const data=blogFormData(status);
       await saveBlogPost(data,editingBlogId);
       uploadedCoverUrl="";
-      showToast(status==="published"?"Contenido publicado":"Borrador guardado");
-      resetBlogForm();await loadBlogPosts();
+      resetBlogForm();
+      await loadBlogPosts();
+      showToast(status==="published"?"Contenido publicado correctamente":"Borrador guardado correctamente");
     }catch(err){
-      if(uploadedCoverUrl){await deleteBlogCover(uploadedCoverUrl);editingCoverUrl=previousCoverUrl;}
-      showToast(friendlyError(err));
+      if(uploadedCoverUrl){
+        await deleteBlogCover(uploadedCoverUrl).catch(()=>{});
+        editingCoverUrl=previousCoverUrl;
+      }
+      const message=friendlyError(err);
+      hint.textContent="No se pudo guardar: "+message+" Tu contenido sigue en el formulario; corrige el problema e inténtalo nuevamente.";
+      hint.style.color="#B3261E";
+      showToast(message);
+      console.error("Error al guardar contenido del Blog:",err);
+    }finally{
+      btn.disabled=false;
+      updateBlogStatusHint();
     }
-    finally{btn.disabled=false;btn.textContent=editingBlogId?"Guardar cambios":"Guardar contenido";}
   });
   $("blogCover").addEventListener("change",()=>{
     const file=$("blogCover").files[0];if(!file)return;
