@@ -563,7 +563,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   import {
     watchUser, logout, fetchAllListings, fetchAllUsers, setListingStatus, setUserStatus,
     removeListing, setAdminContactPhone, esc, safeUrl, ms, friendlyError,
-    fetchAdminBlogPosts, saveBlogPost, deleteBlogPost, uploadBlogCover
+    fetchAdminBlogPosts, saveBlogPost, deleteBlogPost, uploadBlogCover, deleteBlogCover
   } from "../assets/firebase.js";
   import { CAT_LABELS, computeReport, toCSV, reportRows } from "../assets/reports.js";
 
@@ -898,11 +898,23 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   }
   $("blogForm").addEventListener("submit",async e=>{
     e.preventDefault();const btn=$("blogSaveBtn");btn.disabled=true;
+    const previousCoverUrl=editingCoverUrl;
+    let uploadedCoverUrl="";
     try{
-      if($("blogCover").files[0]){btn.textContent="Subiendo portada…";editingCoverUrl=await uploadBlogCover(adminUser.uid,$("blogCover").files[0]);}
+      if($("blogCover").files[0]){
+        btn.textContent="Subiendo portada…";
+        uploadedCoverUrl=await uploadBlogCover(adminUser.uid,$("blogCover").files[0]);
+        editingCoverUrl=uploadedCoverUrl;
+      }
       const status=$("blogStatus").value;const data=blogFormData(status);
-      await saveBlogPost(data,editingBlogId);showToast(status==="published"?"Contenido publicado":"Borrador guardado");resetBlogForm();await loadBlogPosts();
-    }catch(err){showToast(friendlyError(err));}
+      await saveBlogPost(data,editingBlogId);
+      uploadedCoverUrl="";
+      showToast(status==="published"?"Contenido publicado":"Borrador guardado");
+      resetBlogForm();await loadBlogPosts();
+    }catch(err){
+      if(uploadedCoverUrl){await deleteBlogCover(uploadedCoverUrl);editingCoverUrl=previousCoverUrl;}
+      showToast(friendlyError(err));
+    }
     finally{btn.disabled=false;btn.textContent=editingBlogId?"Guardar cambios":"Guardar contenido";}
   });
   $("blogCover").addEventListener("change",()=>{
