@@ -886,14 +886,15 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     $("blogFormHint").textContent="Editando: "+post.title;
     $("blogForm").scrollIntoView({behavior:"smooth",block:"start"});
   }
-  function previewBlogForm(){
-    const title=$("blogTitle").value.trim()||"Título de tu artículo";
-    const excerpt=$("blogExcerpt").value.trim()||"Aquí aparecerá el resumen del contenido.";
-    const content=$("blogContent").value.trim()||"Escribe aquí el contenido completo.";
-    const cover=$("blogCoverPreview").style.display!=="none" ? $("blogCoverPreview").src : editingCoverUrl;
+  function previewBlogForm(post=null){
+    const title=String(post?.title ?? $("blogTitle").value.trim() ?? "Título de tu artículo")||"Título de tu artículo";
+    const excerpt=String(post?.excerpt ?? $("blogExcerpt").value.trim() ?? "Aquí aparecerá el resumen del contenido.")||"Aquí aparecerá el resumen del contenido.";
+    const body=String(post?.content ?? $("blogContent").value.trim() ?? "Escribe aquí el contenido completo.")||"Escribe aquí el contenido completo.";
+    const category=String(post?.category ?? $("blogCategory").value ?? "Blog");
+    const cover=post ? safeUrl(post.coverImage) : ($("blogCoverPreview").style.display!=="none" ? $("blogCoverPreview").src : editingCoverUrl);
     const win=window.open("","_blank");
     if(!win){showToast("Permite las ventanas emergentes para ver la vista previa.");return;}
-    win.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vista previa · '+esc(title)+'</title><style>body{margin:0;font:16px/1.7 Roboto,Arial;color:#1B1A17;background:#F6F4EF}.wrap{max-width:800px;margin:35px auto;padding:24px;background:white;border-radius:14px}img{width:100%;max-height:360px;object-fit:cover;border-radius:10px}small{color:#00AFCF;font-weight:bold}h1{font-size:36px;line-height:1.15}p{white-space:pre-wrap}</style><main class="wrap">'+(cover?'<img src="'+esc(cover)+'">':'')+'<small>'+esc($("blogCategory").value)+'</small><h1>'+esc(title)+'</h1><p>'+esc(excerpt)+'</p><hr><p>'+esc(content)+'</p></main></html>');
+    win.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vista previa · '+esc(title)+'</title><style>body{margin:0;font:16px/1.7 Roboto,Arial;color:#1B1A17;background:#F6F4EF}.wrap{max-width:800px;margin:35px auto;padding:24px;background:white;border-radius:14px}img{width:100%;max-height:360px;object-fit:cover;border-radius:10px}small{color:#00AFCF;font-weight:bold}h1{font-size:36px;line-height:1.15}p{white-space:pre-wrap}</style><main class="wrap">'+(cover?'<img src="'+esc(cover)+'" alt="">':'')+'<small>'+esc(category)+'</small><h1>'+esc(title)+'</h1><p>'+esc(excerpt)+'</p><hr><p>'+esc(body)+'</p></main></html>');
     win.document.close();
   }
   $("blogForm").addEventListener("submit",async e=>{
@@ -929,7 +930,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     const btn=e.target.closest("[data-blog-act]");if(!btn)return;
     const post=blogPosts.find(item=>item.id===btn.dataset.id);if(!post)return;
     if(btn.dataset.blogAct==="edit"){fillBlogForm(post);return;}
-    if(btn.dataset.blogAct==="preview"){fillBlogForm(post);previewBlogForm();return;}
+    if(btn.dataset.blogAct==="preview"){previewBlogForm(post);return;}
     if(btn.dataset.blogAct==="delete"&&!confirm('¿Eliminar "'+post.title+'"?'))return;
     btn.disabled=true;
     try{
