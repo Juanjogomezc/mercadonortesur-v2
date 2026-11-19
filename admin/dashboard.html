@@ -890,7 +890,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     const title=$("blogTitle").value.trim()||"Título de tu artículo";
     const excerpt=$("blogExcerpt").value.trim()||"Aquí aparecerá el resumen del contenido.";
     const content=$("blogContent").value.trim()||"Escribe aquí el contenido completo.";
-    const cover=editingCoverUrl||$("blogCoverPreview").src;
+    const cover=$("blogCoverPreview").style.display!=="none" ? $("blogCoverPreview").src : editingCoverUrl;
     const win=window.open("","_blank");
     if(!win){showToast("Permite las ventanas emergentes para ver la vista previa.");return;}
     win.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vista previa · '+esc(title)+'</title><style>body{margin:0;font:16px/1.7 Roboto,Arial;color:#1B1A17;background:#F6F4EF}.wrap{max-width:800px;margin:35px auto;padding:24px;background:white;border-radius:14px}img{width:100%;max-height:360px;object-fit:cover;border-radius:10px}small{color:#00AFCF;font-weight:bold}h1{font-size:36px;line-height:1.15}p{white-space:pre-wrap}</style><main class="wrap">'+(cover?'<img src="'+esc(cover)+'">':'')+'<small>'+esc($("blogCategory").value)+'</small><h1>'+esc(title)+'</h1><p>'+esc(excerpt)+'</p><hr><p>'+esc(content)+'</p></main></html>');
