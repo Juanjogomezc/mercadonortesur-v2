@@ -109,7 +109,8 @@
       let canonicalLink=document.querySelector('link[rel="canonical"]');
       if(!canonicalLink){canonicalLink=document.createElement("link");canonicalLink.rel="canonical";document.head.appendChild(canonicalLink);}
       canonicalLink.href=canonical;
-      const date=post.publishedAt?.toDate?post.publishedAt.toDate():post.publishedAt?new Date(post.publishedAt):null;
+      const publishedDate=post.publishedAt||post.createdAt||post.updatedAt;
+      const date=publishedDate?.toDate?publishedDate.toDate():publishedDate?new Date(publishedDate):null;
       const article=document.createElement("article");article.className="paper";
       if(cover){const img=document.createElement("img");img.className="cover";img.src=cover;img.alt=title;img.loading="eager";article.appendChild(img);}
       addText(article,"p","cat",post.category||"Blog");
