@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#27D3F5">
+  <meta name="theme-color" content="#12313A">
 <title>Mercado Norte Sur — Mockup arquitectura visual</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -12,15 +12,15 @@
 
   :root{
     --bg: #FFFFFF;
-    --bg-subtle: #FFFFFF;
-    --ink: #1B1A17;
-    --ink-soft: #635E55;
-    --ink-faint: #96907F;
-    --rust: #27D3F5;
-    --rust-dark: #00AFCF;
-    --forest: #F5AD27;
-    --forest-soft: #FFF0C2;
-    --line: #E7E2D8;
+    --bg-subtle: #F3FBFD;
+    --ink: #12313A;
+    --ink-soft: #52656C;
+    --ink-faint: #7A9097;
+    --rust: #F5AD27;
+    --rust-dark: #D9910D;
+    --forest: #27D3F5;
+    --forest-soft: #E5FAFE;
+    --line: #DCE8EC;
     --card-bg: #FFFFFF;
     --radius: 10px;
     --shadow: 0 1px 2px rgba(27,26,23,0.04), 0 8px 24px rgba(27,26,23,0.05);
@@ -54,8 +54,8 @@
 
   /* ---------- ANNOUNCEMENT BAR ---------- */
   .announce{
-    background:#27D3F5;
-    color:#1B1A17;
+    background:#F5AD27;
+    color:#12313A;
     font-size:12.5px;
     text-align:center;
     padding:7px 12px;
@@ -343,7 +343,7 @@
   .stat .lbl{font-size:11.5px; color:#51401F; margin-top:2px;}
 
   /* ---------- FOOTER ---------- */
-  footer{background:var(--forest); color:#1B1A17; padding:52px 0 0;}
+  footer{background:#12313A; color:#FFFFFF; padding:52px 0 0;}
   .footer-grid{
     display:grid; grid-template-columns:1.4fr repeat(4,1fr); gap:32px;
     padding-bottom:40px; border-bottom:1px solid rgba(27,26,23,0.18);
@@ -535,6 +535,19 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
 .p-media.no-image{display:grid;place-items:center;background:#F3F6F7;color:#68757A}.p-media.no-image:after{content:'📷 Foto no disponible';font-size:13px;font-weight:600}
 .p-media img{min-width:100%;min-height:100%}.photo-card-placeholder{display:grid;place-items:center;height:100%;font-size:13px;color:var(--ink-soft)}
 
+
+/* Identidad visual 03 — Marketplace dinámico */
+:root{--bg-subtle:#F3FBFD;--ink:#12313A;--ink-soft:#52656C;--ink-faint:#7A9097;--rust:#F5AD27;--rust-dark:#D9910D;--rust-soft:#FFF3D8;--forest:#27D3F5;--forest-soft:#E5FAFE;--line:#DCE8EC;}
+footer,footer.site{background:#12313A!important;color:#FFFFFF!important;}
+footer .footer-brand .logo,footer .footer-col h4,footer .footer-col a,footer .footer-bottom,footer.site a{color:#FFFFFF!important;}
+footer .footer-brand p,footer .footer-col a,footer .footer-bottom{color:#D3E4E8!important;}
+.contact-btn,.add-cart-btn{background:#F5AD27!important;color:#12313A!important;}
+.contact-btn:hover,.add-cart-btn:hover{background:#D9910D!important;color:#12313A!important;}
+.btn-primary,.btn-sell{color:#12313A;}
+
+/* Accesibilidad de contraste para controles */
+.pill-toggle button.on{background:#12313A;color:#FFFFFF;}
+.toast{background:#12313A;color:#FFFFFF;}
 </style>
 </head>
 <body>
