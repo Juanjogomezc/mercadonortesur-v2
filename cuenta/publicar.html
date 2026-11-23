@@ -721,7 +721,7 @@ body{font-size:15.5px;line-height:1.55}.form-card h2{font-size:21px}.form-card .
     if (editId) {
       try {
         const l = await fetchListing(editId);
-        if (!l || l.sellerId !== user.uid) { gate('No encontramos esa publicación', 'Puede que haya sido eliminada o no sea tuya.', 'dashboard.html', 'Volver a mi cuenta'); return; }
+        if (!l || (profile.role !== 'admin' && l.sellerId !== user.uid)) { gate('No encontramos esa publicación', 'Puede que haya sido eliminada o no tengas permiso para editarla.', profile.role === 'admin' ? '../admin/dashboard.html' : 'dashboard.html', profile.role === 'admin' ? 'Volver al panel administrador' : 'Volver a mi cuenta'); return; }
         $('f-titulo').value = l.title || '';
         $('f-categoria').value = l.category || 'trekking';
         if (l.condition === 'nuevo' || l.condition === 'usado') $('f-condicion').value = l.condition;
