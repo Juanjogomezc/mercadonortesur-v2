@@ -764,6 +764,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
           : state === 'pending'
             ? '<button class="btn-approve btn-sm" data-act="approve" data-id="' + esc(l.id) + '">Aprobar</button>'
             : '<button class="btn-outline-sm" data-act="restore" data-id="' + esc(l.id) + '">Volver a revisión</button>') +
+          (isAdmin ? '<a class="btn-outline-sm" href="../cuenta/publicar.html?edit=' + encodeURIComponent(l.id) + '">Editar</a>' : '') +
           '<a class="btn-outline-sm" href="../producto.html?id=' + encodeURIComponent(l.id) + '" target="_blank" rel="noopener">Ver</a>' +
           '<button class="btn-outline-sm" data-act="delete" data-id="' + esc(l.id) + '">Eliminar</button>';
       return '<tr><td>' + product + '</td><td>' + typeBadge + '</td><td>' + esc(catLabel(l.category)) + '</td>' +
