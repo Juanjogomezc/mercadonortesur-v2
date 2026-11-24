@@ -1023,30 +1023,14 @@ footer .footer-brand p,footer .footer-col a,footer .footer-bottom{color:#D3E4E8!
   document.getElementById('searchInputMobile').addEventListener('input', (e)=> runSearch(e.target.value));
 
   /* ---------- Mobile: hamburger drawer ---------- */
-  /* ---------- Hero carousel ---------- */
-  let heroIndex = 0;
-  const heroSlides = document.querySelectorAll('.hero-slide');
-  const heroDots = document.querySelectorAll('.hero-dot');
-  let heroTimer = null;
-
-  function heroGoTo(i){
-    heroIndex = (i + heroSlides.length) % heroSlides.length;
-    heroSlides.forEach((s, idx) => s.classList.toggle('active', idx === heroIndex));
-    heroDots.forEach((d, idx) => d.classList.toggle('active', idx === heroIndex));
-    resetHeroAutoplay();
-  }
-  function heroNext(){ heroGoTo(heroIndex + 1); }
-  function heroPrev(){ heroGoTo(heroIndex - 1); }
-  function resetHeroAutoplay(){
-    clearInterval(heroTimer);
-    heroTimer = setInterval(heroNext, 6000);
-  }
-  resetHeroAutoplay();
-  const heroCarouselEl = document.querySelector('.hero-carousel');
-  if(heroCarouselEl){
-    heroCarouselEl.addEventListener('mouseenter', ()=> clearInterval(heroTimer));
-    heroCarouselEl.addEventListener('mouseleave', resetHeroAutoplay);
-  }
+  /* ---------- Hero carousel dinámico ---------- */
+  let heroIndex=0,heroTimer=null,heroSlides=[],heroDots=[];
+  function refreshHeroNodes(){heroSlides=[...document.querySelectorAll('.hero-slide')];heroDots=[...document.querySelectorAll('.hero-dot')];}
+  function heroGoTo(i){refreshHeroNodes();if(!heroSlides.length)return;heroIndex=(i+heroSlides.length)%heroSlides.length;heroSlides.forEach((s,n)=>s.classList.toggle('active',n===heroIndex));heroDots.forEach((d,n)=>d.classList.toggle('active',n===heroIndex));resetHeroAutoplay();}
+  function heroNext(){heroGoTo(heroIndex+1)} function heroPrev(){heroGoTo(heroIndex-1)}
+  function resetHeroAutoplay(){clearInterval(heroTimer);refreshHeroNodes();if(heroSlides.length>1)heroTimer=setInterval(heroNext,6000);}
+  window.mnsRenderHero=function(slides){const track=document.getElementById("heroTrack");if(!track||!Array.isArray(slides)||!slides.length)return;track.querySelectorAll(".hero-slide,.hero-arrow,.hero-dots").forEach(el=>el.remove());slides.slice(0,6).forEach((item,i)=>{const slide=document.createElement("div");slide.className="hero-slide"+(i===0?" active":"");const wrap=document.createElement("div");wrap.className="h-img";const img=document.createElement("img");img.src=item.image;img.alt=item.brand||"Mercado Norte Sur";img.loading=i===0?"eager":"lazy";wrap.append(img);const copy=document.createElement("div");copy.className="hero-copy";for(const [cls,val] of [["eyebrow-pill",item.eyebrow],["brand",item.brand],["tagline",item.tagline]]){const el=document.createElement("div");el.className=cls;el.textContent=val||"";copy.append(el);}const btn=document.createElement("button");btn.className="btn-hero";btn.type="button";btn.textContent="Ver colección";btn.addEventListener("click",()=>selectCategory(item.category||"all"));copy.append(btn);slide.append(wrap,copy);track.append(slide);});if(slides.length>1){const prev=document.createElement("button"),next=document.createElement("button"),dots=document.createElement("div");prev.className="hero-arrow prev";prev.type="button";prev.setAttribute("aria-label","Banner anterior");prev.textContent="‹";prev.addEventListener("click",heroPrev);next.className="hero-arrow next";next.type="button";next.setAttribute("aria-label","Banner siguiente");next.textContent="›";next.addEventListener("click",heroNext);dots.className="hero-dots";dots.id="heroDots";slides.slice(0,6).forEach((_,i)=>{const d=document.createElement("button");d.className="hero-dot"+(i===0?" active":"");d.type="button";d.setAttribute("aria-label","Ir al banner "+(i+1));d.addEventListener("click",()=>heroGoTo(i));dots.append(d);});track.append(prev,next,dots);}heroIndex=0;refreshHeroNodes();resetHeroAutoplay();};
+  refreshHeroNodes();resetHeroAutoplay();const heroCarouselEl=document.querySelector('.hero-carousel');if(heroCarouselEl){heroCarouselEl.addEventListener('mouseenter',()=>clearInterval(heroTimer));heroCarouselEl.addEventListener('mouseleave',resetHeroAutoplay);}
 
   function openDrawer(){
     document.getElementById('catDrawer').classList.add('open');
@@ -1094,7 +1078,7 @@ footer .footer-brand p,footer .footer-col a,footer .footer-bottom{color:#D3E4E8!
 
 
 <script type="module">
-  import { watchUser, logout, fetchApprovedListings, safeUrl, fetchFavoriteIds, toggleFavorite } from "./assets/firebase.js";
+  import { watchUser, logout, fetchApprovedListings, safeUrl, fetchFavoriteIds, toggleFavorite, fetchHeroSlides } from "./assets/firebase.js";
 
   // El catálogo público se alimenta exclusivamente desde publicaciones aprobadas en Firestore.
 
@@ -1115,6 +1099,8 @@ footer .footer-brand p,footer .footer-col a,footer .footer-bottom{color:#D3E4E8!
 
   (async () => {
     try {
+      const hero = await fetchHeroSlides();
+      if (window.mnsRenderHero) window.mnsRenderHero(hero);
       const list = await fetchApprovedListings();
       window.setProducts(list.map(toProduct));
     } catch (err) {
