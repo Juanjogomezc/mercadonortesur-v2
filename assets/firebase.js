@@ -672,11 +672,15 @@ export async function saveHeroSlides(slides,user,profile){
 }
 export async function uploadHeroBanner(uid,file,index=0){
  if(!uid||!file)throw new Error("Selecciona una imagen e inicia sesión.");
- if(!["image/jpeg","image/png","image/webp"].includes(String(file.type||"").toLowerCase()))throw new Error("Usa imágenes JPG, PNG o WEBP.");
+ const mime=String(file.type||"").toLowerCase();
+ const extensions={"image/jpeg":"jpg","image/png":"png","image/webp":"webp"};
+ if(!extensions[mime])throw new Error("Usa imágenes JPG, PNG o WEBP.");
  if(file.size>8*1024*1024)throw new Error("Cada imagen puede pesar hasta 8 MB.");
- const blob=await resizeImage(file),key=(globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36);
- const storageRef=ref(storage,"hero-banners/"+uid+"/"+key+"-"+index+".jpg");
- const task=uploadBytesResumable(storageRef,blob,{contentType:"image/jpeg",cacheControl:"public,max-age=31536000"});
+ // El banner se almacena tal como fue seleccionado: sin canvas, compresión,
+ // cambio de dimensiones ni conversión de formato.
+ const key=(globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36);
+ const storageRef=ref(storage,"hero-banners/"+uid+"/"+key+"-"+index+"."+extensions[mime]);
+ const task=uploadBytesResumable(storageRef,file,{contentType:mime,cacheControl:"public,max-age=31536000"});
  await new Promise((resolve,reject)=>task.on("state_changed",null,reject,resolve));
  try{return await getDownloadURL(storageRef);}catch(error){await deleteObject(storageRef).catch(()=>{});throw error;}
 }
