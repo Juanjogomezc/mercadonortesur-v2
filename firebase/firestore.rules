@@ -107,6 +107,13 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Configuración pública del sitio: lectura abierta, cambios solo por admins.
+    match /siteSettings/{settingId} {
+      allow read: if settingId == 'homepage';
+      allow create, update: if settingId == 'homepage' && isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // ---------- Publicaciones ----------
     match /listings/{id} {
       // Público: solo aprobadas. Dueño: las propias. Admin: todas.

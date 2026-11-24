@@ -648,6 +648,39 @@ export async function deleteBlogCover(url) {
   await removeBlogCoverFile(url);
 }
 
+/* Gestor de banner principal */
+const HERO_DEFAULTS=[
+{eyebrow:"Temporada de verano",brand:"Doite",tagline:"Carpas para toda condición",category:"camping",image:"https://commons.wikimedia.org/wiki/Special:FilePath/Camping_among_beautiful_mountains.jpg?width=1400"},
+{eyebrow:"Nueva colección",brand:"Osprey",tagline:"Mochilas que cargan tu aventura",category:"trekking",image:"https://commons.wikimedia.org/wiki/Special:FilePath/Adventurous_Mountain_Hikes_(Unsplash).jpg?width=1400"},
+{eyebrow:"Pre-temporada",brand:"Burton",tagline:"Nieve sin límites",category:"nieve",image:"https://commons.wikimedia.org/wiki/Special:FilePath/Snowboarding.jpg?width=1400"},
+{eyebrow:"Recomendado",brand:"Black Diamond",tagline:"Escalada con equipo verificado",category:"escalada",image:"https://commons.wikimedia.org/wiki/Special:FilePath/Man_rock_climbing_(Unsplash).jpg?width=1400"}];
+export async function fetchHeroSlides(){
+ const snap=await getDoc(doc(db,"siteSettings","homepage"));
+ const saved=snap.exists()&&Array.isArray(snap.data().heroSlides)?snap.data().heroSlides:[];
+ return saved.length?saved:HERO_DEFAULTS;
+}
+export async function saveHeroSlides(slides,user,profile){
+ if(!user||profile?.role!=="admin")throw new Error("Solo un administrador puede modificar el banner.");
+ if(!Array.isArray(slides)||slides.length<1||slides.length>6)throw new Error("El banner debe tener entre 1 y 6 imágenes.");
+ const clean=slides.map((s,i)=>{
+  const image=safeUrl(s.image),eyebrow=String(s.eyebrow||"").trim().slice(0,60),brand=String(s.brand||"").trim().slice(0,60),tagline=String(s.tagline||"").trim().slice(0,120),category=String(s.category||"all");
+  if(!image||!eyebrow||!brand||!tagline)throw new Error("Completa imagen, etiqueta, título y descripción en la diapositiva "+(i+1)+".");
+  if(!["all","camping","escalada","trekking","surf","pesca","ciclismo","nieve","navegacion","servicios"].includes(category))throw new Error("Categoría no válida en diapositiva "+(i+1)+".");
+  return {image,eyebrow,brand,tagline,category};
+ });
+ await setDoc(doc(db,"siteSettings","homepage"),{heroSlides:clean,updatedAt:serverTimestamp(),updatedBy:user.uid});return clean;
+}
+export async function uploadHeroBanner(uid,file,index=0){
+ if(!uid||!file)throw new Error("Selecciona una imagen e inicia sesión.");
+ if(!["image/jpeg","image/png","image/webp"].includes(String(file.type||"").toLowerCase()))throw new Error("Usa imágenes JPG, PNG o WEBP.");
+ if(file.size>8*1024*1024)throw new Error("Cada imagen puede pesar hasta 8 MB.");
+ const blob=await resizeImage(file),key=(globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36);
+ const storageRef=ref(storage,"hero-banners/"+uid+"/"+key+"-"+index+".jpg");
+ const task=uploadBytesResumable(storageRef,blob,{contentType:"image/jpeg",cacheControl:"public,max-age=31536000"});
+ await new Promise((resolve,reject)=>task.on("state_changed",null,reject,resolve));
+ try{return await getDownloadURL(storageRef);}catch(error){await deleteObject(storageRef).catch(()=>{});throw error;}
+}
+
 export async function uploadBlogCover(uid, file) {
   if (!uid || !file) throw new Error("Selecciona una imagen e inicia sesión.");
   const mime = String(file.type || "").toLowerCase();

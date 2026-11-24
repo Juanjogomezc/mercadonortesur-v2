@@ -14,6 +14,19 @@ service firebase.storage {
                     && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // Banners de portada: lectura pública y carga/eliminación solo por admins.
+    match /hero-banners/{uid}/{file} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        && request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      allow delete: if request.auth != null
+        && request.auth.uid == uid
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     // Fotos de publicaciones: se ven públicamente, solo las sube su dueño
     match /listings/{uid}/{file} {
       allow read: if true;
