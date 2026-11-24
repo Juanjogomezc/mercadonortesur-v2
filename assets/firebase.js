@@ -663,7 +663,7 @@ export async function saveHeroSlides(slides,user,profile){
  if(!user||profile?.role!=="admin")throw new Error("Solo un administrador puede modificar el banner.");
  if(!Array.isArray(slides)||slides.length<1||slides.length>6)throw new Error("El banner debe tener entre 1 y 6 imágenes.");
  const clean=slides.map((s,i)=>{
-  const image=safeUrl(s.image),eyebrow=String(s.eyebrow||"").trim().slice(0,60),brand=String(s.brand||"").trim().slice(0,60),tagline=String(s.tagline||"").trim().slice(0,120),category=String(s.category||"all");
+  const image=safeUrl(s.image),imageMobile=s.imageMobile?safeUrl(s.imageMobile):"",eyebrow=String(s.eyebrow||"").trim().slice(0,60),brand=String(s.brand||"").trim().slice(0,60),tagline=String(s.tagline||"").trim().slice(0,120),category=String(s.category||"all");
   if(!image||!eyebrow||!brand||!tagline)throw new Error("Completa imagen, etiqueta, título y descripción en la diapositiva "+(i+1)+".");
   if(!["all","camping","escalada","trekking","surf","pesca","ciclismo","nieve","navegacion","servicios"].includes(category))throw new Error("Categoría no válida en diapositiva "+(i+1)+".");
   return {image,imageMobile,eyebrow,brand,tagline,category};
