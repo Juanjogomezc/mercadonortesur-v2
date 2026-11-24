@@ -649,6 +649,8 @@ export async function deleteBlogCover(url) {
 }
 
 /* Gestor de banner principal */
+const HERO_POSITION_VALUES=["0% 0%","50% 0%","100% 0%","0% 50%","50% 50%","100% 50%","0% 100%","50% 100%","100% 100%"];
+function validHeroPosition(value){return HERO_POSITION_VALUES.includes(value)?value:"50% 50%";}
 const HERO_DEFAULTS=[
 {eyebrow:"Temporada de verano",brand:"Doite",tagline:"Carpas para toda condición",category:"camping",image:"https://commons.wikimedia.org/wiki/Special:FilePath/Camping_among_beautiful_mountains.jpg?width=1400"},
 {eyebrow:"Nueva colección",brand:"Osprey",tagline:"Mochilas que cargan tu aventura",category:"trekking",image:"https://commons.wikimedia.org/wiki/Special:FilePath/Adventurous_Mountain_Hikes_(Unsplash).jpg?width=1400"},
@@ -663,10 +665,10 @@ export async function saveHeroSlides(slides,user,profile){
  if(!user||profile?.role!=="admin")throw new Error("Solo un administrador puede modificar el banner.");
  if(!Array.isArray(slides)||slides.length<1||slides.length>6)throw new Error("El banner debe tener entre 1 y 6 imágenes.");
  const clean=slides.map((s,i)=>{
-  const image=safeUrl(s.image),imageMobile=s.imageMobile?safeUrl(s.imageMobile):"",eyebrow=String(s.eyebrow||"").trim().slice(0,60),brand=String(s.brand||"").trim().slice(0,60),tagline=String(s.tagline||"").trim().slice(0,120),category=String(s.category||"all");
+  const image=safeUrl(s.image),imageMobile=s.imageMobile?safeUrl(s.imageMobile):"",objectPosition=validHeroPosition(s.objectPosition),objectPositionMobile=validHeroPosition(s.objectPositionMobile||s.objectPosition),eyebrow=String(s.eyebrow||"").trim().slice(0,60),brand=String(s.brand||"").trim().slice(0,60),tagline=String(s.tagline||"").trim().slice(0,120),category=String(s.category||"all");
   if(!image||!eyebrow||!brand||!tagline)throw new Error("Completa imagen, etiqueta, título y descripción en la diapositiva "+(i+1)+".");
   if(!["all","camping","escalada","trekking","surf","pesca","ciclismo","nieve","navegacion","servicios"].includes(category))throw new Error("Categoría no válida en diapositiva "+(i+1)+".");
-  return {image,imageMobile,eyebrow,brand,tagline,category};
+  return {image,imageMobile,objectPosition,objectPositionMobile,eyebrow,brand,tagline,category};
  });
  await setDoc(doc(db,"siteSettings","homepage"),{heroSlides:clean,updatedAt:serverTimestamp(),updatedBy:user.uid});return clean;
 }

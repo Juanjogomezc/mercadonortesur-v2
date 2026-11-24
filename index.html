@@ -163,6 +163,8 @@
   .hero-slide.active{opacity:1; pointer-events:auto;}
   .hero-slide .h-img{flex:1; position:relative; overflow:hidden; height:100%;}
   .hero-slide .h-img img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block;}
+  .hero-slide .h-img img{object-position:var(--hero-position,50% 50%);}
+  @media(max-width:680px){.hero-slide .h-img img{object-position:var(--hero-position-mobile,var(--hero-position,50% 50%));}}
   .hero-copy{
     position:absolute; inset:0; z-index:2;
     display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start;
@@ -984,6 +986,7 @@ footer .footer-brand p,footer .footer-col a,footer .footer-bottom{color:#D3E4E8!
     if(!valid.length){carousel.hidden=true;refreshHeroNodes();return;}
     valid.forEach((item,i)=>{
       const slide=document.createElement("div");slide.className="hero-slide"+(i===0?" active":"");
+      slide.style.setProperty("--hero-position",item.objectPosition||"50% 50%");slide.style.setProperty("--hero-position-mobile",item.objectPositionMobile||item.objectPosition||"50% 50%");
       const wrap=document.createElement("div");wrap.className="h-img";
       const picture=document.createElement("picture");
       if(item.imageMobile){const source=document.createElement("source");source.media="(max-width: 680px)";source.srcset=item.imageMobile;picture.append(source);}
