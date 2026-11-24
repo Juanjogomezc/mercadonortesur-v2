@@ -436,6 +436,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
       <a href="../cuenta/publicar.html">＋ Crear publicación</a>
       <button data-panel="activas">✅ Publicaciones activas</button>
       <button data-panel="reportes">📊 Reportes</button>
+      <button data-panel="hero">🖼️ Banner principal</button>
       <button data-panel="blog">✍️ Blog y contenidos <span class="count" id="countBlog">0</span></button>
       <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:14px 4px;">
       <a href="../index.html">← Volver al sitio</a>
@@ -509,6 +510,15 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
         <div class="empty-state" id="emptyActivas" style="display:none;">No hay publicaciones activas que coincidan.</div>
       </div>
 
+
+      <!-- ===== Gestor del banner ===== -->
+      <div class="panel" id="panel-hero">
+        <div class="blog-admin-intro"><div><div class="eyebrow">Portada del sitio</div><h2>Gestiona el banner principal</h2><p>Sube o reemplaza las imágenes de la portada y modifica sus textos y categorías.</p></div><a class="btn-primary" href="../index.html" target="_blank" rel="noopener">Ver portada ↗</a></div>
+        <div class="card"><div class="section-head"><h2>Diapositivas</h2><span class="card-sub">JPG, PNG o WEBP · Máximo 8 MB por imagen</span></div>
+        <div id="heroSlidesEditor"></div>
+        <div class="blog-form-actions" style="margin-top:18px"><button class="btn-primary" id="heroSaveBtn" type="button">Guardar banner</button><button class="btn-ghost" id="heroReloadBtn" type="button">Descartar cambios</button></div>
+        <p class="hint" id="heroEditorStatus" role="status" aria-live="polite">Los cambios se mostrarán en la portada después de guardar.</p></div>
+      </div>
 
       <!-- ===== Blog editorial ===== -->
       <div class="panel" id="panel-blog">
@@ -597,7 +607,8 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   import {
     watchUser, logout, fetchAllListings, fetchAllUsers, setListingStatus, setUserStatus,
     removeListing, setAdminContactPhone, esc, safeUrl, ms, friendlyError,
-    fetchAdminBlogPosts, saveBlogPost, deleteBlogPost, uploadBlogCover, deleteBlogCover
+    fetchAdminBlogPosts, saveBlogPost, deleteBlogPost, uploadBlogCover, deleteBlogCover,
+    fetchHeroSlides, saveHeroSlides, uploadHeroBanner
   } from "../assets/firebase.js";
   import { CAT_LABELS, computeReport, toCSV, reportRows } from "../assets/reports.js";
 
@@ -885,6 +896,21 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
   });
 
 
+  /* ---------- Gestión de banner principal ---------- */
+  const HERO_SEED=[
+   {eyebrow:"Temporada de verano",brand:"Doite",tagline:"Carpas para toda condición",category:"camping",image:"https://commons.wikimedia.org/wiki/Special:FilePath/Camping_among_beautiful_mountains.jpg?width=1400"},
+   {eyebrow:"Nueva colección",brand:"Osprey",tagline:"Mochilas que cargan tu aventura",category:"trekking",image:"https://commons.wikimedia.org/wiki/Special:FilePath/Adventurous_Mountain_Hikes_(Unsplash).jpg?width=1400"},
+   {eyebrow:"Pre-temporada",brand:"Burton",tagline:"Nieve sin límites",category:"nieve",image:"https://commons.wikimedia.org/wiki/Special:FilePath/Snowboarding.jpg?width=1400"},
+   {eyebrow:"Recomendado",brand:"Black Diamond",tagline:"Escalada con equipo verificado",category:"escalada",image:"https://commons.wikimedia.org/wiki/Special:FilePath/Man_rock_climbing_(Unsplash).jpg?width=1400"}];
+  let heroAdminSlides=[];
+  const heroCats=[["all","Todas"],["camping","Camping"],["escalada","Escalada"],["trekking","Trekking"],["surf","Surf"],["pesca","Pesca"],["ciclismo","Ciclismo"],["nieve","Nieve"],["navegacion","Navegación"],["servicios","Servicios"]];
+  function renderHeroEditor(){
+   $("heroSlidesEditor").innerHTML=heroAdminSlides.map((s,i)=>'<section class="card" style="display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);gap:14px;margin-bottom:14px"><div>'+(s.image?'<img class="hero-preview-img" src="'+esc(safeUrl(s.image))+'" alt="Banner '+(i+1)+'" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px">':'<div style="aspect-ratio:16/9;display:grid;place-items:center;background:var(--bg-subtle)">Sin imagen</div>')+'<div class="field"><label>Imagen '+(i+1)+'</label><input type="file" accept="image/jpeg,image/png,image/webp" data-hero-file="'+i+'"></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="field"><label>Etiqueta superior</label><input maxlength="60" data-hero-field="eyebrow" value="'+esc(s.eyebrow)+'"></div><div class="field"><label>Título / marca</label><input maxlength="60" data-hero-field="brand" value="'+esc(s.brand)+'"></div><div class="field" style="grid-column:1/-1"><label>Descripción</label><input maxlength="120" data-hero-field="tagline" value="'+esc(s.tagline)+'"></div><div class="field"><label>Categoría del botón</label><select data-hero-field="category">'+heroCats.map(([v,l])=>'<option value="'+v+'" '+(s.category===v?'selected':'')+'>'+l+'</option>').join("")+'</select></div></div></section>').join("");
+   $("heroSlidesEditor").querySelectorAll("[data-hero-file]").forEach(input=>input.addEventListener("change",()=>{const f=input.files?.[0],img=input.closest("section").querySelector(".hero-preview-img");if(f&&img)img.src=URL.createObjectURL(f);}));
+  }
+  async function loadHeroEditor(){ $("heroEditorStatus").textContent="Cargando banner…";try{heroAdminSlides=(await fetchHeroSlides()).slice(0,6).map(s=>({...s}));renderHeroEditor();$("heroEditorStatus").textContent="Reemplaza imágenes o edita textos y guarda los cambios.";}catch(e){$("heroEditorStatus").textContent=friendlyError(e);} }
+  $("heroReloadBtn").addEventListener("click",loadHeroEditor);
+  $("heroSaveBtn").addEventListener("click",async()=>{const b=$("heroSaveBtn");b.disabled=true;b.textContent="Guardando…";try{const rows=[...$("heroSlidesEditor").querySelectorAll("section")],next=[];for(let i=0;i<rows.length;i++){const row=rows[i],item={...heroAdminSlides[i]};row.querySelectorAll("[data-hero-field]").forEach(el=>item[el.dataset.heroField]=el.value.trim());const file=row.querySelector("[data-hero-file]")?.files?.[0];if(file){$("heroEditorStatus").textContent="Subiendo imagen "+(i+1)+"…";item.image=await uploadHeroBanner(adminUser.uid,file,i);}next.push(item);}heroAdminSlides=await saveHeroSlides(next,adminUser,adminProfile);renderHeroEditor();$("heroEditorStatus").textContent="Banner guardado. Los cambios ya están disponibles para la portada.";showToast("Banner principal actualizado");}catch(e){$("heroEditorStatus").textContent=friendlyError(e);showToast(friendlyError(e));}finally{b.disabled=false;b.textContent="Guardar banner";}});
   /* ---------- Blog editorial: CRUD exclusivo del administrador ---------- */
   let blogPosts = [], editingBlogId = null, editingSlug = "", editingCoverUrl = "", editingPublishedAt = null;
   const slugify = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,100);
@@ -1010,7 +1036,8 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
     cuentas: 'Cuentas registradas',
     activas: 'Publicaciones activas en el sitio',
     reportes: 'Reportes para toma de decisiones',
-    blog: 'Blog y contenidos'
+    blog: 'Blog y contenidos',
+    hero: 'Banner principal'
   };
   document.querySelectorAll('.admin-nav button[data-panel]').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -1029,6 +1056,7 @@ body{font-size:15.5px;line-height:1.55}.page-head h1{font-size:28px}.page-head .
       if (activePanel === 'activas') renderActivas();
       if (activePanel === 'reportes') renderReports();
       if (activePanel === 'blog') await loadBlogPosts();
+      if (activePanel === 'hero') await loadHeroEditor();
       updateLabel();
     });
   });
