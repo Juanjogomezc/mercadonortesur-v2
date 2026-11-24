@@ -154,14 +154,15 @@
     position:relative; overflow:hidden; background:var(--bg-subtle);
     border-bottom:1px solid var(--line);
   }
-  .hero-track{position:relative; height:420px; overflow:hidden;}
+  .hero-carousel[hidden]{display:none!important;}
+  .hero-track{position:relative; width:100%; aspect-ratio:1920/650; max-height:520px; overflow:hidden; background:#102c34;}
   .hero-slide{
     position:absolute; inset:0; height:100%; display:flex; opacity:0; pointer-events:none;
     transition:opacity .45s ease;
   }
   .hero-slide.active{opacity:1; pointer-events:auto;}
   .hero-slide .h-img{flex:1; position:relative; overflow:hidden; height:100%;}
-  .hero-slide .h-img img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;}
+  .hero-slide .h-img img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block;}
   .hero-copy{
     position:absolute; inset:0; z-index:2;
     display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start;
@@ -370,7 +371,7 @@
   }
 
   @media (max-width:960px){
-    .hero-track{height:340px;}
+    .hero-track{height:auto;}
     .hero-copy .brand{font-size:34px;}
     .cat-strip{grid-template-columns:repeat(4,1fr);}
     .product-grid{grid-template-columns:repeat(2,1fr);}
@@ -398,7 +399,7 @@
     .cat-nav::-webkit-scrollbar{display:none;}
     .cat-nav a{padding:9px 11px; font-size:12.5px;}
 
-    .hero-track{height:280px;}
+    .hero-track{height:auto;}
     .hero-copy{
       padding:0 18px 20px; gap:6px;
     }
@@ -530,7 +531,7 @@ body{font-size:15.5px;line-height:1.55}.announce{font-size:13.5px}.cat-nav a,.ic
 .chip-filter{font-size:14px}.p-name{font-size:15px;line-height:1.4}.p-price{font-size:18px}.p-cat{font-size:12px}
 .p-seller{font-size:12.5px;line-height:1.45}.trust-item .t{font-size:14px}.trust-item .d{font-size:12.5px;line-height:1.4}
 .footer-col a,.footer-brand p{font-size:14px;line-height:1.5}
-@media(max-width:680px){.header-top{gap:10px;padding:12px 14px}.logo{font-size:16px}.header-actions{gap:10px}.icon-btn{min-width:36px;min-height:40px;justify-content:center}.hero-track{height:300px}.hero-copy .brand{font-size:28px}.hero-copy .tagline{font-size:15px}.hero-copy .btn-hero{font-size:14px;min-height:44px}section{padding:28px 0}.section-head h2{font-size:21px}.cat-chip{flex-basis:90px;min-height:104px}.cat-chip .name{font-size:12.5px}.product-grid{gap:10px}.p-name{font-size:14px;line-height:1.35}.p-price{font-size:16.5px}.p-body{padding:11px 10px 13px}.p-seller{font-size:11.5px}.trust-inner{gap:16px;padding:18px 16px}.trust-item .t{font-size:13px}.trust-item .d{font-size:12px}.seller-copy p,.seller-list li{font-size:15px;line-height:1.5}.footer-col a{font-size:14px}.btn-primary,.btn-ghost,.btn-sell{min-height:44px;font-size:14px}}
+@media(max-width:680px){.header-top{gap:10px;padding:12px 14px}.logo{font-size:16px}.header-actions{gap:10px}.icon-btn{min-width:36px;min-height:40px;justify-content:center}.hero-track{height:auto;aspect-ratio:3/4;max-height:none}.hero-copy .brand{font-size:28px}.hero-copy .tagline{font-size:15px}.hero-copy .btn-hero{font-size:14px;min-height:44px}section{padding:28px 0}.section-head h2{font-size:21px}.cat-chip{flex-basis:90px;min-height:104px}.cat-chip .name{font-size:12.5px}.product-grid{gap:10px}.p-name{font-size:14px;line-height:1.35}.p-price{font-size:16.5px}.p-body{padding:11px 10px 13px}.p-seller{font-size:11.5px}.trust-inner{gap:16px;padding:18px 16px}.trust-item .t{font-size:13px}.trust-item .d{font-size:12px}.seller-copy p,.seller-list li{font-size:15px;line-height:1.5}.footer-col a{font-size:14px}.btn-primary,.btn-ghost,.btn-sell{min-height:44px;font-size:14px}}
 @media(max-width:380px){.logo{font-size:14px;gap:6px}.header-actions{gap:6px}.p-name{font-size:13.5px}.product-grid{gap:8px}}
 .p-media.no-image{display:grid;place-items:center;background:#F3F6F7;color:#68757A}.p-media.no-image:after{content:'📷 Foto no disponible';font-size:13px;font-weight:600}
 .p-media img{min-width:100%;min-height:100%}.photo-card-placeholder{display:grid;place-items:center;height:100%;font-size:13px;color:var(--ink-soft)}
@@ -661,62 +662,8 @@ footer .footer-brand p,footer .footer-col a,footer .footer-bottom{color:#D3E4E8!
   </nav>
 </header>
 
-<section class="hero-carousel">
-  <div class="hero-track" id="heroTrack">
-
-    <div class="hero-slide active" data-slide="0">
-      <div class="h-img"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Camping_among_beautiful_mountains.jpg?width=1400" alt=""></div>
-      <div class="hero-copy">
-        <span class="eyebrow-pill">Temporada de verano</span>
-        <div class="brand">Doite</div>
-        <div class="tagline">Carpas para toda condición</div>
-        <button class="btn-hero" onclick="selectCategory('camping')">Ver colección</button>
-      </div>
-    </div>
-
-    <div class="hero-slide" data-slide="1">
-      <div class="h-img"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Adventurous_Mountain_Hikes_(Unsplash).jpg?width=1400" alt=""></div>
-      <div class="hero-copy">
-        <span class="eyebrow-pill">Nueva colección</span>
-        <div class="brand">Osprey</div>
-        <div class="tagline">Mochilas que cargan tu aventura</div>
-        <button class="btn-hero" onclick="selectCategory('trekking')">Ver colección</button>
-      </div>
-    </div>
-
-    <div class="hero-slide" data-slide="2">
-      <div class="h-img"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Snowboarding.jpg?width=1400" alt=""></div>
-      <div class="hero-copy">
-        <span class="eyebrow-pill">Pre-temporada</span>
-        <div class="brand">Burton</div>
-        <div class="tagline">Nieve sin límites</div>
-        <button class="btn-hero" onclick="selectCategory('nieve')">Ver colección</button>
-      </div>
-    </div>
-
-    <div class="hero-slide" data-slide="3">
-      <div class="h-img"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Man_rock_climbing_(Unsplash).jpg?width=1400" alt=""></div>
-      <div class="hero-copy">
-        <span class="eyebrow-pill">Recomendado</span>
-        <div class="brand">Black Diamond</div>
-        <div class="tagline">Escalada con equipo verificado</div>
-        <button class="btn-hero" onclick="selectCategory('escalada')">Ver colección</button>
-      </div>
-    </div>
-
-    <button class="hero-arrow prev" onclick="heroPrev()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-    </button>
-    <button class="hero-arrow next" onclick="heroNext()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
-    </button>
-    <div class="hero-dots" id="heroDots">
-      <button class="hero-dot active" onclick="heroGoTo(0)"></button>
-      <button class="hero-dot" onclick="heroGoTo(1)"></button>
-      <button class="hero-dot" onclick="heroGoTo(2)"></button>
-      <button class="hero-dot" onclick="heroGoTo(3)"></button>
-    </div>
-  </div>
+<section class="hero-carousel" id="heroCarousel" hidden>
+  <div class="hero-track" id="heroTrack" aria-label="Banners principales"></div>
 </section>
 
 <div class="wrap">
@@ -1029,7 +976,33 @@ footer .footer-brand p,footer .footer-col a,footer .footer-bottom{color:#D3E4E8!
   function heroGoTo(i){refreshHeroNodes();if(!heroSlides.length)return;heroIndex=(i+heroSlides.length)%heroSlides.length;heroSlides.forEach((s,n)=>s.classList.toggle('active',n===heroIndex));heroDots.forEach((d,n)=>d.classList.toggle('active',n===heroIndex));resetHeroAutoplay();}
   function heroNext(){heroGoTo(heroIndex+1)} function heroPrev(){heroGoTo(heroIndex-1)}
   function resetHeroAutoplay(){clearInterval(heroTimer);refreshHeroNodes();if(heroSlides.length>1)heroTimer=setInterval(heroNext,6000);}
-  window.mnsRenderHero=function(slides){const track=document.getElementById("heroTrack");if(!track||!Array.isArray(slides)||!slides.length)return;track.querySelectorAll(".hero-slide,.hero-arrow,.hero-dots").forEach(el=>el.remove());slides.slice(0,6).forEach((item,i)=>{const slide=document.createElement("div");slide.className="hero-slide"+(i===0?" active":"");const wrap=document.createElement("div");wrap.className="h-img";const img=document.createElement("img");img.src=item.image;img.alt=item.brand||"Mercado Norte Sur";img.loading=i===0?"eager":"lazy";wrap.append(img);const copy=document.createElement("div");copy.className="hero-copy";for(const [cls,val] of [["eyebrow-pill",item.eyebrow],["brand",item.brand],["tagline",item.tagline]]){const el=document.createElement("div");el.className=cls;el.textContent=val||"";copy.append(el);}const btn=document.createElement("button");btn.className="btn-hero";btn.type="button";btn.textContent="Ver colección";btn.addEventListener("click",()=>selectCategory(item.category||"all"));copy.append(btn);slide.append(wrap,copy);track.append(slide);});if(slides.length>1){const prev=document.createElement("button"),next=document.createElement("button"),dots=document.createElement("div");prev.className="hero-arrow prev";prev.type="button";prev.setAttribute("aria-label","Banner anterior");prev.textContent="‹";prev.addEventListener("click",heroPrev);next.className="hero-arrow next";next.type="button";next.setAttribute("aria-label","Banner siguiente");next.textContent="›";next.addEventListener("click",heroNext);dots.className="hero-dots";dots.id="heroDots";slides.slice(0,6).forEach((_,i)=>{const d=document.createElement("button");d.className="hero-dot"+(i===0?" active":"");d.type="button";d.setAttribute("aria-label","Ir al banner "+(i+1));d.addEventListener("click",()=>heroGoTo(i));dots.append(d);});track.append(prev,next,dots);}heroIndex=0;refreshHeroNodes();resetHeroAutoplay();};
+  window.mnsRenderHero=function(slides){
+    const track=document.getElementById("heroTrack"),carousel=document.getElementById("heroCarousel");
+    if(!track||!carousel)return;
+    clearInterval(heroTimer);track.replaceChildren();heroIndex=0;
+    const valid=Array.isArray(slides)?slides.filter(item=>item&&item.image).slice(0,6):[];
+    if(!valid.length){carousel.hidden=true;refreshHeroNodes();return;}
+    valid.forEach((item,i)=>{
+      const slide=document.createElement("div");slide.className="hero-slide"+(i===0?" active":"");
+      const wrap=document.createElement("div");wrap.className="h-img";
+      const picture=document.createElement("picture");
+      if(item.imageMobile){const source=document.createElement("source");source.media="(max-width: 680px)";source.srcset=item.imageMobile;picture.append(source);}
+      const img=document.createElement("img");img.src=item.image;img.alt=item.brand||"Mercado Norte Sur";img.loading=i===0?"eager":"lazy";img.decoding="async";picture.append(img);wrap.append(picture);
+      const copy=document.createElement("div");copy.className="hero-copy";
+      for(const [cls,val] of [["eyebrow-pill",item.eyebrow],["brand",item.brand],["tagline",item.tagline]]){const el=document.createElement("div");el.className=cls;el.textContent=val||"";copy.append(el);}
+      const btn=document.createElement("button");btn.className="btn-hero";btn.type="button";btn.textContent="Ver colección";btn.addEventListener("click",()=>selectCategory(item.category||"all"));copy.append(btn);
+      slide.append(wrap,copy);track.append(slide);
+    });
+    if(valid.length>1){
+      const prev=document.createElement("button"),next=document.createElement("button"),dots=document.createElement("div");
+      prev.className="hero-arrow prev";prev.type="button";prev.setAttribute("aria-label","Banner anterior");prev.textContent="‹";prev.addEventListener("click",heroPrev);
+      next.className="hero-arrow next";next.type="button";next.setAttribute("aria-label","Banner siguiente");next.textContent="›";next.addEventListener("click",heroNext);
+      dots.className="hero-dots";dots.id="heroDots";
+      valid.forEach((_,i)=>{const d=document.createElement("button");d.className="hero-dot"+(i===0?" active":"");d.type="button";d.setAttribute("aria-label","Ir al banner "+(i+1));d.addEventListener("click",()=>heroGoTo(i));dots.append(d);});
+      track.append(prev,next,dots);
+    }
+    carousel.hidden=false;refreshHeroNodes();resetHeroAutoplay();
+  };
   refreshHeroNodes();resetHeroAutoplay();const heroCarouselEl=document.querySelector('.hero-carousel');if(heroCarouselEl){heroCarouselEl.addEventListener('mouseenter',()=>clearInterval(heroTimer));heroCarouselEl.addEventListener('mouseleave',resetHeroAutoplay);}
 
   function openDrawer(){
@@ -1105,6 +1078,7 @@ footer .footer-brand p,footer .footer-col a,footer .footer-bottom{color:#D3E4E8!
       window.setProducts(list.map(toProduct));
     } catch (err) {
       console.error('No se pudieron cargar las publicaciones:', err);
+      if (window.mnsRenderHero) window.mnsRenderHero([]);
       window.setProducts([]);
     }
   })();
